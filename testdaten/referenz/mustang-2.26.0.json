@@ -1,0 +1,224 @@
+{
+  "formatVersion": 1,
+  "hinweis": "Referenz mit Mustang-CLI 2.26.0 (scripts/referenz-mustang.mjs). extraktion: SHA-256 des von Mustang extrahierten XML je Testdatei. extended: Mustang-Beispiele (nur lokal geladen, nicht im Repo) mit Bewertung durch Mustang und CEN-Meldungen der Belegbrücke. customLevelWarning: CEN-Regeln, die bei von Mustang als gültig bewerteten EXTENDED-Dateien als Fehler auftreten.",
+  "mustang": "2.26.0",
+  "java": "java version \"21.0.10\" 2026-01-20 LTS",
+  "extraktion": {
+    "pdf-ohne-xml.pdf": {
+      "xmlSha256": null
+    },
+    "zf-basic.pdf": {
+      "xmlSha256": "084048071190dbd93984b9007f5c3edddceae2beee4a950c4f1db4c261a5ec69",
+      "bytes": 10209,
+      "mustang": {
+        "status": "invalid",
+        "fehler": [
+          "PEPPOL-EN16931-R008"
+        ]
+      }
+    },
+    "zf-en16931.pdf": {
+      "xmlSha256": "5cf33c2c417858d319bba0eccf0536e3c0b79beeb6b77563c718fac385fce137",
+      "bytes": 10140,
+      "mustang": {
+        "status": "valid",
+        "fehler": []
+      }
+    },
+    "zf-extended.pdf": {
+      "xmlSha256": "0131e83d310c48f87cade5b64564e112c7facf2b7146e21cfba1f7946c5af2be",
+      "bytes": 10220,
+      "mustang": {
+        "status": "valid",
+        "fehler": []
+      }
+    },
+    "zf-minimum.pdf": {
+      "xmlSha256": "f1b7c0a24b88c96e8d216028bd76f86601bb781f97788bc06b03d490317a952a",
+      "bytes": 10147,
+      "mustang": {
+        "status": "invalid",
+        "fehler": []
+      }
+    },
+    "zf-xrechnung.pdf": {
+      "xmlSha256": "e58a673aa659973ba190c25fd583050af3239a58b3ab04b1c2b2583920d203e6",
+      "bytes": 9793,
+      "mustang": {
+        "status": "valid",
+        "fehler": []
+      }
+    }
+  },
+  "extended": {
+    "factur-x-extended.xml": {
+      "sha256": "a63bb55b739a5d23ba91cfcd4991c819df7e3058f12837c1da1d91c8ff757b50",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-12:error",
+        "BR-S-08:error",
+        "CII-DT-027:error",
+        "CII-DT-043:warning",
+        "CII-DT-044:warning",
+        "CII-SR-002:warning",
+        "CII-SR-013:warning",
+        "CII-SR-028:warning",
+        "CII-SR-128:warning",
+        "CII-SR-312:warning",
+        "CII-SR-335:warning",
+        "CII-SR-351:warning",
+        "CII-SR-396:warning",
+        "CII-SR-408:warning",
+        "CII-SR-450:warning"
+      ]
+    },
+    "Extended_fremdwaehrung.xml": {
+      "sha256": "460a999957296363b445335d881cefab6f2544c629f316b649fc141cba9f11c7",
+      "mustang": "invalid",
+      "mustangFehler": [],
+      "xsdD16B": false,
+      "xsdFehler": [
+        "Schemas validity error : Element '{urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100}URIID': This element is not expected. Expected is one of ( {urn:un:unece:uncefact:"
+      ],
+      "cen": [],
+      "verarbeitungsfehler": "XPTY0004 Required cardinality of first argument of normalize-space() is zero or one; supplied value contains 2 items (xs:untypedAtomic('0204'), xs:untypedAtomic('EM'))"
+    },
+    "cii/extended_warenrechnung_based_doublecashdiscount.xml": {
+      "sha256": "43e6e5dc42d833b47360332ff0de9e1759d922310ac821c0a6e8dadd16437ca7",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-12:error",
+        "BR-S-08:error",
+        "CII-DT-043:warning",
+        "CII-DT-044:warning",
+        "CII-SR-002:warning",
+        "CII-SR-013:warning",
+        "CII-SR-028:warning",
+        "CII-SR-102:warning",
+        "CII-SR-128:warning",
+        "CII-SR-154:warning",
+        "CII-SR-312:warning",
+        "CII-SR-335:warning",
+        "CII-SR-351:warning",
+        "CII-SR-396:warning",
+        "CII-SR-408:warning",
+        "CII-SR-450:warning",
+        "CII-SR-452:warning",
+        "CII-SR-453:warning"
+      ]
+    },
+    "cii/UC11_F202600022_EXTENDED_FX_CII_BT-X-589Only_on_GROUP_Line.xml": {
+      "sha256": "edd459212a6869b3a6835e4f1d04683e940330de9eaa8ab1251858d721c120ba",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-22:error",
+        "BR-23:error",
+        "BR-26:error",
+        "BR-27:error",
+        "BR-CO-04:error",
+        "BR-CO-10:error",
+        "BR-S-10:error",
+        "CII-DT-058:warning",
+        "CII-SR-148:warning",
+        "CII-SR-200:warning",
+        "CII-SR-201:warning",
+        "CII-SR-439:error",
+        "CII-SR-474:warning"
+      ]
+    },
+    "migration/reference/ZUGFeRD2_EXTENDED_Warenrechnung.xml": {
+      "profil": "urn:cen.eu:en16931:2017#conformant#urn:zugferd.de:2p0:extended",
+      "uebersprungen": "kein EXTENDED"
+    },
+    "subinvoicelines/Extended_Fallschutz-Set_SubInvoiceLine_Bsp5.xml": {
+      "sha256": "fb06881dd37710a186ebce6dedfc84fc755a5eb842e359314c2d131f73a60a9e",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "CII-DT-027:error",
+        "CII-SR-013:warning",
+        "CII-SR-164:warning",
+        "CII-SR-203:warning",
+        "CII-SR-335:warning"
+      ]
+    },
+    "subinvoicelines/Extended_SubInvoiceLines_Hardware_Bsp2.xml": {
+      "sha256": "a552c3f7b92583e0988cf805bac70167bdcfcea4f39c16306a0ccfdc9de1d6db",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-10:error",
+        "BR-S-08:error",
+        "CII-SR-408:warning",
+        "CII-SR-452:warning",
+        "CII-SR-453:warning"
+      ]
+    },
+    "subinvoicelines/Extended___SubInvoiceLines_Buero_Material_Bsp3__.xml": {
+      "sha256": "4a818498ddd5d44a492588e1e038c6f72a716afdc8d518433e387ac670de8a5b",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-10:error",
+        "BR-S-08:error",
+        "CII-SR-408:warning",
+        "CII-SR-452:warning",
+        "CII-SR-453:warning"
+      ]
+    },
+    "subinvoicelines/Extended___SubInvoiceLines_Kaffee_Bundle_Set_Bsp4__.xml": {
+      "sha256": "5801f2b85ef06b73b4c66211782e336c943dc3fc669ba2c160b0493cd5b16494",
+      "mustang": "invalid",
+      "mustangFehler": [
+        "BR-S-05"
+      ],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-10:error",
+        "BR-S-05:error",
+        "CII-SR-154:warning",
+        "CII-SR-408:warning",
+        "CII-SR-452:warning",
+        "CII-SR-453:warning"
+      ]
+    },
+    "subinvoicelines/ZUGFeRD_Extended__Abschlagsrechnung_SubInvoiceLine_u_LV_Nr_.xml": {
+      "sha256": "57e998377a1e0dcfbbe689bb4938583e4a1815cce36df580b35ae7c6a0b46217",
+      "mustang": "valid",
+      "mustangFehler": [],
+      "xsdD16B": true,
+      "cen": [
+        "BR-CO-10:error",
+        "BR-S-08:error",
+        "CII-DT-021:error",
+        "CII-SR-113:warning",
+        "CII-SR-408:warning",
+        "CII-SR-452:warning",
+        "CII-SR-453:warning"
+      ]
+    }
+  },
+  "customLevelWarning": [
+    "BR-22",
+    "BR-23",
+    "BR-26",
+    "BR-27",
+    "BR-CO-04",
+    "BR-CO-10",
+    "BR-CO-12",
+    "BR-S-08",
+    "BR-S-10",
+    "CII-DT-021",
+    "CII-DT-027",
+    "CII-SR-439"
+  ]
+}

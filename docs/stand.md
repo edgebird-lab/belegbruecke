@@ -11,8 +11,8 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **0.3** Referenzlauf mit dem KoSIT-Validator: `npm run referenz` (Java 21, 9 s für 94 Dateien). Snapshot `testdaten/referenz/kosit-1.6.3.json`, **86 von 86 angenommen**. Mutationen M1 bis M8 per `scripts/mutationen.mjs` in `testdaten/mutationen/`. Ergebnisse und Abweichungen (M7 mit `QQQ`, T-P1) in [entscheidungen.md](entscheidungen.md#t3-referenzlauf-schritt-03).
 - [x] **0.4** SaxonJS-Durchstich (Gate): **erfüllt**, 91 von 91 vergleichbaren Dateien gleich der Referenz; Ansicht findet CSS, JavaScript und Übersetzungen. `npm run sef` kompiliert 8 XSLT in 10 s. Messwerte in [entscheidungen.md](entscheidungen.md#t4-saxonjs-statt-java-gate-erfüllt-schritt-04). Die Vergleiche werden in 1.4 zu Tests (T-V1).
 - [x] **0.5** xmllint-wasm-Durchstich: 86 von 86 gültig, M6 mit erwartetem Fehler (Zeile 11). Spalte ermittelt die Belegbrücke selbst, siehe [T5](entscheidungen.md#t5-xmllint-wasm-für-xsd-schritt-05).
-- [ ] **0.6** **(Robin)** DATEV-Formate an der Primärquelle prüfen, Kanzleifragen klären
-- [ ] **0.7** ZUGFeRD sichten, Testdateien wählen, EXTENDED-Prüfung entscheiden
+- [ ] **0.6** **(Robin)** DATEV-Formate an der Primärquelle prüfen, Kanzleifragen klären. Offen; Rückfall nach Spezifikation: Phase 4 nach Sekundärquelle, Export „Vorschau“ ([T6](entscheidungen.md#t6-datev-formate-schritt-06-robin)). Annahmen zu den Kanzleifragen in der Tabelle oben in entscheidungen.md.
+- [x] **0.7** ZUGFeRD: Profilkennungen und Anhangsnamen an Mustang 2.26.0 bestätigt, 6 lizenzklare Test-PDFs selbst erzeugt (`scripts/zugferd-testdaten.mjs`), Mustang-Referenz `testdaten/referenz/mustang-2.26.0.json`. EXTENDED: eigenes Szenario mit 12 Regeln als `customLevel` warning ([T7](entscheidungen.md#t7-zugferd-und-factur-x-schritt-07)).
 
 ## Phase 1 – Fachkern: Eingang und Prüfung
 
