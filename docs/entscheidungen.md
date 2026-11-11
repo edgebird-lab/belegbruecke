@@ -37,3 +37,16 @@ Hier steht, was beim Bau entschieden wurde. Einträge mit **Annahme, bis Robin e
 - Die KoSIT-Releases (Konfiguration, Visualisierung, Testsuite) liegen nicht im Repo, sondern werden von `scripts/artefakte.mjs` mit fester SHA-256 geladen und unverändert entpackt. Das hält das Repo klein und macht jede Aktualisierung zu einer Zeile in `vendor/artefakte.json`. Die CI lädt sie ebenfalls und hält sie im Cache.
 - Validator und Mustang-CLI (Java) lädt das Skript nur mit `--referenz`; die App und die Tests brauchen kein Java.
 - Die Release-Archive enthalten keine Lizenzdateien. Die Lizenztexte stammen deshalb aus den Repos zum jeweiligen Release-Stand und liegen, ebenfalls mit Prüfsumme, in `vendor/lizenzen/` im Repo.
+
+### T3 Referenzlauf (Schritt 0.3)
+
+Lauf mit KoSIT-Validator 1.6.3, Java 21.0.10, Konfiguration v2026-08-31 über 86 Testdateien und M1 bis M8 (`npm run referenz`, 9 s). Festgestellt:
+
+- **86 von 86 Testdateien angenommen.** 40 Dateien tragen nur den Hinweis `BR-DE-TMP-32` (Stufe information), darunter `01.01a`.
+- **Szenarioauswahl:** Die `match`-Ausdrücke der Konfiguration vergleichen BT-24 exakt; jede Datei passt auf höchstens ein Szenario. Die Reihenfolge („erster Treffer gilt“) ist bei dieser Konfiguration deshalb nicht beobachtbar; die Belegbrücke wertet in Dateireihenfolge aus und nimmt den ersten Treffer.
+- **Schematron nach XSD-Fehler:** läuft nicht. M6 hat nur den Schritt `val-xsd` (ungültig) und keine Schematron-Meldungen. Die Belegbrücke macht es genauso (R6 Punkt 7), ein Test friert das ein.
+- **Stufen im Bericht:** Die Meldungen tragen die Stufe aus `flag`/`role` (vor `customLevel`), z. B. `BR-CL-23:error` bei M7. `customLevel` wirkt erst in der Bewertung; M7 wird angenommen. Der Snapshot speichert deshalb die Stufe vor `customLevel` und die Bewertung danach.
+- **DTD:** M4 scheitert beim Validator schon beim Parsen („DOCTYPE ist nicht zulässig“), wie R2 in der Belegbrücke.
+- **Abweichung M7:** Die Spezifikation nennt `unitCode` `XYZ`. `XYZ` steht aber in der Codeliste von BR-CL-23 (UN/ECE Rec. 21), die Mutation hätte nichts ausgelöst. M7 nutzt deshalb `QQQ`.
+- **Abweichung T-P1:** `01.01a` hat weder BT-72 noch BG-14; nur die erste von zwei Positionen trägt BG-26. Nach R8 Nr. 6 ist der Leistungszeitpunkt damit „pruefen“ (Warnung), nicht „erfüllt über BG-14“. Der Referenzlauf meldet dazu passend `BR-DE-TMP-32`. Die Regel R8 geht vor; T-P1 erwartet für Nr. 6 „pruefen“.
+- **Ampel für 01.01a (U-2):** Hinweise (information) zählen nach der Ampelregel nicht als Warnung; 01.01a ist damit grün.

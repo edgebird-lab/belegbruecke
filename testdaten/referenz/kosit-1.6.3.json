@@ -1,0 +1,1172 @@
+{
+  "formatVersion": 1,
+  "hinweis": "Referenzlauf mit dem KoSIT-Validator (scripts/referenz.mjs). meldungen = Menge aus Regel-ID und Stufe, wie der Validator sie meldet (vor customLevel); angenommen = Bewertung des Validators (nach customLevel).",
+  "validator": "1.6.3",
+  "konfiguration": "xrechnung-3.0.2-validator-configuration-2026-08-31",
+  "java": "java version \"21.0.10\" 2026-01-20 LTS",
+  "dateien": {
+    "extension/04.01a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung Extension (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "UBL-CR-646:warning"
+      ]
+    },
+    "extension/04.02a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung Extension (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "UBL-CR-646:warning"
+      ]
+    },
+    "extension/04.03a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung Extension (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "UBL-CR-646:warning"
+      ]
+    },
+    "extension/04.04a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung Extension (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information",
+        "UBL-CR-646:warning"
+      ]
+    },
+    "extension/04.05a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung Extension (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CL-10:error",
+        "BR-CL-21:error"
+      ]
+    },
+    "extension/05.01a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung Extension (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CO-16:error",
+        "BR-DE-TMP-32:information",
+        "UBL-CR-470:warning"
+      ]
+    },
+    "standard/01.01a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.01a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.02a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.02a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.03a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.03a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.04a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.04a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.05a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.05a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.06a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.06a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.07a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.07a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.08a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.08a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.09a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.09a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.10a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.10a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.11a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.11a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.12a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.12a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.13a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.13a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.14a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.14a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.15a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.15a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.17a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.17a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/01.18a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.18a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.19a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.19a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.20a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.20a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.21a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/01.21a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.01a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.01a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.02a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.02a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.03a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.03a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.04a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.04a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/02.05a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/02.05a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/02.06a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/02.06a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/03.01a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.01a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.02a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/03.02a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/03.03a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "standard/03.03a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information",
+        "CII-SR-475:warning"
+      ]
+    },
+    "standard/03.04a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.04a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.05a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.05a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.06a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.06a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.07a-INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "standard/03.07a-INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "CII-SR-475:warning",
+        "CII-SR-476:warning"
+      ]
+    },
+    "technical-cases/cius/01.01_comprehensive_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.01_comprehensive_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "CII-SR-475:warning",
+        "CII-SR-476:warning"
+      ]
+    },
+    "technical-cases/cius/01.02_comprehensive_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.02_comprehensive_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.03_comprehensive_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.03_comprehensive_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.04_comprehensive_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.04_comprehensive_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "technical-cases/cius/01.05_minimal_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "technical-cases/cius/01.05_minimal_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "technical-cases/cius/01.06_minimal_test_ubl.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "technical-cases/cius/01.06_minimal_test_uncefact.xml": {
+      "szenario": "EN16931 XRechnung (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "technical-cases/cvd/02.01a-cvd_INVOICE_ubl.xml": {
+      "szenario": "EN16931 XRechnung CVD (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CL-13:error"
+      ]
+    },
+    "technical-cases/cvd/02.01a-cvd_INVOICE_uncefact.xml": {
+      "szenario": "EN16931 XRechnung CVD (CII)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CL-13:error"
+      ]
+    },
+    "mutationen/M1-steuerbetrag.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": false,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CO-14:error",
+        "BR-CO-15:error",
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "mutationen/M2-ohne-kaeuferreferenz.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": false,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": false,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-15:error",
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "mutationen/M3-unbekannte-kennung.xml": {
+      "szenario": null,
+      "angenommen": false,
+      "schritte": {
+        "val-xml": true
+      },
+      "meldungen": []
+    },
+    "mutationen/M4-externe-entity.xml": {
+      "szenario": null,
+      "angenommen": false,
+      "schritte": {
+        "val-xml": false
+      },
+      "meldungen": [
+        "generic-error:error"
+      ],
+      "xmlMeldungen": [
+        {
+          "schritt": "val-xml",
+          "zeile": null,
+          "spalte": null,
+          "code": "generic-error",
+          "text": "IOException while reading resource /C:/Users/Robin/Projekte/Apps/belegbruecke/testdaten/mutationen/M4-externe-entity.xml: SXXP0003   Error reported by XML parser: DOCTYPE ist nicht zulässig, wenn das Feature \"http://apache.org/xml/features/disallow-doctype-decl\" auf \"true\" gesetzt ist."
+        }
+      ]
+    },
+    "mutationen/M5-abgeschnitten.xml": {
+      "szenario": null,
+      "angenommen": false,
+      "schritte": {
+        "val-xml": false
+      },
+      "meldungen": [
+        "generic-error:error"
+      ],
+      "xmlMeldungen": [
+        {
+          "schritt": "val-xml",
+          "zeile": null,
+          "spalte": null,
+          "code": "generic-error",
+          "text": "IOException while reading resource /C:/Users/Robin/Projekte/Apps/belegbruecke/testdaten/mutationen/M5-abgeschnitten.xml: SXXP0003   Error reported by XML parser: XML-Dokumentstrukturen müssen innerhalb derselben Entity beginnen und enden."
+        }
+      ]
+    },
+    "mutationen/M6-falsches-element.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": false,
+      "schritte": {
+        "val-xsd": false,
+        "val-xml": true
+      },
+      "meldungen": [
+        "cvc-complex-type.2.4.a:error"
+      ],
+      "xmlMeldungen": [
+        {
+          "schritt": "val-xsd",
+          "zeile": 11,
+          "spalte": 19,
+          "code": "cvc-complex-type.2.4.a",
+          "text": "Ungültiger Content wurde beginnend mit Element '{\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\":IssueDat}' gefunden. '{\"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\":CopyIndicator, \"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\":UUID, \"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2\":IssueDate}' wird erwartet."
+        }
+      ]
+    },
+    "mutationen/M7-einheit-qqq.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": false,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-CL-23:error",
+        "BR-DE-TMP-32:information"
+      ]
+    },
+    "mutationen/M8-steuersatz-16.xml": {
+      "szenario": "EN16931 XRechnung (UBL Invoice)",
+      "angenommen": true,
+      "schritte": {
+        "val-xsd": true,
+        "val-sch.1": true,
+        "val-sch.2": true,
+        "val-xml": true
+      },
+      "meldungen": [
+        "BR-DE-TMP-32:information"
+      ]
+    }
+  }
+}
