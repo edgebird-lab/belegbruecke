@@ -113,3 +113,32 @@ Nicht erledigt: Die DATEV-Formatbeschreibungen (Dok.-Nr. 1036228 und 1035732) si
 - **CSP der App** wie spezifiziert (`default-src 'self'`); die Oberfläche darf deshalb keine Inline-Styles oder Inline-Skripte verwenden. Phase 3 muss das beachten oder die CSP bewusst erweitern.
 - **Kein HTTPS** in Version 0.1 (nur 127.0.0.1); das Cookie erhält `Secure`, sobald der Server unter HTTPS läuft (Phase 7).
 - **Entwicklung mit Vite:** Der Proxy von `npm run dev` (Port 5184) und `npm run preview` (4184) tritt gegenüber dem Server als dieser selbst auf (`changeOrigin`, `Origin` auf `http://127.0.0.1:8784` gesetzt), sonst lehnte die Origin-Prüfung jede ändernde Anfrage ab. Das gilt nur für die Entwicklung auf 127.0.0.1; einmal echt geprüft (GET 200, POST über den Proxy 201, fremder Origin direkt 403).
+
+### T11 Kontierung, Freigabe und Übergabe (Phase 4, API zu Phase 3)
+
+- **Windows-1252 ohne iconv-lite:** Die EXTF-Datei kodiert eine eigene Tabelle (`src/fach/datev/cp1252.ts`, 27 Zeichen in 0x80 bis 0x9F, sonst Latin-1); nicht darstellbare Zeichen werden `_` und als Hinweis gemeldet. Eine Abhängigkeit weniger, läuft auch im Browser.
+- **Spaltenüberschriften (Zeile 2)** wörtlich wie `ledermann/datev` (Datei `lib/datev/base/booking.rb`, Stand Commit 5bf02e0 vom 26.02.2026), ohne Anführungszeichen wie dort. Feld 114 Festschreibung, Feld 115 Leistungsdatum. Eigene Feldnotizen in [datev-felder.md](datev-felder.md). Bis Schritt 0.6 und 4.7 heißt der Export in der Oberfläche „Vorschau“.
+- **BU-Schlüssel bei Sonderfällen:** von Hand je Beleg (Schritt B5). Hat derselbe Lieferant mit derselben Kategorie und demselben Satz schon einen Schlüssel von Hand, schlägt die Kontierung ihn wieder vor. Für alle anderen Steuerfälle gilt R13 ohne Ausnahme.
+- **Kreditorenkonto:** B4 zeigt das nächste freie Konto als Vorschlag. Ändert der Benutzer es, wird es sofort am Lieferanten gespeichert (geprüft nach R10 Punkt 3); sonst vergibt die erste Freigabe das dann nächste freie Konto. Nach der ersten Übergabe mit diesem Lieferanten ist das Konto fest.
+- **Neuer Lieferant oder neue Erfassung von Hand:** Wechselt der Lieferant eines Belegs oder ändert sich die Erfassung von Hand, verfällt die Kontierung (Buchungstext und Steuerzeilen hängen daran); der Beleg ist wieder „geprüft“.
+- **Erfassung von Hand im Protokoll:** Aktion `pruefung` mit `art: "handerfassung"`, den erfassten Werten und einem neuen Prüfbericht (Nummer n + 1); so prüft die Kettenprüfung auch diesen Bericht. Weicht die Summe der Steuerzeilen vom Brutto ab, lässt sich nicht speichern; falsch gerundete Steuer ist eine Warnung `HAND-STEUER`.
+- **Ablehnen auch aus „eingegangen“** (Abweichung von der Tabelle in Abschnitt 4): Eine PDF, die gar keine Rechnung ist (z. B. AGB im Mailanhang), muss nicht erst von Hand erfasst werden. „Ablehnung aufheben“ führt sie zurück nach „eingegangen“.
+- **Dublette bestätigt:** „Ja, dieselbe Rechnung“ lehnt den Beleg in einem Schritt ab (Grund „Dublette von B-…“, zwei Protokolleinträge). „Ablehnung aufheben“ setzt die Dublettenentscheidung zurück.
+- **Freigabe zurücknehmen** senkt die Zähler der Kontierungsregeln wieder (Regeln mit 0 entfallen), damit Rücknahme und neue Freigabe die Historie nicht doppelt zählen.
+- **Sperren der Übergabe:** Kontenprüfungen (Kreditor, Sachkonto, BU-Schlüssel, Sachkontenlänge) nur im Modus „Buchungsstapel und Belege“; Fremdwährung sperrt immer. Zeilen mit 0,00 € entfallen im Stapel.
+- **Kettenanker** ist der Protokolleintrag `exportiert` des Laufs selbst (mit Dateien, Hashes und Belegliste), also der letzte Eintrag nach dem Export. Zusätzlich erhält jeder übergebene Beleg einen eigenen Eintrag `exportiert` (Statusübergang).
+- **Summen je Steuersatz** im Übergabeprotokoll: Summe der Buchungszeilen, Gutschriften (Soll) negativ. Belege ohne Buchung (Typ 389) stehen gesondert.
+- **Belegfeld 1 und Buchungstext:** Weicht Belegfeld 1 von BT-1 ab und enthält ein von Hand geänderter Buchungstext BT-1 nicht mehr, hängt der Export BT-1 an (der Text wird dafür gekürzt).
+- **Belegpaket:** Dateinamen `B-00001_<Belegfeld 1>.<Endung>`; Ansicht auch für ZUGFeRD (aus dem eingebetteten XML); `index.csv` mit Datum `TT.MM.JJJJ` und Betrag `336,90` für Tabellenkalkulationen.
+- **Prüferexport:** Zeitraum nach Belegdatum (ohne Belegdatum nach Eingangsdatum), alle Prüfberichte je Beleg, immer das ganze Protokoll (nur so ist die Kette nachrechenbar); vorher läuft eine Kettenprüfung, deren Ergebnis beiliegt.
+
+### T12 Oberfläche (Phase 3)
+
+- **Navigation über den Hash** (`#/beleg/<id>/kontieren` …) ohne Router-Bibliothek; Zurück, Lesezeichen und die Rückfall-Auslieferung des Servers funktionieren ohne Weiteres.
+- **Schrittleisten** benennen ihre Knöpfe für Bildschirmleser „Schritt 6: Freigeben“, damit sie sich vom Knopf „Freigeben“ unterscheiden. Nach jedem Seitenwechsel erhält die Überschrift den Fokus.
+- **„Erklärungen“** (wie der Lernmodus des Prozesslotsen) sind beim ersten Start an; die Wahl gilt je Browser.
+- **PDF-Ansicht** mit dem PDF-Betrachter des Browsers im iframe, Antwort mit eigener CSP (`default-src 'none'; frame-ancestors 'self'`). XML wird nie im Browser geöffnet, sondern nur heruntergeladen, weil ein Stylesheet darin Skripte ausführen könnte. pdf.js rendert in der Oberfläche nicht (kleinerer Build); es liest weiter die Anhänge im Server.
+- **E3 „bewusst leer“:** Ein leerer BU-Schlüssel verlangt ein Häkchen; „ohne Vorsteuer“ ist nach R13 vorbelegt leer und deshalb schon angehakt. Der Sonderfall wird immer je Beleg gewählt.
+- **Nach der Freigabe** zeigen die Schritte Zuordnen, Kontieren und Erfassen ihre Daten nur noch an; Ändern geht über „Freigabe zurücknehmen“.
+- **Kontrast:** Rahmen von Eingabefeldern dunkler als beim Prozesslotsen (`--linie-stark` #8f8e86 hell, #7d7c75 dunkel), damit sie den Kontrast 3:1 für Bedienelemente erreichen.
+- **Browsertests:** ein Server für alle Dateien, Reihenfolge nach Dateiname. `1-einrichtung.spec.ts` braucht den frischen Server (U-1 nur per Tastatur); alle anderen Dateien richten sich bei Bedarf per API ein (`e2e/hilfen.ts`, `vorbereiten`) und laufen auch einzeln. Jeder Schritt wird mit axe hell und dunkel geprüft (U-5); Zeitlimit 120 s je Test.

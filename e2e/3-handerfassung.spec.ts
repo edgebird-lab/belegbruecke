@@ -1,0 +1,42 @@
+/** Schritt 3.7: PDF ohne XML von Hand erfassen und bis zur Freigabe bringen (R16); U-5 für die Erfassung. */
+import { expect, test } from '@playwright/test'
+import { axeHellUndDunkel, vorbereiten, zugferd } from './hilfen.ts'
+
+test('PDF ohne XML: erfassen, zuordnen, kontieren, freigeben', async ({ page, baseURL }) => {
+  await vorbereiten(page.request, baseURL!)
+  await page.goto('/#/eingang')
+  await page.getByLabel('Rechnungsdateien auswählen').setInputFiles({ name: 'Quittung Bäckerei.pdf', mimeType: 'application/pdf', buffer: zugferd('pdf-ohne-xml.pdf') })
+  const ergebnis = page.locator('.ergebnisliste li').first()
+  await expect(ergebnis).toContainText('Keine E-Rechnung')
+  await ergebnis.getByRole('link').click()
+
+  await expect(page.getByRole('heading', { name: 'Rechnung von Hand erfassen', level: 2 })).toBeVisible()
+  await expect(page.locator('iframe[title="PDF des Belegs"]')).toBeVisible()
+  await axeHellUndDunkel(page)
+  await page.getByLabel(/^Lieferant/).fill('Bäckerei Korn')
+  await page.getByLabel('Steuernummer des Lieferanten').fill('12/345/67890')
+  await page.getByLabel(/^Rechnungsnummer/).fill('Q-77')
+  await page.getByLabel(/^Rechnungsdatum/).fill('2026-10-02')
+  await page.getByLabel('Leistungsdatum').fill('2026-10-02')
+  await page.getByLabel('Kategorie Zeile 1').selectOption('S')
+  await page.getByLabel('Steuersatz Zeile 1').fill('7')
+  await page.getByLabel('Netto Zeile 1').fill('10,00')
+  await page.getByRole('button', { name: 'Steuer für Zeile 1 berechnen' }).click()
+  await expect(page.getByLabel('Steuer Zeile 1')).toHaveValue('0,70')
+  await page.getByRole('button', { name: 'Summe als Brutto übernehmen' }).click()
+  await expect(page.getByLabel('Bruttobetrag')).toHaveValue('10,70')
+  await page.getByRole('button', { name: 'Speichern und prüfen' }).click()
+
+  // Nach der Erfassung: Pflichtangaben auf den erfassten Werten (Kleinbetrag, § 33 UStDV)
+  await expect(page.getByRole('heading', { name: 'Prüfen', level: 2 })).toBeVisible()
+  await expect(page.getByText('Pflichtangaben nach § 33 UStDV')).toBeVisible()
+  await page.getByRole('button', { name: 'Schritt 4: Zuordnen' }).click()
+  await expect(page.getByLabel(/^Name des Lieferanten/)).toHaveValue('Bäckerei Korn')
+  await page.getByRole('button', { name: 'Lieferant zuordnen und weiter' }).click()
+  await page.getByLabel('Sachkonto für Zeile 1').selectOption('4900')
+  await page.getByRole('button', { name: 'Kontierung speichern und weiter' }).click()
+  await page.getByRole('checkbox', { name: 'Leistung erhalten, Preise und Mengen geprüft' }).check()
+  await page.getByRole('button', { name: 'Freigeben', exact: true }).click()
+  await expect(page.locator('.seitentitel .statusmarke')).toHaveText('freigegeben')
+  await expect(page.locator('.seitentitel')).toContainText('Bäckerei Korn')
+})

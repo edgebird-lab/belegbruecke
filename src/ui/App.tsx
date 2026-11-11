@@ -1,102 +1,257 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { api, type EinstellungenAntwort, type Sitzung } from './api.ts'
+import { Anmeldung } from './anmeldung/Anmeldung.tsx'
+import { Archiv } from './archiv/Archiv.tsx'
+import { BelegAssistent } from './beleg/BelegAssistent.tsx'
+import { Belege } from './belege/Belege.tsx'
+import { Eingang } from './eingang/Eingang.tsx'
+import { Einrichtung } from './einrichtung/Einrichtung.tsx'
+import { Einstellungsseite } from './einstellungen/Einstellungsseite.tsx'
+import { Laden, Schalter } from './gemeinsam/Bausteine.tsx'
 import { Darstellungswahl } from './gemeinsam/Darstellung.tsx'
 import { useDarstellung } from './gemeinsam/useDarstellung.ts'
+import { AppKontext, type AppApi } from './kontext.ts'
+import { routeZuHash, useRoute, type Route } from './route.ts'
+import { Uebergabe } from './uebergabe/Uebergabe.tsx'
 import './styles.css'
 
-/** Antwort von GET /api/status */
-interface Serverstatus {
-  version: string
-  artefakte: { konfiguration: string; enSchematron: string; xrSchematron: string; visualisierung: string } | null
+const ERKLAERUNGEN = 'belegbruecke.erklaerungen'
+
+function gespeicherteErklaerungen(): boolean {
+  try {
+    return localStorage.getItem(ERKLAERUNGEN) !== 'aus'
+  } catch {
+    return true
+  }
 }
 
-type Verbindung = { art: 'laedt' } | { art: 'ok'; status: Serverstatus } | { art: 'fehler' }
-
-/**
- * Startseite des Entwicklungsstands: Die Oberfläche mit Eingang, Beleg-Assistent, Übergabe und
- * Archiv folgt in Phase 3 (docs/stand.md). Bis dahin zeigt sie, ob der Server läuft.
- */
+/** Sitzung laden; ohne Anmeldung die Anmeldung bzw. das Anlegen des ersten Benutzers. */
 export default function App() {
-  const [darstellung, setDarstellung] = useDarstellung()
-  const [verbindung, setVerbindung] = useState<Verbindung>({ art: 'laedt' })
-
-  useEffect(() => {
-    let aktiv = true
-    fetch('/api/status')
-      .then(async (antwort) => {
-        if (!antwort.ok) throw new Error(String(antwort.status))
-        const status = (await antwort.json()) as Serverstatus
-        if (aktiv) setVerbindung({ art: 'ok', status })
+  const [sitzung, setSitzung] = useState<Sitzung | null>(null)
+  const [fehler, setFehler] = useState<string | null>(null)
+  const laden = useCallback(() => {
+    api<Sitzung>('/sitzung')
+      .then((s) => {
+        setSitzung(s)
+        setFehler(null)
       })
-      .catch(() => aktiv && setVerbindung({ art: 'fehler' }))
-    return () => {
-      aktiv = false
-    }
+      .catch(() => setFehler('Der Server der Belegbrücke ist nicht erreichbar. Starten Sie ihn mit start.cmd oder npm run server.'))
   }, [])
+  useEffect(() => laden(), [laden])
 
-  return (
-    <div className="seite">
-      <header className="kopf">
-        <div className="marke">
-          <img src="/favicon.svg" alt="" width={28} height={28} />
-          <span>Belegbrücke</span>
-        </div>
-        <Darstellungswahl wert={darstellung} aendern={setDarstellung} />
-      </header>
-      <main className="inhalt">
-        <h1>E-Rechnungen annehmen, prüfen, archivieren und übergeben</h1>
-        <p className="einleitung">
-          Die Belegbrücke prüft eingehende E-Rechnungen nach EN 16931 und XRechnung, erklärt Fehler in Klartext,
-          bewahrt das Original unverändert mit Prüfbericht und Hashkette auf und erzeugt monatlich die Übergabe an
-          die Steuerkanzlei. Alles bleibt auf diesem Rechner.
-        </p>
-        <section className="karte" aria-labelledby="status-titel">
-          <h2 id="status-titel">Server</h2>
-          <Statusanzeige verbindung={verbindung} />
-        </section>
-        <section className="karte" aria-labelledby="stand-titel">
-          <h2 id="stand-titel">Entwicklungsstand</h2>
-          <p>
-            Fachkern, Prüfung, Archiv und Server entstehen zuerst. Die Assistenten für Eingang, Beleg, Übergabe und
-            Archiv folgen in Phase 3; der Stand steht in <code>docs/stand.md</code>.
-          </p>
-        </section>
-      </main>
-      <footer className="fuss">
-        Technische Prüfung ohne Gewähr; die Pflicht zur eigenen Rechnungsprüfung bleibt (BMF-Schreiben vom 15.10.2025, Rn. 35a).
-      </footer>
-    </div>
-  )
-}
-
-function Statusanzeige({ verbindung }: { verbindung: Verbindung }) {
-  if (verbindung.art === 'laedt') return <p role="status">Verbindung wird geprüft …</p>
-  if (verbindung.art === 'fehler') {
+  if (fehler) {
     return (
-      <p role="status" className="ampel ampel-grau">
-        <span aria-hidden="true">○</span> Server nicht erreichbar. Starten Sie ihn mit <code>npm run server</code>.
-      </p>
+      <Rahmenlos>
+        <h1>Belegbrücke</h1>
+        <p role="alert">{fehler}</p>
+      </Rahmenlos>
     )
   }
-  const { status } = verbindung
+  if (!sitzung) {
+    return (
+      <Rahmenlos>
+        <Laden />
+      </Rahmenlos>
+    )
+  }
+  if (!sitzung.angemeldet || !sitzung.benutzer) {
+    return (
+      <Rahmenlos>
+        <Anmeldung ersterBenutzer={sitzung.einrichtungNoetig} angemeldet={laden} />
+      </Rahmenlos>
+    )
+  }
+  return <Hauptfenster sitzung={sitzung as Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }} abgemeldet={laden} />
+}
+
+function Rahmenlos({ children }: { children: ReactNode }) {
+  const [darstellung, setDarstellung] = useDarstellung()
   return (
-    <div role="status">
-      <p className="ampel ampel-gruen">
-        <span aria-hidden="true">✓</span> Server läuft, Version {status.version}
-      </p>
-      {status.artefakte ? (
-        <dl className="eckdaten">
-          <dt>Prüfkonfiguration</dt>
-          <dd>{status.artefakte.konfiguration}</dd>
-          <dt>EN 16931</dt>
-          <dd>{status.artefakte.enSchematron}</dd>
-          <dt>XRechnung</dt>
-          <dd>{status.artefakte.xrSchematron}</dd>
-          <dt>Ansicht</dt>
-          <dd>{status.artefakte.visualisierung}</dd>
-        </dl>
-      ) : (
-        <p>Prüfartefakte fehlen. Laden Sie sie mit <code>npm run vorbereiten</code>.</p>
-      )}
+    <div className="app">
+      <header className="kopf">
+        <Marke />
+        <div className="kopf-aktionen">
+          <Darstellungswahl wert={darstellung} aendern={setDarstellung} />
+        </div>
+      </header>
+      <main id="inhalt" className="anmeldeflaeche">
+        {children}
+      </main>
+      <Fuss />
     </div>
   )
+}
+
+function Marke() {
+  return (
+    <div className="marke">
+      <img src="/favicon.svg" alt="" width={28} height={28} />
+      <span>Belegbrücke</span>
+    </div>
+  )
+}
+
+function Fuss() {
+  return <footer className="fuss">Technische Prüfung ohne Gewähr; die Pflicht zur eigenen Rechnungsprüfung bleibt (BMF-Schreiben vom 15.10.2025, Rn. 35a). Keine Steuer- oder Rechtsberatung.</footer>
+}
+
+const NAVIGATION: { seite: Route['seite']; text: string; route: Route }[] = [
+  { seite: 'eingang', text: 'Eingang', route: { seite: 'eingang' } },
+  { seite: 'belege', text: 'Belege', route: { seite: 'belege' } },
+  { seite: 'uebergabe', text: 'Übergabe', route: { seite: 'uebergabe', laufId: null } },
+  { seite: 'archiv', text: 'Archiv', route: { seite: 'archiv', id: null } },
+  { seite: 'einstellungen', text: 'Einstellungen', route: { seite: 'einstellungen', bereich: 'firma' } },
+]
+
+function Hauptfenster({ sitzung, abgemeldet }: { sitzung: Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }; abgemeldet: () => void }) {
+  const [darstellung, setDarstellung] = useDarstellung()
+  const [route, gehe] = useRoute()
+  const [erklaerungen, setErklaerungenRoh] = useState(gespeicherteErklaerungen)
+  const [meldung, setMeldung] = useState('')
+  const [zaehler, setZaehler] = useState({ offen: 0, freigegeben: 0 })
+  const [einstellungen, setEinstellungen] = useState<EinstellungenAntwort | null>(null)
+  const meldungsZeit = useRef<number | undefined>(undefined)
+  const ersterAufruf = useRef(true)
+
+  const melde = useCallback((text: string) => {
+    setMeldung(text)
+    window.clearTimeout(meldungsZeit.current)
+    meldungsZeit.current = window.setTimeout(() => setMeldung(''), 8000)
+  }, [])
+  const setErklaerungen = useCallback((an: boolean) => {
+    setErklaerungenRoh(an)
+    try {
+      localStorage.setItem(ERKLAERUNGEN, an ? 'an' : 'aus')
+    } catch {
+      // ohne Speicher gilt die Wahl bis zum Neuladen
+    }
+  }, [])
+  const aktualisiereZaehler = useCallback(() => {
+    api<{ offen: number; freigegeben: number }>('/zaehler')
+      .then(setZaehler)
+      .catch(() => undefined)
+  }, [])
+  const ladeEinstellungen = useCallback(async () => {
+    setEinstellungen(await api<EinstellungenAntwort>('/einstellungen'))
+  }, [])
+
+  useEffect(() => {
+    api<{ offen: number; freigegeben: number }>('/zaehler')
+      .then(setZaehler)
+      .catch(() => undefined)
+    api<EinstellungenAntwort>('/einstellungen')
+      .then(setEinstellungen)
+      .catch(() => undefined)
+  }, [])
+
+  // Beim ersten Start öffnet sich der Einrichtungsassistent (Spezifikation 5.1)
+  const einrichtungOffen = einstellungen !== null && einstellungen.eingerichtetAm === null
+  useEffect(() => {
+    if (einrichtungOffen && route.seite !== 'einrichtung') gehe({ seite: 'einrichtung', schritt: 1 })
+  }, [einrichtungOffen, route.seite, gehe])
+
+  // Nach einem Seitenwechsel bekommt die Überschrift den Fokus (Tastatur und Bildschirmleser)
+  const hash = routeZuHash(route)
+  useEffect(() => {
+    if (ersterAufruf.current) {
+      ersterAufruf.current = false
+      return
+    }
+    const t = window.setTimeout(() => document.querySelector<HTMLElement>('[data-seitentitel]')?.focus(), 50)
+    window.scrollTo({ top: 0 })
+    return () => window.clearTimeout(t)
+  }, [hash])
+
+  const abmelden = async () => {
+    await api('/abmelden', { daten: {} }).catch(() => undefined)
+    abgemeldet()
+  }
+
+  const apiWert = useMemo<AppApi>(
+    () => ({ benutzer: sitzung.benutzer, erklaerungen, setErklaerungen, melde, zaehler, aktualisiereZaehler, gehe, einstellungen, ladeEinstellungen }),
+    [sitzung.benutzer, erklaerungen, setErklaerungen, melde, zaehler, aktualisiereZaehler, gehe, einstellungen, ladeEinstellungen],
+  )
+
+  return (
+    <AppKontext.Provider value={apiWert}>
+      <div className="app">
+        <a
+          className="sprungmarke"
+          href="#inhalt"
+          onClick={(e) => {
+            e.preventDefault()
+            document.getElementById('inhalt')?.focus()
+          }}
+        >
+          Zum Inhalt springen
+        </a>
+        <header className="kopf">
+          <Marke />
+          <p className="meldung" role="status" aria-live="polite">
+            {meldung}
+          </p>
+          <div className="kopf-aktionen">
+            <Schalter an={erklaerungen} aendern={setErklaerungen}>
+              Erklärungen
+            </Schalter>
+            <Darstellungswahl wert={darstellung} aendern={setDarstellung} />
+            <span className="benutzername">{sitzung.benutzer.name}</span>
+            <button type="button" className="knopf knopf-klein" onClick={() => void abmelden()}>
+              Abmelden
+            </button>
+          </div>
+        </header>
+        <div className={einrichtungOffen ? 'rahmen ohne-navigation' : 'rahmen'}>
+          {!einrichtungOffen && (
+            <nav className="navigation" aria-label="Hauptnavigation">
+              <ul>
+                {NAVIGATION.map((n) => (
+                  <li key={n.seite}>
+                    <a href={routeZuHash(n.route)} aria-current={route.seite === n.seite || (n.seite === 'belege' && route.seite === 'beleg') ? 'page' : undefined}>
+                      <span>{n.text}</span>
+                      {n.seite === 'eingang' && zaehler.offen > 0 && (
+                        <span className="zaehler">
+                          {zaehler.offen}
+                          <span className="unsichtbar"> offen</span>
+                        </span>
+                      )}
+                      {n.seite === 'uebergabe' && zaehler.freigegeben > 0 && (
+                        <span className="zaehler zaehler-leise">
+                          {zaehler.freigegeben}
+                          <span className="unsichtbar"> freigegeben, noch nicht übergeben</span>
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          )}
+          <main id="inhalt" tabIndex={-1} className="inhalt">
+            <Seite route={route} />
+          </main>
+        </div>
+        <Fuss />
+      </div>
+    </AppKontext.Provider>
+  )
+}
+
+function Seite({ route }: { route: Route }) {
+  switch (route.seite) {
+    case 'eingang':
+      return <Eingang />
+    case 'belege':
+      return <Belege />
+    case 'beleg':
+      return <BelegAssistent key={route.id} id={route.id} schritt={route.schritt} />
+    case 'uebergabe':
+      return <Uebergabe laufId={route.laufId} />
+    case 'archiv':
+      return <Archiv id={route.id} />
+    case 'einstellungen':
+      return <Einstellungsseite bereich={route.bereich} />
+    case 'einrichtung':
+      return <Einrichtung schritt={route.schritt} />
+  }
 }

@@ -1,21 +1,12 @@
-import AxeBuilder from '@axe-core/playwright'
-import { expect, test, type Page } from '@playwright/test'
-
-/** Prüft die Seite mit axe; Befunde der Stufen serious und critical lassen den Test scheitern. */
-async function pruefe(page: Page) {
-  const ergebnis = await new AxeBuilder({ page }).analyze()
-  const schwer = ergebnis.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
-  expect(schwer.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(' ')).join(', ')})`)).toEqual([])
-}
+import { expect, test } from '@playwright/test'
+import { axe, PASSWORT, vorbereiten } from './hilfen.ts'
 
 for (const schema of ['light', 'dark'] as const) {
-  test(`Startseite ohne schwere Barrieren (${schema === 'light' ? 'hell' : 'dunkel'})`, async ({ page }) => {
+  test(`Anmeldeseite ohne schwere Barrieren (${schema === 'light' ? 'hell' : 'dunkel'})`, async ({ page }) => {
     await page.emulateMedia({ colorScheme: schema })
     await page.goto('/')
-    await expect(page.getByRole('heading', { level: 1 })).toContainText('E-Rechnungen')
-    await expect(page.getByRole('status')).toContainText('Server läuft')
-    await expect(page.getByRole('status')).toContainText('XRechnung 3.0.2')
-    await pruefe(page)
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Anmelden|Willkommen/)
+    await axe(page)
   })
 }
 
@@ -23,14 +14,29 @@ test('Darstellung lässt sich umschalten', async ({ page }) => {
   await page.goto('/')
   await page.getByLabel('Darstellung').selectOption('dunkel')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
-  await pruefe(page)
+  await axe(page)
   await page.getByLabel('Darstellung').selectOption('hell')
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.getByLabel('Darstellung').selectOption('system')
   await expect(page.locator('html')).not.toHaveAttribute('data-theme')
 })
 
-test('der Server liefert die Oberfläche mit Sicherheitsheadern und ohne CSP-Verstöße aus', async ({ page }) => {
+test('Anmelden mit falschem und richtigem Passwort, Abmelden', async ({ page, baseURL }) => {
+  await vorbereiten(page.request, baseURL!)
+  await page.request.post('/api/abmelden', { headers: { 'x-belegbruecke': '1', origin: baseURL! } })
+  await page.goto('/')
+  await page.getByLabel('Anmeldename').fill('robin')
+  await page.getByLabel('Passwort').fill('falsch-falsch')
+  await page.getByRole('button', { name: 'Anmelden' }).click()
+  await expect(page.getByRole('alert')).toContainText('Anmeldename oder Passwort falsch')
+  await page.getByLabel('Passwort').fill(PASSWORT)
+  await page.getByRole('button', { name: 'Anmelden' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Eingang')
+  await page.getByRole('button', { name: 'Abmelden' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Anmelden')
+})
+
+test('der Server liefert die Oberfläche mit Sicherheitsheadern und ohne CSP-Verstöße aus', async ({ page, baseURL }) => {
   const verstoesse: string[] = []
   page.on('console', (m) => {
     if (/Content Security Policy/i.test(m.text())) verstoesse.push(m.text())
@@ -41,6 +47,13 @@ test('der Server liefert die Oberfläche mit Sicherheitsheadern und ohne CSP-Ver
   expect(kopf['content-security-policy']).toContain("frame-ancestors 'none'")
   expect(kopf['x-content-type-options']).toBe('nosniff')
   expect(kopf['referrer-policy']).toBe('no-referrer')
-  await expect(page.getByRole('status')).toContainText('Server läuft')
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  // auch angemeldet auf allen Seiten
+  await vorbereiten(page.request, baseURL!)
+  for (const pfad of ['#/eingang', '#/belege', '#/uebergabe', '#/archiv', '#/einstellungen/firma', '#/einstellungen/konten', '#/einstellungen/lieferanten', '#/einstellungen/system']) {
+    await page.goto(`/${pfad}`)
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await axe(page)
+  }
   expect(verstoesse).toEqual([])
 })

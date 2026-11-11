@@ -16,6 +16,8 @@ export default defineConfig({
   testDir: 'e2e',
   fullyParallel: false,
   workers: 1,
+  // Lange Abläufe durch alle Schritte mit axe hell und dunkel je Schritt
+  timeout: 120_000,
   retries: CI ? 1 : 0,
   reporter: CI ? 'github' : 'list',
   globalTeardown: './e2e/aufraeumen.ts',
@@ -25,6 +27,7 @@ export default defineConfig({
     channel: CI ? 'chrome' : 'msedge',
     locale: 'de-DE',
     viewport: { width: 1440, height: 900 },
+    screenshot: 'only-on-failure',
   },
   webServer: {
     // Der echte Server liefert die gebaute Oberfläche aus, wie im Betrieb (CSP, Host-Prüfung, API)

@@ -139,6 +139,11 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
     return c.json({ benutzer: oeffentlicherBenutzer(b) }, 201)
   })
 
+  app.get('/api/benutzer', (c) => c.json({ benutzer: d.benutzer.alle().map(oeffentlicherBenutzer), hoechstens: MAX_BENUTZER }))
+
+  // Angaben für Einrichtung (E5) und Einstellungen; nur angemeldet, weil sie den Datenordner nennen
+  app.get('/api/system', (c) => c.json({ version: d.version, datenOrdner: d.datenOrdner, artefakte: artefaktversionen() }))
+
   // ---------- Einstellungen ----------
   app.get('/api/einstellungen', (c) => c.json(einstellungenFuerAusgabe(d.einstellungen.lies())))
 

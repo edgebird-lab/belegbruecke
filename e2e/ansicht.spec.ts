@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs'
 import { expect, test } from '@playwright/test'
-import { anmelden, hochladen } from './hilfen.ts'
+import { hochladen, vorbereiten } from './hilfen.ts'
 
 const XSS = 'vendor/visualisierung/test/instances/additional-supporting-documents-xss_ubl.xml'
 const STANDARD = 'testdaten/kosit/instances/standard/01.01a-INVOICE_ubl.xml'
 
 test.describe('Ansicht der E-Rechnung in der Sandbox', () => {
   test.beforeEach(async ({ page, baseURL }) => {
-    await anmelden(page.request, baseURL!)
+    await vorbereiten(page.request, baseURL!)
   })
 
   test('T-S8: die Ansicht lädt im iframe der App', async ({ page, baseURL }) => {

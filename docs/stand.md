@@ -4,7 +4,7 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 2 fertig (bis auf 0.6, das Robin und die Kanzlei brauchen). 204 Unit-Tests und 7 Browsertests grün; Zweigabdeckung der Fachlogik 92,7 % (`npm run abdeckung`, Ziel 90 %). Ein frischer Klon besteht `npm ci`, `npm run vorbereiten`, Lint, Tests und Build. Teile von Phase 6 erledigt (Sicherheitsdurchsicht, Wiederherstellungstest, Doku). Nächster Schritt: Phase 3 (Oberfläche), beginnend mit 3.1.
+**Kurzstand:** Phasen 0 bis 4 fertig bis auf die Schritte mit Robin (0.6, 4.7). Oberfläche mit Einrichtung, Eingang, Beleg-Assistent, Übergabe, Archiv und Einstellungen; DATEV-Export als „Vorschau“. 268 Unit-Tests und 16 Browsertests (axe hell und dunkel) grün. Nächster Schritt: Phase 5 (Postfach).
 
 ## Phase 0 – Klärung und Durchstich
 
@@ -38,23 +38,23 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 3 – Oberfläche
 
-- [ ] **3.1** Grundlayout, Navigation, Hell/Dunkel, Schrittleiste. Vorarbeit: Startseite mit Serverstatus und Darstellungswahl, Browsertest mit axe hell und dunkel.
-- [ ] **3.2** Einrichtungsassistent E1 bis E5
-- [ ] **3.3** Eingang mit Upload und Belegliste
-- [ ] **3.4** Prüfen und Ansehen mit Sandbox-iframe. Vorarbeit: T-S5 und T-S8 als Browsertests gegen den Server grün (`e2e/ansicht.spec.ts`: Ansicht lädt im iframe, XSS-Testdatei der KoSIT öffnet keinen Dialog, undurchsichtiger Ursprung).
-- [ ] **3.5** Zuordnen mit Lieferant und Dublettenvergleich
-- [ ] **3.6** Kontieren, Freigeben, Ablehnen
-- [ ] **3.7** Handerfassung für sonstige Rechnungen (R16). Fachteil fertig: `src/fach/handerfassung.ts` (Pflichtfelder, Summe auf den Cent, Steuer kaufmännisch gerundet als Warnung `HAND-STEUER`, Plausibilität).
-- [ ] **3.8** Archivsuche, Belegdetail, „Archiv prüfen“
+- [x] **3.1** Grundlayout, Navigation, Hell/Dunkel, Schrittleiste: `src/ui/App.tsx` (Anmeldung, erster Benutzer, Navigation links mit Zählern, Schalter „Erklärungen“, Fokus auf die Überschrift nach jedem Seitenwechsel), Bausteine in `src/ui/gemeinsam/Bausteine.tsx`, Navigation über den Hash (`src/ui/route.ts`). Browsertests mit axe hell und dunkel grün (`e2e/start.spec.ts`).
+- [x] **3.2** Einrichtungsassistent E1 bis E5 (`src/ui/einrichtung/Einrichtung.tsx`, Formulare in `src/ui/einstellungen/`). U-1 grün: Einrichtung nur per Tastatur, Einstellungen und Kontenplan gespeichert (`e2e/1-einrichtung.spec.ts`). E4 zeigt bis Phase 5 nur den Upload.
+- [x] **3.3** Eingang mit Upload (Ziehen und Ablegen, mehrere Dateien) und Liste offener Belege; Seite „Belege“ mit Filter. Upload von 3 Dateien zeigt 3 Zeilen mit Status (`e2e/2-beleg.spec.ts`).
+- [x] **3.4** Prüfen (Ampel, Befunde gruppiert, Pflichtangaben, Drucken, Text für die Rückfrage kopieren: `src/fach/rueckfrage.ts`) und Ansehen (KoSIT-Ansicht im Sandbox-iframe, Eckdaten, PDF-Reiter bei ZUGFeRD). U-2 bis „Ansehen“, T-S5 und T-S8 grün.
+- [x] **3.5** Zuordnen mit Dublettenvergleich nebeneinander, Lieferantenvorschlag (R10) und Kreditorenkonto. Browsertest für T-D2 grün, API-Tests in `src/server/schritte.test.ts`.
+- [x] **3.6** Kontieren (Sachkonto je Zeile, Suche, zuletzt genutzte zuerst, BU nach R13, Summenprüfung) und Freigeben/Ablehnen, Rücknahme, Aufheben. U-2 und U-3 grün.
+- [x] **3.7** Handerfassung für sonstige Rechnungen (R16): PDF oder Bild links, Formular rechts, Steuer berechnen, Summe übernehmen; danach R8 bis R15 (`src/fach/handerfassung.ts`). Browsertest PDF ohne XML bis zur Freigabe grün (`e2e/3-handerfassung.spec.ts`).
+- [x] **3.8** Archivsuche (Volltext, Betrag, Zeitraum, Status), Belegdetail mit Protokoll, „Archiv prüfen“ mit Kettenanker und druckbarem Kettenbericht, Prüferexport (R22). Suche nach „123456XX“ findet den Beleg (`e2e/5-archiv.spec.ts`).
 
 ## Phase 4 – Kontierung und DATEV-Übergabe
 
-- [ ] **4.1** Kontenplan und Kreditorenkonten. Fachteil und API fertig: `src/fach/kontenplan.ts` (CSV-Import, Suche), `GET`/`PUT`/`POST /api/sachkonten`, `PUT /api/lieferanten/:id` (Kreditorenkonto geprüft, nach einer Übergabe fest). Import von 20 Konten und Kreditor-Test grün. Offen: Oberfläche (Einstellungen, E3).
+- [x] **4.1** Kontenplan von Hand und per CSV (`src/fach/kontenplan.ts`, `/api/sachkonten`, Oberfläche in E3 und Einstellungen), Lieferantenliste mit Kreditorenkonto. Import von 20 Konten und Kreditor-Test grün.
 - [x] **4.2** Kontierungsvorschlag (R12, R13): `src/fach/kontierung.ts` (Steuerfall, BU-Schlüssel, Soll/Haben, Buchungstext, Vorschlag aus der Historie, Wahl des Benutzers, Regeln bei Freigabe und Rücknahme), `src/fach/freigabe.ts` (Statusübergänge, R14). T-K1 bis T-K9 grün (`kontierung.test.ts`).
 - [x] **4.3** EXTF-Buchungsstapel (R19): `src/fach/datev/extf.ts` mit 125 Feldern nach `ledermann/datev`, eigener Windows-1252-Kodierung (`cp1252.ts`, statt iconv-lite). T-E1 (bytegleich mit `testdaten/datev/EXTF_03.01a.csv`, selbst erzeugt, Bestätigung durch den Probeimport 4.7 offen) bis T-E4 grün.
 - [x] **4.4** Monatsgruppierung, Nachtrag, Exportsperren (R19, R21): `src/fach/uebergabe.ts` (Monat des Belegdatums, Nachtragsnummer, Sperrgründe je Beleg und Stammdaten, Buchungen, Summen je Steuersatz). T-E5, T-E6, T-E8 und der Exportteil von T-K3 grün.
 - [x] **4.5** Belegpaket, DUO-Paket nur nach Bestätigung (R20): `src/fach/datev/belegpaket.ts` (ZIP mit fflate, `index.csv` UTF-8 mit BOM), Erzeugung im Server (`src/server/dienste/uebergabe.ts`, Ablage unter `exporte/<lauf-id>/` schreibgeschützt). T-E7 grün, auch über die API (Original im Paket mit dem Hash des Archivs). DUO-Paket bleibt aus, bis 0.6 das Format bestätigt; `document.xml` gegen das DATEV-XSD entfällt damit vorerst.
-- [ ] **4.6** Übergabe-Assistent mit Übergabeprotokoll
+- [x] **4.6** Übergabe-Assistent U1 bis U4 mit Übergabeprotokoll in der Druckansicht (Mandant, Zeitraum, Summen, Dateien mit SHA-256, Kettenanker, Nur-Beleg, Hinweise), Hinweis „Vorschau“. U-4 grün (`e2e/4-uebergabe.spec.ts`). Eigene Feldnotizen: [datev-felder.md](datev-felder.md).
 - [ ] **4.7** **(Robin)** Probeimport bei der Kanzlei
 
 ## Phase 5 – Postfach

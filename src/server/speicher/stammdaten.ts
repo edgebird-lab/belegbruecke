@@ -45,6 +45,10 @@ export class Benutzerspeicher {
     return this.db.eins<{ n: number }>('SELECT count(*) AS n FROM benutzer')!.n
   }
 
+  alle(): Benutzer[] {
+    return this.db.alle<Benutzerzeile>('SELECT * FROM benutzer ORDER BY angelegt_am, anmeldename').map(ausZeile)
+  }
+
   nachName(anmeldename: string): Benutzer | null {
     const z = this.db.eins<Benutzerzeile>('SELECT * FROM benutzer WHERE anmeldename = ?', [anmeldename])
     return z ? ausZeile(z) : null
