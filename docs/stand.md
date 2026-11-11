@@ -49,11 +49,11 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 4 – Kontierung und DATEV-Übergabe
 
-- [ ] **4.1** Kontenplan und Kreditorenkonten. Fachteil fertig: `src/fach/kontenplan.ts` (CSV-Import, Suche), Import von 20 Konten und Kreditor-Test grün (`kontenplan.test.ts`). Offen: API und Oberfläche.
+- [ ] **4.1** Kontenplan und Kreditorenkonten. Fachteil und API fertig: `src/fach/kontenplan.ts` (CSV-Import, Suche), `GET`/`PUT`/`POST /api/sachkonten`, `PUT /api/lieferanten/:id` (Kreditorenkonto geprüft, nach einer Übergabe fest). Import von 20 Konten und Kreditor-Test grün. Offen: Oberfläche (Einstellungen, E3).
 - [x] **4.2** Kontierungsvorschlag (R12, R13): `src/fach/kontierung.ts` (Steuerfall, BU-Schlüssel, Soll/Haben, Buchungstext, Vorschlag aus der Historie, Wahl des Benutzers, Regeln bei Freigabe und Rücknahme), `src/fach/freigabe.ts` (Statusübergänge, R14). T-K1 bis T-K9 grün (`kontierung.test.ts`).
 - [x] **4.3** EXTF-Buchungsstapel (R19): `src/fach/datev/extf.ts` mit 125 Feldern nach `ledermann/datev`, eigener Windows-1252-Kodierung (`cp1252.ts`, statt iconv-lite). T-E1 (bytegleich mit `testdaten/datev/EXTF_03.01a.csv`, selbst erzeugt, Bestätigung durch den Probeimport 4.7 offen) bis T-E4 grün.
 - [x] **4.4** Monatsgruppierung, Nachtrag, Exportsperren (R19, R21): `src/fach/uebergabe.ts` (Monat des Belegdatums, Nachtragsnummer, Sperrgründe je Beleg und Stammdaten, Buchungen, Summen je Steuersatz). T-E5, T-E6, T-E8 und der Exportteil von T-K3 grün.
-- [ ] **4.5** Belegpaket, DUO-Paket nur nach Bestätigung (R20). Fachteil fertig: `src/fach/datev/belegpaket.ts` (ZIP mit fflate, `index.csv` UTF-8 mit BOM). Offen: Erzeugung im Server (Hash gleich Archiv, T-E7 über die API). DUO-Paket bleibt aus (0.6).
+- [x] **4.5** Belegpaket, DUO-Paket nur nach Bestätigung (R20): `src/fach/datev/belegpaket.ts` (ZIP mit fflate, `index.csv` UTF-8 mit BOM), Erzeugung im Server (`src/server/dienste/uebergabe.ts`, Ablage unter `exporte/<lauf-id>/` schreibgeschützt). T-E7 grün, auch über die API (Original im Paket mit dem Hash des Archivs). DUO-Paket bleibt aus, bis 0.6 das Format bestätigt; `document.xml` gegen das DATEV-XSD entfällt damit vorerst.
 - [ ] **4.6** Übergabe-Assistent mit Übergabeprotokoll
 - [ ] **4.7** **(Robin)** Probeimport bei der Kanzlei
 

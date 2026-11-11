@@ -9,8 +9,16 @@ import type { Datenbank } from './db.ts'
 
 export interface Belegfilter {
   status?: Belegstatus
+  /** nur offene Belege (eingegangen, geprüft, kontiert) */
+  offen?: boolean
   monat?: string
+  /** Volltext in Namen, E-Mail, Nummer und Dateiname */
   suche?: string
+  /** Belegdatum von, bis (ISO, je einschließlich) */
+  von?: string
+  bis?: string
+  /** Bruttobetrag in Cent */
+  bruttoCent?: number
 }
 
 /** Belegdatum (BT-2 bzw. Handerfassung) für die Monatsgruppierung (R21). */
@@ -109,10 +117,23 @@ export class Belegspeicher {
 
   liste(filter: Belegfilter = {}): Beleg[] {
     const bedingungen: string[] = []
-    const p: Record<string, string> = {}
+    const p: Record<string, string | number> = {}
     if (filter.status) {
       bedingungen.push('status = $status')
       p.status = filter.status
+    }
+    if (filter.offen) bedingungen.push("status IN ('eingegangen', 'geprueft', 'kontiert')")
+    if (filter.von) {
+      bedingungen.push('rechnungsdatum >= $von')
+      p.von = filter.von
+    }
+    if (filter.bis) {
+      bedingungen.push('rechnungsdatum <= $bis')
+      p.bis = filter.bis
+    }
+    if (filter.bruttoCent !== undefined) {
+      bedingungen.push('(brutto_cent = $brutto OR brutto_cent = -$brutto)')
+      p.brutto = filter.bruttoCent
     }
     if (filter.monat) {
       bedingungen.push('monat = $monat')
@@ -124,6 +145,14 @@ export class Belegspeicher {
     }
     const wo = bedingungen.length ? `WHERE ${bedingungen.join(' AND ')}` : ''
     return this.db.alle<{ json: string }>(`SELECT json FROM belege ${wo} ORDER BY laufnummer DESC`, p).map((z) => JSON.parse(z.json) as Beleg)
+  }
+
+  /** Zähler für die Navigation: offene Belege und freigegebene, noch nicht übergebene. */
+  zaehler(): { offen: number; freigegeben: number } {
+    const z = this.db.eins<{ offen: number; freigegeben: number }>(
+      "SELECT coalesce(sum(status IN ('eingegangen', 'geprueft', 'kontiert')), 0) AS offen, coalesce(sum(status = 'freigegeben'), 0) AS freigegeben FROM belege",
+    )!
+    return { offen: z.offen, freigegeben: z.freigegeben }
   }
 
   /** Merkmale aller Belege für die Dublettenprüfung (R9); abgelehnte zählen mit. */

@@ -83,3 +83,19 @@ describe('steuerAusSatz', () => {
     expect(steuerAusSatz(100, '-7')).toBeNull()
   })
 })
+
+describe('Betrag aus einer Eingabe', () => {
+  it('versteht deutsche und technische Schreibweisen', async () => {
+    const { leseBetragEingabe } = await import('./betrag.ts')
+    expect(leseBetragEingabe('336,90')).toBe(33690)
+    expect(leseBetragEingabe('1.234,56 €')).toBe(123456)
+    expect(leseBetragEingabe('336.90')).toBe(33690)
+    expect(leseBetragEingabe('1.234')).toBe(123400)
+    expect(leseBetragEingabe('1.234.567')).toBe(123456700)
+    expect(leseBetragEingabe('-12,5')).toBe(-1250)
+    expect(leseBetragEingabe('12')).toBe(1200)
+    expect(leseBetragEingabe('')).toBeNull()
+    expect(leseBetragEingabe('12,345')).toBeNull()
+    expect(leseBetragEingabe('zwölf')).toBeNull()
+  })
+})

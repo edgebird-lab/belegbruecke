@@ -87,6 +87,15 @@ export class Ablage {
     return { sha256: sha256(bytes), pfad, bytes: bytes.length }
   }
 
+  /** Datei eines Exportlaufs unter exporte/<lauf-id>/<name>; einmal schreiben, dann schreibgeschützt. */
+  async speichereExport(laufId: string, name: string, bytes: Uint8Array): Promise<{ sha256: string; pfad: string; bytes: number }> {
+    if (!UUID.test(laufId) || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(name)) throw new AblageFehler('Unzulässige Lauf-ID oder unzulässiger Dateiname')
+    const pfad = `exporte/${laufId}/${name}`
+    if (existsSync(this.absolut(pfad))) throw new AblageFehler(`Exportdatei ${pfad} existiert bereits`)
+    await atomarSchreiben(this.absolut(pfad), bytes)
+    return { sha256: sha256(bytes), pfad, bytes: bytes.length }
+  }
+
   async lies(pfad: string): Promise<Uint8Array> {
     return new Uint8Array(await readFile(this.absolut(pfad)))
   }

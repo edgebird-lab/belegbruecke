@@ -3,24 +3,21 @@
  * deutschem Text und Code. Im Betrieb liefert derselbe Server die gebaute Oberfläche aus.
  */
 import { randomUUID } from 'node:crypto'
-import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, extname, join, normalize, relative, sep } from 'node:path'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { extname, join, normalize, relative, sep } from 'node:path'
 import { Hono, type Context } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
-import { aufbewahrungText } from '../fach/aufbewahrung.ts'
-import { belegnummer } from '../fach/dubletten.ts'
 import { einstellungsAenderungen } from '../fach/einstellungen.ts'
-import { formatBezeichnung } from '../fach/formaterkennung.ts'
-import { ampel } from '../fach/pruefbericht.ts'
-import type { Beleg, Benutzer, Einstellungen } from '../fach/typen.ts'
-import { dekodiereXml } from '../fach/zeichensatz.ts'
+import type { Benutzer, Einstellungen } from '../fach/typen.ts'
 import { artefaktversionen } from '../pruefung/artefakte.ts'
-import { anmeldungSchema, belegfilterSchema, einstellungenSchema, kettenpruefungSchema, neuerBenutzerSchema, zodText } from './api/schemata.ts'
-import { nimmAn } from './dienste/eingang.ts'
+import { registriereBelege } from './api/belege.ts'
+import { anmeldungSchema, einstellungenSchema, kettenpruefungSchema, neuerBenutzerSchema, zodText } from './api/schemata.ts'
+import { registriereStammdaten } from './api/stammdaten.ts'
+import { registriereUebergabe } from './api/uebergabe.ts'
 import { pruefeArchiv, kettenberichtText } from './dienste/kette.ts'
 import type { Dienste } from './dienste/kontext.ts'
-import { ANSICHT_CSP, fehler, ipAdresse, kopfzeilen, schutz, type Umgebung } from './sicherheit/middleware.ts'
+import { fehler, ipAdresse, kopfzeilen, schutz, type Umgebung } from './sicherheit/middleware.ts'
 import { ATTRAPPE, hashePasswort, pruefePasswort } from './sicherheit/passwort.ts'
 import { Anmeldesperre, COOKIE, LEERLAUF_MS } from './sicherheit/sitzungen.ts'
 
@@ -35,36 +32,9 @@ function oeffentlicherBenutzer(b: Benutzer) {
   return { id: b.id, anmeldename: b.anmeldename, name: b.name }
 }
 
-function belegZusammenfassung(b: Beleg) {
-  const d = b.daten
-  return {
-    id: b.id,
-    laufnummer: b.laufnummer,
-    belegnummer: belegnummer(b.laufnummer),
-    status: b.status,
-    eingangAm: b.eingangAm,
-    dateiname: b.original.dateiname,
-    format: formatBezeichnung(b.format),
-    belegart: b.format.belegart,
-    lieferant: b.handerfassung?.lieferantName ?? (d ? (d.typcode === '389' ? d.kaeufer.name : d.verkaeufer.name) : null),
-    rechnungsnummer: b.handerfassung?.rechnungsnummer ?? d?.rechnungsnummer ?? null,
-    rechnungsdatum: b.handerfassung?.rechnungsdatum ?? d?.rechnungsdatum ?? null,
-    bruttoCent: b.handerfassung?.bruttoCent ?? d?.summen.bruttoCent ?? null,
-    waehrung: d?.waehrung ?? 'EUR',
-    ampel: ampel(b.format, b.pruefung),
-    dubletten: b.dubletten.length,
-    aufbewahrenBis: b.aufbewahrenBis,
-  }
-}
-
 /** Einstellungen für die Oberfläche: Postfach-Passwort nie herausgeben (Spezifikation 7.6). */
 function einstellungenFuerAusgabe(e: Einstellungen) {
   return { ...e, postfach: { ...e.postfach, passwortVerschluesselt: '' }, passwortGesetzt: e.postfach.passwortVerschluesselt !== '' }
-}
-
-function anhangKopf(dateiname: string): string {
-  const ascii = dateiname.replace(/[^\x20-\x7e]/g, '_').replace(/["\\]/g, '_')
-  return `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(dateiname)}`
 }
 
 const MIME: Record<string, string> = {
@@ -178,6 +148,8 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
     const alt = d.einstellungen.lies()
     // Das Passwort ist nur über den Postfach-Schritt schreibbar (Phase 5); hier bleibt es unverändert
     const neu: Einstellungen = { ...(e.daten as Einstellungen), postfach: { ...(e.daten as Einstellungen).postfach, passwortVerschluesselt: alt.postfach.passwortVerschluesselt } }
+    // Abschluss der Einrichtung (E5): Zeitpunkt nach der Uhr des Servers, danach unveränderlich
+    neu.eingerichtetAm = alt.eingerichtetAm ?? (neu.eingerichtetAm ? d.uhr().toISOString() : null)
     const aenderungen = einstellungsAenderungen(alt, neu)
     if (aenderungen.length) {
       d.db.transaktion(() => {
@@ -188,80 +160,9 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
     return c.json(einstellungenFuerAusgabe(neu))
   })
 
-  // ---------- Belege ----------
-  app.post('/api/belege', async (c) => {
-    let dateien: File[]
-    try {
-      const body = await c.req.parseBody({ all: true })
-      const roh = body['dateien']
-      dateien = (Array.isArray(roh) ? roh : roh === undefined ? [] : [roh]).filter((f): f is File => typeof f !== 'string')
-    } catch {
-      return fehler(c, 400, 'EINGABE', 'Erwartet wird ein Formular (multipart/form-data) mit dem Feld „dateien“.')
-    }
-    if (dateien.length === 0) return fehler(c, 400, 'EINGABE', 'Es wurde keine Datei übertragen (Feld „dateien“).')
-    const ergebnisse = []
-    for (const f of dateien) {
-      ergebnisse.push(await nimmAn(d, { name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) }, { art: 'upload', benutzerId: c.get('benutzer')!.id }, akteur(c)))
-    }
-    return c.json({ ergebnisse }, 201)
-  })
-
-  app.get('/api/belege', (c) => {
-    const f = belegfilterSchema.safeParse(c.req.query())
-    if (!f.success) return fehler(c, 400, 'EINGABE', zodText(f.error))
-    return c.json({ belege: d.belege.liste(f.data).map(belegZusammenfassung) })
-  })
-
-  const ladeBeleg = (c: Context<Umgebung>): Beleg | Response => {
-    const id = c.req.param('id') ?? ''
-    if (!/^[0-9A-F-]{36}$/i.test(id)) return fehler(c, 404, 'NICHT-GEFUNDEN', 'Diesen Beleg gibt es nicht.')
-    return d.belege.hole(id.toUpperCase()) ?? fehler(c, 404, 'NICHT-GEFUNDEN', 'Diesen Beleg gibt es nicht.')
-  }
-
-  app.get('/api/belege/:id', (c) => {
-    const b = ladeBeleg(c)
-    if (b instanceof Response) return b
-    return c.json({ beleg: b, zusammenfassung: belegZusammenfassung(b), aufbewahrung: aufbewahrungText(b.aufbewahrenBis), protokoll: d.protokoll.fuerBeleg(b.id) })
-  })
-
-  app.get('/api/belege/:id/original', async (c) => {
-    const b = ladeBeleg(c)
-    if (b instanceof Response) return b
-    const bytes = await d.ablage.lies(b.original.speicherpfad)
-    return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { 'Content-Type': b.original.mimeTyp, 'Content-Disposition': anhangKopf(b.original.dateiname) })
-  })
-
-  app.get('/api/belege/:id/bericht', async (c) => {
-    const b = ladeBeleg(c)
-    if (b instanceof Response) return b
-    const z = d.db.eins<{ pfad: string }>("SELECT pfad FROM dateien WHERE art = 'bericht' AND pfad LIKE ? ORDER BY angelegt_am DESC, pfad DESC LIMIT 1", [`berichte/${b.id}/%`])
-    if (!z) return fehler(c, 404, 'NICHT-GEFUNDEN', 'Für diesen Beleg gibt es noch keinen Prüfbericht.')
-    const bytes = await d.ablage.lies(z.pfad)
-    return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Disposition': anhangKopf(`Pruefbericht_${belegnummer(b.laufnummer)}.json`) })
-  })
-
-  app.get('/api/belege/:id/ansicht', async (c) => {
-    const b = ladeBeleg(c)
-    if (b instanceof Response) return b
-    if (!b.format.syntax || !b.format.xmlSha256) return fehler(c, 404, 'KEINE-ANSICHT', 'Für diesen Beleg gibt es keine Ansicht der E-Rechnung (kein lesbares XML).')
-    const cache = d.ablage.absolut(`cache/ansicht/${b.format.xmlSha256}.html`)
-    let html: string
-    if (existsSync(cache)) html = readFileSync(cache, 'utf8')
-    else {
-      let xml = await d.ablage.lies(b.original.speicherpfad)
-      if (b.format.container === 'pdf-mit-xml') {
-        const pdf = await d.pruefer.pdf(xml)
-        if (pdf.art !== 'mit-xml') return fehler(c, 404, 'KEINE-ANSICHT', 'Das XML in der PDF ist nicht lesbar.')
-        xml = pdf.xml
-      }
-      const text = dekodiereXml(xml)
-      if (!text.ok) return fehler(c, 404, 'KEINE-ANSICHT', 'Das XML ist nicht lesbar.')
-      html = await d.pruefer.ansicht(text.text, b.format.syntax)
-      mkdirSync(dirname(cache), { recursive: true })
-      writeFileSync(cache, html)
-    }
-    return c.body(html, 200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Security-Policy': ANSICHT_CSP })
-  })
+  registriereBelege(app, d)
+  registriereStammdaten(app, d)
+  registriereUebergabe(app, d)
 
   // ---------- Archiv ----------
   app.post('/api/archiv/pruefen', async (c) => {

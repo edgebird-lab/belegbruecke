@@ -6,6 +6,7 @@ import type { Ausfuehrer } from '../../pruefung/eingang.ts'
 import { Ablage } from '../speicher/ablage.ts'
 import { Belegspeicher } from '../speicher/belege.ts'
 import { Datenbank } from '../speicher/db.ts'
+import { Exportspeicher, Lieferantenspeicher, Regelspeicher, Sachkontenspeicher } from '../speicher/kontierung.ts'
 import { Protokoll } from '../speicher/protokoll.ts'
 import { Benutzerspeicher, Einstellungsspeicher } from '../speicher/stammdaten.ts'
 import { Anmeldesperre, Sitzungen } from '../sicherheit/sitzungen.ts'
@@ -23,6 +24,10 @@ export interface Dienste {
   belege: Belegspeicher
   einstellungen: Einstellungsspeicher
   benutzer: Benutzerspeicher
+  lieferanten: Lieferantenspeicher
+  sachkonten: Sachkontenspeicher
+  regeln: Regelspeicher
+  exporte: Exportspeicher
   pruefer: Pruefer
   sitzungen: Sitzungen
   sperre: Anmeldesperre
@@ -61,6 +66,10 @@ export function erzeugeDienste(o: Dienstoptionen): Dienste {
     belege: new Belegspeicher(db),
     einstellungen: new Einstellungsspeicher(db),
     benutzer: new Benutzerspeicher(db),
+    lieferanten: new Lieferantenspeicher(db),
+    sachkonten: new Sachkontenspeicher(db),
+    regeln: new Regelspeicher(db),
+    exporte: new Exportspeicher(db),
     pruefer: o.pruefer,
     sitzungen: new Sitzungen(() => uhr().getTime()),
     sperre: new Anmeldesperre(() => uhr().getTime()),

@@ -63,3 +63,17 @@ export function steuerAusSatz(bemessungCent: Cent, satz: string): Cent | null {
   if ((abs % teiler) * 2n >= teiler) q += 1n
   return Number(negativ ? -q : q)
 }
+
+/**
+ * Betrag aus einer Eingabe im deutschen Format: „1.234,56“, „336,90 €“, „-12,5“; ohne Komma gilt der
+ * Punkt als Dezimalzeichen („336.90“), außer bei Tausendergruppen („1.234“ = 1234). Liefert Cent oder
+ * null, wenn die Eingabe kein Betrag mit höchstens 2 Nachkommastellen ist.
+ */
+export function leseBetragEingabe(text: string): Cent | null {
+  let t = text.replace(/[\s €]/g, '')
+  if (t === '') return null
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.')
+  else if (/^[+-]?\d{1,3}(\.\d{3})+$/.test(t)) t = t.replace(/\./g, '')
+  const r = parseBetrag(t)
+  return r.ok ? r.cent : null
+}
