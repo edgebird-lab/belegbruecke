@@ -23,7 +23,7 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **1.5** Datenextraktion über das KoSIT-Zwischenmodell: `src/fach/zwischenmodell.ts` (rein), `src/pruefung/extraktion.ts` (SaxonJS). T-X1 bis T-X4 grün; alle 86 Dateien ohne Befund, Summen stimmen (BR-CO-15).
 - [x] **1.6** Klartext-Katalog (R7): 45 Regeln der Regelwerke (`src/fach/klartext/regelwerk.ts`) und 17 eigene, alle in eigenen Worten mit BT-Bezug, USt-Einordnung und Handlung; jede Regel aus Referenzlauf und EXTENDED-Vergleich ist erklärt. `docs/regelkatalog.md` wird mit `node scripts/regelkatalog.mjs` erzeugt, ein Test hält sie aktuell. T-V2 bis T-V5 grün.
 - [x] **1.7** Pflichtangaben, Empfängerprüfung, Plausibilität (R8, R11): `pflichtangaben.ts` (§ 14 Abs. 4 UStG, §§ 33, 34a UStDV, Erfassung von Hand), `plausibilitaet.ts` (IBAN Modulo 97), `pruefbericht.ts` (Prüfergebnis und Ampel nach 5.3). T-P1 bis T-P11 grün; T-P1 mit Nr. 6 „pruefen“ statt „erfüllt“ ([T9](entscheidungen.md#t9-pflichtangaben-ampel-und-plausibilität-schritt-17)).
-- [ ] **1.8** Dubletten und Lieferantenschlüssel (R9, R10)
+- [x] **1.8** Dubletten und Lieferantenschlüssel (R9, R10): `dubletten.ts` (drei Stufen, Abweichungen in Klartext, Sperre bis zur Entscheidung), `lieferant.ts` (Schlüssel, Vorschlag, Kreditorenkonto mit Prüfung). T-D1 bis T-D4 grün (T-D1 als reine Funktion; „kein neuer Beleg“ folgt mit der API in 2.5), dazu der Partnerschlüssel aus T-K9.
 
 ## Phase 2 – Archiv und Server
 
