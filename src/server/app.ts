@@ -277,7 +277,12 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
   const ui = optionen.oberflaeche
   if (ui && existsSync(join(ui, 'index.html'))) {
     app.get('*', (c) => {
-      const pfad = decodeURIComponent(new URL(c.req.url).pathname)
+      let pfad: string
+      try {
+        pfad = decodeURIComponent(new URL(c.req.url).pathname)
+      } catch {
+        pfad = '/'
+      }
       const datei = normalize(join(ui, pfad))
       const rel = relative(ui, datei)
       const innen = rel !== '' && !rel.startsWith('..') && !rel.includes(`..${sep}`)
