@@ -6,6 +6,15 @@ Letzte Aktualisierung: 11.11.2026
 
 **Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. 277 Unit-Tests und 18 Browsertests (axe hell und dunkel) grün. **GitHub-Repo fehlt noch** (Rechteprüfung hat `gh repo create` abgelehnt): im Projektordner `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`. Phase 7 nur nach Robins Freigabe.
 
+## Für Robin (in dieser Reihenfolge)
+
+1. Privates Repo anlegen und pushen: `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`; danach läuft zum ersten Mal die CI (Lint, Tests, Build).
+2. `start.cmd` einmal ausprobieren (Schritt 6.4): Einrichtung durchklicken, eine Rechnung aus `testdaten/fallbeispiel/` hochladen.
+3. Annahmen durchsehen: Tabelle oben in [entscheidungen.md](entscheidungen.md) (offene Fragen 1 bis 15) sowie T11 bis T13 (Kontierung, Oberfläche, Postfach).
+4. Schritt 0.6: DATEV-Formatbeschreibung (Dok.-Nr. 1036228) neben [datev-felder.md](datev-felder.md) legen und die Feldliste vergleichen; Kanzlei nach BU-Schlüsseln, Automatikkonten, Berater- und Mandantennummer fragen.
+5. Schritt 4.7: Probeimport mit der Kanzlei (Fragen in [datev-felder.md](datev-felder.md), unten); danach den Export von „Vorschau“ auf endgültig umstellen und Version 0.1.0 taggen (6.5).
+6. Phase 7 (Docker, Windows-Programm) erst nach Freigabe.
+
 ## Phase 0 – Klärung und Durchstich
 
 - [x] **0.1** Projektgerüst (Vite, React, TypeScript, Vitest, oxlint, Playwright, CI). Gerüst wie beim Prozesslotsen, Ports 4184 (Vorschau, Browsertests) und 8784 (Server). Drei `tsconfig`: Oberfläche (ohne Node-Typen, erzwingt `src/fach` ohne Node-APIs), Server und Prüfung (Node 24 führt TypeScript direkt aus), Werkzeuge.
