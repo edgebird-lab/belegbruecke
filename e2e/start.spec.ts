@@ -13,7 +13,8 @@ for (const schema of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: schema })
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1 })).toContainText('E-Rechnungen')
-    await expect(page.getByRole('status')).not.toContainText('wird geprüft')
+    await expect(page.getByRole('status')).toContainText('Server läuft')
+    await expect(page.getByRole('status')).toContainText('XRechnung 3.0.2')
     await pruefe(page)
   })
 }
@@ -27,4 +28,19 @@ test('Darstellung lässt sich umschalten', async ({ page }) => {
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.getByLabel('Darstellung').selectOption('system')
   await expect(page.locator('html')).not.toHaveAttribute('data-theme')
+})
+
+test('der Server liefert die Oberfläche mit Sicherheitsheadern und ohne CSP-Verstöße aus', async ({ page }) => {
+  const verstoesse: string[] = []
+  page.on('console', (m) => {
+    if (/Content Security Policy/i.test(m.text())) verstoesse.push(m.text())
+  })
+  const antwort = await page.goto('/')
+  const kopf = antwort!.headers()
+  expect(kopf['content-security-policy']).toContain("default-src 'self'")
+  expect(kopf['content-security-policy']).toContain("frame-ancestors 'none'")
+  expect(kopf['x-content-type-options']).toBe('nosniff')
+  expect(kopf['referrer-policy']).toBe('no-referrer')
+  await expect(page.getByRole('status')).toContainText('Server läuft')
+  expect(verstoesse).toEqual([])
 })

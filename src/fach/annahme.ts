@@ -22,7 +22,7 @@ export const MIME_TYP: Record<Dateiart, 'application/xml' | 'application/pdf' | 
   png: 'image/png',
 }
 
-export const ENDUNG: Record<Dateiart, string> = { xml: 'xml', pdf: 'pdf', jpeg: 'jpg', png: 'png' }
+export const ENDUNG: Record<Dateiart, 'xml' | 'pdf' | 'jpg' | 'png'> = { xml: 'xml', pdf: 'pdf', jpeg: 'jpg', png: 'png' }
 
 function beginntMit(bytes: Uint8Array, muster: readonly number[], ab = 0): boolean {
   return bytes.length >= ab + muster.length && muster.every((b, i) => bytes[ab + i] === b)

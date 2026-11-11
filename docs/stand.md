@@ -31,8 +31,8 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **2.2** Dateiablage nach SHA-256: `src/server/speicher/ablage.ts`, atomar (Temporärdatei, fsync, umbenennen), danach schreibgeschützt, gleicher Hash ohne zweite Datei, auch bei gleichzeitigem Upload; Berichte nie überschreibbar, Pfade nur innerhalb der Ablage. Tests grün.
 - [x] **2.3** Protokoll mit Hashkette und Kettenprüfung (R17, R18): `src/server/speicher/protokoll.ts` (Eintrag in der Transaktion der Änderung), `src/server/dienste/kette.ts` (Nummern, Verkettung, Hashes, Dateien unter originale/ und berichte/, Dateien ohne Eintrag, Kettenanker; Kettenbericht als Text; Eintrag `kette-geprueft`). T-H1 bis T-H4 grün auf Datenbank- und Dateiebene; 10.300 Einträge und 300 Dateien in rund 2 s (Ziel: 10.000 und 2.000 in unter 30 s).
 - [x] **2.4** Aufbewahrungsfrist (R15): `src/fach/aufbewahrung.ts` mit Ortszeit Europe/Berlin über `Intl`. T-A1 bis T-A5 grün, dazu Sommerzeit und Schaltjahr.
-- [ ] **2.5** HTTP-API mit Hono und zod für den Upload-Ablauf
-- [ ] **2.6** Anmeldung, Sitzung, CSRF, Host- und Origin-Prüfung, Ratenbegrenzung, Sicherheitsheader
+- [x] **2.5** HTTP-API mit Hono und zod für den Upload-Ablauf: `src/server/app.ts`, Eingangsdienst `src/server/dienste/eingang.ts` (Annahme, identische Datei, Ablage, Beleg, Prüfung im Pool, Prüfbericht, Dubletten, Protokoll), Belege, Einstellungen, Benutzer, Original, Bericht, Ansicht, Archivprüfung. Start mit `npm run server` (`src/server/start.ts`, Worker-Pool, tägliche Sicherung mit `VACUUM INTO`). API-Test lädt 01.01a hoch und erhält „angenommen“; T-D1 und T-D2 über die API grün.
+- [x] **2.6** Anmeldung, Sitzung, CSRF, Host- und Origin-Prüfung, Ratenbegrenzung, Sicherheitsheader: scrypt (N = 2^17), Sitzungen mit 8 h Leerlauf, Sperre nach 5 Fehlversuchen, `sicherheitslog`. T-S1 bis T-S4, T-S7 und T-S8 grün, dazu ein Test gegen den echten HTTP-Server (fremder Host → 421). Browsertests laufen jetzt gegen den echten Server. Entscheidungen in [T10](entscheidungen.md#t10-server-api-und-sicherheit-schritte-25-und-26).
 
 ## Phase 3 – Oberfläche
 

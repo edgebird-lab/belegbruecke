@@ -1,14 +1,24 @@
+import { mkdtempSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { defineConfig } from '@playwright/test'
+import { raeumeAlteAuf } from './e2e/aufraeumen.ts'
 
 const CI = !!process.env.CI
 // Fester Port der Belegbrücke für Vorschau und Browsertests; mehrere Apps laufen parallel auf diesem Rechner
 const PORT = Number(process.env.BB_E2E_PORT ?? 4184)
+// Jeder Lauf mit frischem Datenordner; Ordner früherer Läufe werden zuerst gelöscht
+if (!process.env.BB_E2E_DATEN) raeumeAlteAuf()
+const DATEN = process.env.BB_E2E_DATEN ?? mkdtempSync(join(tmpdir(), 'bb-e2e-'))
+process.env.BB_E2E_DATEN = DATEN
 
 export default defineConfig({
   testDir: 'e2e',
-  fullyParallel: true,
+  fullyParallel: false,
+  workers: 1,
   retries: CI ? 1 : 0,
   reporter: CI ? 'github' : 'list',
+  globalTeardown: './e2e/aufraeumen.ts',
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,
     // Vorhandenen Browser nutzen statt einen herunterzuladen: lokal Edge, in der CI Chrome
@@ -17,10 +27,12 @@ export default defineConfig({
     viewport: { width: 1440, height: 900 },
   },
   webServer: {
-    command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
-    url: `http://127.0.0.1:${PORT}`,
+    // Der echte Server liefert die gebaute Oberfläche aus, wie im Betrieb (CSP, Host-Prüfung, API)
+    command: 'npm run build && node src/server/start.ts',
+    env: { BB_PORT: String(PORT), BB_DATEN: DATEN },
+    url: `http://127.0.0.1:${PORT}/api/status`,
     // Nie einen fremden Server auf dem Port mitbenutzen: lieber laut scheitern
     reuseExistingServer: false,
-    timeout: 120_000,
+    timeout: 180_000,
   },
 })

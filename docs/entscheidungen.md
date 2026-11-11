@@ -98,3 +98,17 @@ Nicht erledigt: Die DATEV-Formatbeschreibungen (Dok.-Nr. 1036228 und 1035732) si
 - **Kleinunternehmer (§ 34a UStDV):** Heuristik wie spezifiziert; zusätzlich ein Hinweis `USTDV-34A`, der die Heuristik nennt.
 - **R8 nur für E-Rechnungen:** Sonstige Rechnungen (auch MINIMUM mit auslesbaren Daten) erhalten die Pflichtangabenprüfung erst nach der Erfassung von Hand (`pruefePflichtangabenHand`); dort sind nicht erfasste Angaben (Anschriften, Menge und Art) „pruefen“, nicht „fehlt“.
 - **Empfängerprüfung:** `normName` entfernt Rechtsformen als ganze Wörter, auch „e. K.“ und „haftungsbeschränkt“ in beiden Schreibweisen (ä wird nach NFKD zu a). Der Handelsname (BT-45) zählt ebenfalls.
+
+### T10 Server, API und Sicherheit (Schritte 2.5 und 2.6)
+
+- **Erster Benutzer:** Die Spezifikation sagt nicht, wie der erste Benutzer entsteht. Annahme: Solange es keinen Benutzer gibt, legt `POST /api/einrichtung/benutzer` den ersten an und meldet ihn an; danach antwortet der Pfad mit 409. Weitere Benutzer (höchstens 3) legt ein angemeldeter Benutzer über `POST /api/benutzer` an. Beides steht als `einstellungen-geaendert` im Protokoll. Passwörter brauchen mindestens 10 Zeichen.
+- **Sitzungen im Speicher:** Nach einem Neustart des Servers meldet man sich neu an. Das Cookie enthält ein Zufallstoken (32 Byte), der Server kennt nur dessen SHA-256.
+- **Origin:** Ändernde Anfragen brauchen einen passenden `Origin` (fehlt er, gilt das als fremd) und die Kopfzeile `X-Belegbruecke: 1`. Die Prüfung liegt vor der Sitzungsprüfung; „ohne Sitzung“ ergibt deshalb 401 nur mit gültiger Kopfzeile, sonst 403.
+- **Anmeldesperre** zählt Fehlversuche je Anmeldename im Speicher (15 Minuten Fenster, 5 Versuche); auch unbekannte Namen rechnen scrypt gegen einen festen Vergleichswert, damit die Antwortzeit nichts verrät. Anmeldeereignisse stehen nur im `sicherheitslog`, nie im GoBD-Protokoll; IP-Adressen werden nach 7 Tagen gelöscht, Einträge nach 90 Tagen.
+- **Abgelehnte Dateien** (Typ, Größe, identische Datei) erzeugen keinen Beleg, aber einen Eintrag `eingang-verworfen` mit Grund, Dateiname, Größe und SHA-256.
+- **Sonstige Rechnungen** (PDF ohne XML, MINIMUM, Bilder) bleiben nach der Formaterkennung im Status `eingegangen`, bis die Erfassung von Hand (R16, Phase 3) sie prüft. Prüfbericht und Protokolleintrag `pruefung` entstehen trotzdem.
+- **Unterbrochene Prüfungen** (Absturz zwischen Eingang und Prüfung) prüft der Server beim Start erneut.
+- **Ansicht:** HTML wird beim ersten Abruf im Worker erzeugt und unter `cache/ansicht/<xml-sha256>.html` zwischengespeichert (nicht archivrelevant).
+- **Browsertests gegen den echten Server:** Playwright startet `node src/server/start.ts` auf Port 4184 mit frischem Datenordner; so prüfen die Tests CSP, Host-Prüfung und API mit. `npm run preview` bleibt die reine Vorschau mit Weiterleitung von `/api` an Port 8784.
+- **CSP der App** wie spezifiziert (`default-src 'self'`); die Oberfläche darf deshalb keine Inline-Styles oder Inline-Skripte verwenden. Phase 3 muss das beachten oder die CSP bewusst erweitern.
+- **Kein HTTPS** in Version 0.1 (nur 127.0.0.1); das Cookie erhält `Secure`, sobald der Server unter HTTPS läuft (Phase 7).
