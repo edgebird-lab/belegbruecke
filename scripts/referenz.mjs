@@ -4,7 +4,7 @@
 //
 //   npm run artefakte -- --referenz && npm run referenz
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, rmSync } from 'node:fs'
 import { mkdtemp, readdir, readFile, rm, writeFile, mkdir } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, join, relative } from 'node:path'
@@ -35,6 +35,8 @@ const namen = new Set(dateien.map((d) => basename(d)))
 if (namen.size !== dateien.length) throw new Error('Dateinamen sind nicht eindeutig; Berichte würden sich überschreiben')
 
 const ausgabe = await mkdtemp(join(tmpdir(), 'belegbruecke-referenz-'))
+// Auch bei einem Abbruch aufräumen
+process.on('exit', () => rmSync(ausgabe, { recursive: true, force: true }))
 // Der Validator prüft beim Start, ob stdin eine Pipe ist; unter Windows scheitert das an der
 // Null-Eingabe. Eine leere Datei als stdin umgeht das.
 const leer = join(ausgabe, 'leer.txt')

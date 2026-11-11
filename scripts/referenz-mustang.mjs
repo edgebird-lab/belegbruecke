@@ -11,7 +11,7 @@
 //   npm run artefakte -- --referenz && npm run sef && node scripts/referenz-mustang.mjs
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { closeSync, existsSync, openSync } from 'node:fs'
+import { closeSync, existsSync, openSync, rmSync } from 'node:fs'
 import { mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
@@ -46,6 +46,8 @@ if (!existsSync(JAR)) {
 }
 const sha256 = (b) => createHash('sha256').update(b).digest('hex')
 const temp = await mkdtemp(join(tmpdir(), 'belegbruecke-mustang-'))
+// Auch bei einem Abbruch aufräumen
+process.on('exit', () => rmSync(temp, { recursive: true, force: true }))
 const leer = join(temp, 'leer.txt')
 await writeFile(leer, '')
 
