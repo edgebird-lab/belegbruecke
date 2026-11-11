@@ -3,7 +3,7 @@
  * berichte/ gegen die Werte aus den Protokolleinträgen, optional Kettenanker. Ergebnis als
  * Kettenbericht plus Protokolleintrag `kette-geprueft`.
  */
-import { formatDatum } from '../../fach/anzeige.ts'
+import { ortszeitBerlin } from '../../fach/datum.ts'
 import { belegnummer } from '../../fach/dubletten.ts'
 import { pruefeKette, type Kettenanker } from '../../fach/hashkette.ts'
 import type { Akteur, Protokolleintrag } from '../../fach/typen.ts'
@@ -101,12 +101,19 @@ export async function pruefeArchiv(
   return bericht
 }
 
+/** „11.11.2026, 10:30:00 Uhr (Europe/Berlin; 09:30:00 UTC)“ */
+function zeitText(z: string): string {
+  const o = ortszeitBerlin(z)
+  return `${o.tag}.${o.monat}.${o.jahr}, ${o.stunde}:${o.minute}:${o.sekunde} Uhr (Europe/Berlin; ${z.slice(11, 19)} UTC)`
+}
+
 /** Kettenbericht als Text (Druckansicht, Prüferexport). */
 export function kettenberichtText(b: Kettenbericht): string {
   const zeilen = [
     'Belegbrücke – Kettenbericht',
     '',
-    `Geprüft am: ${formatDatum(b.geprueftAm.slice(0, 10))} ${b.geprueftAm.slice(11, 19)} UTC`,
+    // Ortszeit wie in der Oberfläche und im Übergabeprotokoll; UTC zusätzlich, damit der Zeitpunkt eindeutig bleibt
+    `Geprüft am: ${zeitText(b.geprueftAm)}`,
     `Ergebnis: ${b.ok ? 'in Ordnung – Protokoll und Dateien unverändert' : 'FEHLER gefunden'}`,
     `Protokolleinträge: ${b.eintraege}`,
     `Dateien unter originale/ und berichte/: ${b.dateien}`,

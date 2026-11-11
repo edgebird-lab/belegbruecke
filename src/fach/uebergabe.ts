@@ -82,8 +82,14 @@ export function belegSperren(b: Beleg, k: Uebergabekontext): string[] {
     const konto = k.sachkonten.find((s) => s.nummer === z.sachkonto)
     if (!konto) gruende.push(`Das Sachkonto ${z.sachkonto} steht nicht im Kontenplan${zeile}.`)
     else if (String(z.sachkonto).length > datev.sachkontenlaenge) gruende.push(`Das Sachkonto ${z.sachkonto} ist länger als die Sachkontenlänge ${datev.sachkontenlaenge}${zeile}.`)
-    if (!z.buSchluessel && !konto?.automatikkonto && z.steuerfall !== 'ohne-vorsteuer') {
+    // Die Kontierung ist seit der Freigabe eingefroren; Kontenplan und Schlüssel können sich danach geändert haben (R13)
+    if (konto?.automatikkonto) {
+      if (z.buSchluessel) gruende.push(`Das Sachkonto ${z.sachkonto} ist ein Automatikkonto; der BU-Schlüssel ${z.buSchluessel} gehört dort nicht hin${zeile}. Freigabe zurücknehmen und neu kontieren.`)
+    } else if (!z.buSchluessel && z.steuerfall !== 'ohne-vorsteuer') {
       gruende.push(`BU-Schlüssel fehlt für den Steuerfall „${STEUERFALL_TEXT[z.steuerfall]}“${zeile}; mit der Kanzlei abstimmen.`)
+    } else if (z.steuerfall !== 'sonderfall' && (z.buSchluessel ?? null) !== (datev.buSchluessel[z.steuerfall] ?? null)) {
+      const soll = datev.buSchluessel[z.steuerfall] ?? 'leer'
+      gruende.push(`Der BU-Schlüssel ${z.buSchluessel ?? 'leer'} passt nicht mehr zu den Einstellungen (${STEUERFALL_TEXT[z.steuerfall]}: ${soll})${zeile}. Freigabe zurücknehmen und neu kontieren.`)
     }
   }
   return gruende

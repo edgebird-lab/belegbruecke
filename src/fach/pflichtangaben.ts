@@ -110,8 +110,12 @@ export function eigeneFirmaPruefen(daten: Rechnungsdaten, firma: Firma | null): 
 
 // ---------- Regelwerk ----------
 
-function istKleinbetrag(bruttoCent: number, steuern: { kategorie: string }[]): boolean {
-  return bruttoCent <= KLEINBETRAG_GRENZE_CENT && !steuern.some((s) => s.kategorie === 'AE' || s.kategorie === 'K')
+/**
+ * § 33 UStDV: Gesamtbetrag bis 250 €, keine Kategorie AE oder K. Maßgeblich ist der Betrag ohne
+ * Vorzeichen: Eine Rechnung über −5.000 € (etwa eine Korrektur) ist keine Kleinbetragsrechnung.
+ */
+export function istKleinbetrag(bruttoCent: number, steuern: { kategorie: string }[]): boolean {
+  return Math.abs(bruttoCent) <= KLEINBETRAG_GRENZE_CENT && !steuern.some((s) => s.kategorie === 'AE' || s.kategorie === 'K')
 }
 
 /** § 34a UStDV, Heuristik: alle Steuerzeilen Kategorie E und ein Befreiungsgrund nennt § 19 oder Kleinunternehmer. */

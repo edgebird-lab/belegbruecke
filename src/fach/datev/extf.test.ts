@@ -192,6 +192,26 @@ describe('Monatsübergabe (R19 Sperren, R21)', () => {
     expect(stammdatenSperren({ beraternummer: 1001, mandantennummer: 1, sachkontenlaenge: 4 })).toEqual([])
   })
 
+  it('Kontenplan oder BU-Schlüssel nach der Freigabe geändert: Export gesperrt (Prüferfund)', async () => {
+    // Die Kontierung ist seit der Freigabe eingefroren. Vorher ging ein BU-Schlüssel auch dann in den
+    // Stapel, wenn das Sachkonto inzwischen Automatikkonto war oder die Kanzlei andere Schlüssel nennt.
+    const b = await freigegeben('standard/02.01a-INVOICE_ubl.xml')
+    expect(b.kontierung!.zeilen.map((z) => [z.sachkonto, z.buSchluessel])).toEqual([[4900, '9']])
+    expect(belegSperren(b, kontext())).toEqual([])
+    const automatik = { ...kontext(), sachkonten: TESTKONTEN.map((k) => (k.nummer === 4900 ? { ...k, automatikkonto: true } : k)) }
+    expect(belegSperren(b, automatik)).toEqual(['Das Sachkonto 4900 ist ein Automatikkonto; der BU-Schlüssel 9 gehört dort nicht hin. Freigabe zurücknehmen und neu kontieren.'])
+    const neuerSchluessel = kontext([lieferant(70001)], { buSchluessel: { ...testEinstellungen().datev.buSchluessel, 'vorsteuer-19': '90' } })
+    expect(belegSperren(b, neuerSchluessel)).toEqual(['Der BU-Schlüssel 9 passt nicht mehr zu den Einstellungen (Vorsteuer 19 %: 90). Freigabe zurücknehmen und neu kontieren.'])
+    // ohne Vorsteuer: leer bleibt in Ordnung, solange die Einstellungen keinen Schlüssel verlangen
+    const o = await freigegeben('standard/01.04a-INVOICE_ubl.xml')
+    expect(belegSperren(o, kontext())).toEqual([])
+    expect(belegSperren(o, kontext([lieferant(70001)], { buSchluessel: { ...testEinstellungen().datev.buSchluessel, 'ohne-vorsteuer': '0' } }))).toEqual([
+      'Der BU-Schlüssel leer passt nicht mehr zu den Einstellungen (ohne Vorsteuer: 0). Freigabe zurücknehmen und neu kontieren.',
+    ])
+    // Automatikkonto ohne Schlüssel (T-K5) und Sonderfall mit Schlüssel von Hand bleiben exportierbar
+    expect(belegSperren(await freigegeben('standard/02.01a-INVOICE_ubl.xml', 4901), kontext())).toEqual([])
+  })
+
   it('T-E6: Nachtrag nur mit neuen Belegen und Nummer N1', async () => {
     const alt = await freigegeben('standard/02.01a-INVOICE_ubl.xml', 4900, { status: 'exportiert', exportlaufId: 'L0' })
     const neu = await freigegeben('standard/03.01a-INVOICE_ubl.xml')

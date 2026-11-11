@@ -84,6 +84,26 @@ describe('Pflichtangaben (R8)', () => {
     expect(pruefePflichtangaben(d, BEISPIEL_FIRMA).pruefung.regelwerk).toBe('§ 14 Abs. 4 UStG')
   })
 
+  it('Kleinbetrag nach dem Betrag ohne Vorzeichen: −5.000,00 € ist keiner, −250,00 € schon', async () => {
+    // Prüferfund: Vorher galt jede Rechnung mit negativem Gesamtbetrag als Kleinbetrag (BT-112 ≤ 250 €),
+    // mit verkürzten Pflichtangaben (keine USt-IdNr., keine Rechnungsnummer)
+    const d = await datenAus('standard/01.01a-INVOICE_ubl.xml')
+    d.summen.bruttoCent = -500000
+    d.verkaeufer.ustId = null
+    d.verkaeufer.steuernummer = null
+    d.steuervertreterUstId = null
+    const r = pruefePflichtangaben(d, BEISPIEL_FIRMA)
+    expect(r.pruefung.regelwerk).toBe('§ 14 Abs. 4 UStG')
+    expect(status(r.pruefung)['steuernummer-oder-ustid']).toBe('fehlt')
+    d.summen.bruttoCent = -25000
+    expect(pruefePflichtangaben(d, BEISPIEL_FIRMA).pruefung.regelwerk).toBe('§ 33 UStDV')
+    d.summen.bruttoCent = -25001
+    expect(pruefePflichtangaben(d, BEISPIEL_FIRMA).pruefung.regelwerk).toBe('§ 14 Abs. 4 UStG')
+    // ebenso bei der Erfassung von Hand
+    const hand = { lieferantName: 'Lieferant', lieferantUstId: null, lieferantSteuernummer: null, rechnungsnummer: 'G-1', rechnungsdatum: '2026-10-01', leistungsdatum: null, steuern: [{ kategorie: 'S' as const, satz: '19', bemessungCent: -420168, steuerCent: -79832 }], bruttoCent: -500000 }
+    expect(pruefePflichtangabenHand(hand).pruefung.regelwerk).toBe('§ 14 Abs. 4 UStG')
+  })
+
   it('T-P6: 01.21a mit Kategorie AE ist trotz 233,00 € kein Kleinbetrag', async () => {
     const d = await datenAus('standard/01.21a-INVOICE_ubl.xml')
     expect(d.summen.bruttoCent).toBe(23300)
