@@ -27,7 +27,7 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 2 – Archiv und Server
 
-- [ ] **2.1** SQLite-Schema mit Migrationen und Protokoll-Triggern
+- [x] **2.1** SQLite-Schema mit Migrationen und Protokoll-Triggern: `src/server/speicher/db.ts` (einziger Zugang, WAL, Transaktionen, `VACUUM INTO`), `migrationen.ts` (11 STRICT-Tabellen, Version über `user_version`). T-H5 grün, Sicherung und Wiederherstellung getestet.
 - [ ] **2.2** Dateiablage nach SHA-256
 - [ ] **2.3** Protokoll mit Hashkette und Kettenprüfung (R17, R18)
 - [ ] **2.4** Aufbewahrungsfrist (R15)
