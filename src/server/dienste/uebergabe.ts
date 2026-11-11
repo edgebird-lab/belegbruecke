@@ -66,6 +66,7 @@ async function erzeugeLauf(d: Dienste, monat: string, akteur: Akteur): Promise<U
   if (plan.belege.length === 0) return { ok: false, status: 409, code: 'KEINE-BELEGE', text: `Für ${monat} gibt es keine freigegebenen, noch nicht übergebenen Belege.`, sperren: [] }
   if (plan.sperren.length) return { ok: false, status: 409, code: 'GESPERRT', text: 'Die Übergabe ist gesperrt. Beheben Sie zuerst die genannten Gründe.', sperren: plan.sperren }
   const datev = k.einstellungen.datev
+  const firma = d.einstellungen.lies().firma.name
   const id = randomUUID().toUpperCase()
   const erzeugtAm = d.uhr()
   const dateien: { name: string; bytes: Uint8Array }[] = []
@@ -96,6 +97,7 @@ async function erzeugeLauf(d: Dienste, monat: string, akteur: Akteur): Promise<U
     kettenanker: { nr: 0, hash: '' },
     beraternummer: datev.beraternummer,
     mandantennummer: datev.mandantennummer,
+    firma,
     exportmodus: datev.exportmodus,
     nurBelegIds: plan.nurBeleg.map((b) => b.id),
     hinweise,

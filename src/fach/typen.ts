@@ -365,6 +365,8 @@ export interface Exportlauf {
   /** additiv für das Übergabeprotokoll (R21 Punkt 5): Mandant und Modus zum Zeitpunkt des Exports */
   beraternummer?: number
   mandantennummer?: number
+  /** Name der eigenen Firma (Mandant) zum Zeitpunkt des Exports */
+  firma?: string
   exportmodus?: Exportmodus
   /** Belege ohne Buchung (Typ 389), Buchung durch die Kanzlei */
   nurBelegIds?: Uuid[]

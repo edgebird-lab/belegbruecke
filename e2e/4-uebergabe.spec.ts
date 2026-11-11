@@ -26,14 +26,14 @@ test('U-4: Übergabe 04/2016, Dateien herunterladen, Kettenanker im Übergabepro
 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Übergabeprotokoll 04/2016')
   const protokoll = page.locator('.protokoll-druck')
-  await expect(protokoll).toContainText('Beraternummer 1001, Mandantennummer 1')
+  await expect(protokoll).toContainText('[Buyer name], Beraternummer 1001, Mandantennummer 1')
   await expect(protokoll).toContainText('Kettenanker')
   await expect(protokoll.locator('dd', { hasText: 'Protokolleintrag Nr.' }).locator('code')).toHaveText(/^[0-9a-f]{64}$/)
   await axeHellUndDunkel(page)
 
-  const [extf] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'EXTF_Buchungsstapel_1001_1_2016-04.csv' }).click()])
+  const [extf] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'EXTF_Buchungsstapel_1001_1_2016-04.csv' }).click()])
   expect(extf.suggestedFilename()).toBe('EXTF_Buchungsstapel_1001_1_2016-04.csv')
-  const [zip] = await Promise.all([page.waitForEvent('download'), page.getByRole('link', { name: 'Belege_2016-04.zip' }).click()])
+  const [zip] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Belege_2016-04.zip' }).click()])
   expect(zip.suggestedFilename()).toBe('Belege_2016-04.zip')
 
   // Druckansicht: nur das Protokoll

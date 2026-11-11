@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { api, type EinstellungenAntwort, type Sitzung } from './api.ts'
+import { ABGEMELDET, api, type EinstellungenAntwort, type Sitzung } from './api.ts'
 import { Anmeldung } from './anmeldung/Anmeldung.tsx'
 import { Archiv } from './archiv/Archiv.tsx'
 import { BelegAssistent } from './beleg/BelegAssistent.tsx'
@@ -29,15 +29,31 @@ function gespeicherteErklaerungen(): boolean {
 export default function App() {
   const [sitzung, setSitzung] = useState<Sitzung | null>(null)
   const [fehler, setFehler] = useState<string | null>(null)
+  // Hinweis auf der Anmeldung, wenn die Sitzung während der Arbeit abgelaufen ist
+  const [abgelaufen, setAbgelaufen] = useState(false)
+  const angemeldet = useRef(false)
   const laden = useCallback(() => {
     api<Sitzung>('/sitzung')
       .then((s) => {
+        angemeldet.current = s.angemeldet
         setSitzung(s)
         setFehler(null)
+        if (s.angemeldet) setAbgelaufen(false)
       })
       .catch(() => setFehler('Der Server der Belegbrücke ist nicht erreichbar. Starten Sie ihn mit start.cmd oder npm run server.'))
   }, [])
   useEffect(() => laden(), [laden])
+  useEffect(() => {
+    const abgemeldet = () => {
+      // Nur während der Arbeit; nach dem Abmelden oder auf der Anmeldung ist nichts abgelaufen
+      if (!angemeldet.current) return
+      angemeldet.current = false
+      setAbgelaufen(true)
+      laden()
+    }
+    window.addEventListener(ABGEMELDET, abgemeldet)
+    return () => window.removeEventListener(ABGEMELDET, abgemeldet)
+  }, [laden])
 
   if (fehler) {
     return (
@@ -57,11 +73,17 @@ export default function App() {
   if (!sitzung.angemeldet || !sitzung.benutzer) {
     return (
       <Rahmenlos>
-        <Anmeldung ersterBenutzer={sitzung.einrichtungNoetig} angemeldet={laden} />
+        <Anmeldung ersterBenutzer={sitzung.einrichtungNoetig} angemeldet={laden} abgelaufen={abgelaufen && !sitzung.einrichtungNoetig} />
       </Rahmenlos>
     )
   }
-  return <Hauptfenster sitzung={sitzung as Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }} abgemeldet={laden} />
+  const abmelden = async () => {
+    // Antworten, die nach dem Abmelden noch mit 401 zurückkommen, sind kein Ablauf der Sitzung
+    angemeldet.current = false
+    await api('/abmelden', { daten: {} }).catch(() => undefined)
+    laden()
+  }
+  return <Hauptfenster sitzung={sitzung as Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }} abmelden={abmelden} />
 }
 
 function Rahmenlos({ children }: { children: ReactNode }) {
@@ -103,7 +125,7 @@ const NAVIGATION: { seite: Route['seite']; text: string; route: Route }[] = [
   { seite: 'einstellungen', text: 'Einstellungen', route: { seite: 'einstellungen', bereich: 'firma' } },
 ]
 
-function Hauptfenster({ sitzung, abgemeldet }: { sitzung: Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }; abgemeldet: () => void }) {
+function Hauptfenster({ sitzung, abmelden }: { sitzung: Sitzung & { benutzer: NonNullable<Sitzung['benutzer']> }; abmelden: () => Promise<void> }) {
   const [darstellung, setDarstellung] = useDarstellung()
   const [route, gehe] = useRoute()
   const [erklaerungen, setErklaerungenRoh] = useState(gespeicherteErklaerungen)
@@ -162,10 +184,6 @@ function Hauptfenster({ sitzung, abgemeldet }: { sitzung: Sitzung & { benutzer: 
     return () => window.clearTimeout(t)
   }, [hash])
 
-  const abmelden = async () => {
-    await api('/abmelden', { daten: {} }).catch(() => undefined)
-    abgemeldet()
-  }
 
   const apiWert = useMemo<AppApi>(
     () => ({ benutzer: sitzung.benutzer, erklaerungen, setErklaerungen, melde, zaehler, aktualisiereZaehler, gehe, einstellungen, ladeEinstellungen }),

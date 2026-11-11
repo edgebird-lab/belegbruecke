@@ -7,7 +7,7 @@ Die Typen stehen vollständig in [`src/fach/typen.ts`](../src/fach/typen.ts) (Sp
 - **Beträge** sind Cent-Ganzzahlen (`Cent`), nie Gleitkommazahlen. Der Betragsparser (`src/fach/betrag.ts`) liest Dezimaltext nach xs:decimal; mehr als 2 Nachkommastellen auf Belegebene ergeben den Befund `BETRAG-FORMAT`. Eingaben in der Oberfläche („1.234,56“) liest `leseBetragEingabe`.
 - **Daten** sind ISO-Kalenderdaten (`2026-11-11`), **Zeitpunkte** ISO in UTC. Jahresgrenzen (Aufbewahrung) und der Zeitstempel im EXTF-Kopf rechnen nach Ortszeit Europe/Berlin.
 - **IDs** sind UUID v4 in Großbuchstaben; die Beleg-ID dient als DATEV-Beleg-GUID, sobald das DUO-Paket kommt.
-- Gespeicherte JSON-Strukturen tragen `formatVersion: 1`; Erweiterungen nur additiv. Bisher ergänzt: `Rechnungsdaten.steuervertreterUstId` (BT-63, für R8 Nr. 2) und im `Exportlauf` die Angaben für das Übergabeprotokoll (`beraternummer`, `mandantennummer`, `exportmodus`, `nurBelegIds`, `hinweise`).
+- Gespeicherte JSON-Strukturen tragen `formatVersion: 1`; Erweiterungen nur additiv. Bisher ergänzt: `Rechnungsdaten.steuervertreterUstId` (BT-63, für R8 Nr. 2) und im `Exportlauf` die Angaben für das Übergabeprotokoll (`beraternummer`, `mandantennummer`, `firma`, `exportmodus`, `nurBelegIds`, `hinweise`).
 
 ## Ein Beleg von der Datei bis zur Übergabe
 

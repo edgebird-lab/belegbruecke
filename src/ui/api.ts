@@ -20,6 +20,13 @@ export class ApiFehler extends Error {
   }
 }
 
+/**
+ * Ereignis am window, wenn der Server eine Anfrage mit 401 NICHT-ANGEMELDET ablehnt: Die Sitzung ist
+ * nach 8 Stunden ohne Aktivität abgelaufen oder der Server wurde neu gestartet (Sitzungen liegen nur
+ * im Speicher). Die App zeigt dann wieder die Anmeldung, statt auf jeder Seite nur einen Fehler.
+ */
+export const ABGEMELDET = 'belegbruecke:abgemeldet'
+
 export interface Anfrage {
   methode?: 'GET' | 'POST' | 'PUT'
   daten?: unknown
@@ -44,7 +51,9 @@ async function senden(pfad: string, o: Anfrage): Promise<Response> {
   }
   if (!r.ok) {
     const antwort = (await r.json().catch(() => null)) as { fehler?: { code?: string; text?: string } } | null
-    throw new ApiFehler(r.status, antwort?.fehler?.code ?? 'FEHLER', antwort?.fehler?.text ?? `Der Server antwortet mit Status ${r.status}.`, antwort)
+    const code = antwort?.fehler?.code ?? 'FEHLER'
+    if (r.status === 401 && code === 'NICHT-ANGEMELDET') window.dispatchEvent(new Event(ABGEMELDET))
+    throw new ApiFehler(r.status, code, antwort?.fehler?.text ?? `Der Server antwortet mit Status ${r.status}.`, antwort)
   }
   return r
 }
@@ -151,6 +160,8 @@ export interface Belegdetail {
   lieferant: Lieferant | null
   lieferantenvorschlag: { schluessel: string; vorhanden: Lieferant | null; neu: Pick<Lieferant, 'schluessel' | 'name' | 'ustId' | 'steuernummer' | 'anschrift'> } | null
   kreditorVorschlag: number | null
+  /** nächstes freies Kreditorenkonto (für einen neuen Lieferanten oder einen ohne Konto) */
+  naechsterKreditor: number | null
   kontierungsvorschlag: Kontierung | null
   freigabe: { hindernisse: string[]; begruendungNoetig: boolean; vorsteuerGefaehrdet: boolean }
   dublettenVergleich: { hinweis: Dublettenhinweis; anderer: Belegzeile | null }[]

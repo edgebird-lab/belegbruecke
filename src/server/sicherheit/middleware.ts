@@ -14,7 +14,7 @@ export type Umgebung = { Variables: { benutzer: Benutzer | null } }
 export const APP_CSP = "default-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
 export const ANSICHT_CSP = "sandbox allow-scripts allow-downloads; default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; frame-ancestors 'self'"
 
-export function fehler(c: Context, status: 400 | 401 | 403 | 404 | 409 | 413 | 421 | 429 | 500, code: string, text: string) {
+export function fehler(c: Context, status: 400 | 401 | 403 | 404 | 409 | 410 | 413 | 421 | 429 | 500, code: string, text: string) {
   return c.json({ fehler: { code, text } }, status)
 }
 

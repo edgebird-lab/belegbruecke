@@ -5,7 +5,7 @@
  */
 import { useState } from 'react'
 import type { Exportlauf } from '../../fach/typen.ts'
-import { api, fehlerText, useLaden, type Belegzeile, type Sperre, type Uebergabeplan } from '../api.ts'
+import { api, fehlerText, herunterladen, useLaden, type Belegzeile, type Sperre, type Uebergabeplan } from '../api.ts'
 import { Belegtabelle } from '../belege/Belegtabelle.tsx'
 import { Hinweis, Laden, Lernhinweis, Schrittleiste, Seitentitel, Tabellenrahmen } from '../gemeinsam/Bausteine.tsx'
 import { betrag, datum, groesse, status, useApp, zeit } from '../kontext.ts'
@@ -233,6 +233,38 @@ function Sperrliste({ sperren }: { sperren: Sperre[] }) {
   )
 }
 
+/**
+ * Downloads eines Laufs. Über die API statt als einfacher Link, damit eine fehlende oder veränderte
+ * Datei (der Server liefert sie dann nicht aus) als Klartext erscheint statt als gescheiterter Download.
+ */
+function Exportdateien({ lauf }: { lauf: Exportlauf }) {
+  const { melde } = useApp()
+  const [fehler, setFehler] = useState<string | null>(null)
+  const laden = async (name: string) => {
+    setFehler(null)
+    try {
+      melde(`${await herunterladen(`/uebergaben/${lauf.id}/dateien/${encodeURIComponent(name)}`, {}, name)} wird gespeichert.`)
+    } catch (e) {
+      setFehler(fehlerText(e))
+    }
+  }
+  return (
+    <>
+      <ul className="dateiliste">
+        {lauf.dateien.map((f) => (
+          <li key={f.name}>
+            <button type="button" className="knopf" onClick={() => void laden(f.name)}>
+              {f.name}
+            </button>{' '}
+            <span className="leise">{groesse(f.bytes)}</span>
+          </li>
+        ))}
+      </ul>
+      {fehler && <Hinweis art="fehler">{fehler}</Hinweis>}
+    </>
+  )
+}
+
 /** U4: Downloads und Übergabeprotokoll in der Druckansicht (R21 Punkt 5). */
 function Uebergabeprotokoll({ laufId }: { laufId: string }) {
   const lauf = useLaden<{ lauf: Exportlauf; belege: Belegzeile[]; benutzer: string | null }>(`/uebergaben/${laufId}`)
@@ -248,16 +280,7 @@ function Uebergabeprotokoll({ laufId }: { laufId: string }) {
       </Seitentitel>
       <section className="karte nicht-drucken" aria-labelledby="u4-titel">
         <h2 id="u4-titel">Dateien herunterladen</h2>
-        <ul className="dateiliste">
-          {l.dateien.map((f) => (
-            <li key={f.name}>
-              <a className="knopf" href={`/api/uebergaben/${l.id}/dateien/${encodeURIComponent(f.name)}`} download>
-                {f.name}
-              </a>{' '}
-              <span className="leise">{groesse(f.bytes)}</span>
-            </li>
-          ))}
-        </ul>
+        <Exportdateien lauf={l} />
         <p className="leise">Geben Sie die Dateien und dieses Protokoll an Ihre Kanzlei. Ein erneuter Download liefert dieselben Dateien bytegleich.</p>
         <div className="knopfreihe">
           <button type="button" className="knopf knopf-haupt" onClick={() => window.print()}>
@@ -273,7 +296,7 @@ function Uebergabeprotokoll({ laufId }: { laufId: string }) {
         <dl className="eckdaten">
           <dt>Mandant</dt>
           <dd>
-            Beraternummer {l.beraternummer ?? '–'}, Mandantennummer {l.mandantennummer ?? '–'}
+            {l.firma && `${l.firma}, `}Beraternummer {l.beraternummer ?? '–'}, Mandantennummer {l.mandantennummer ?? '–'}
           </dd>
           <dt>Zeitraum</dt>
           <dd>

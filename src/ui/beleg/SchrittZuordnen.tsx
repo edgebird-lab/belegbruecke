@@ -59,8 +59,29 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
   const [art, setArt] = useState<'vorhanden' | 'neu'>(startArt)
   const [lieferantId, setLieferantId] = useState(d.lieferant?.id ?? v?.vorhanden?.id ?? '')
   const [name, setName] = useState(v?.neu.name ?? '')
-  const [kreditor, setKreditor] = useState(d.kreditorVorschlag !== null ? String(d.kreditorVorschlag) : '')
+  // null = nicht von Hand geändert; dann folgt das Feld dem gewählten Lieferanten. Eine Eingabe gilt
+  // nur für die Wahl, bei der sie gemacht wurde; sonst bekäme ein anderer Lieferant still ein neues Konto.
+  const [kreditorEingabe, setKreditorEingabe] = useState<string | null>(null)
+  const waehleArt = (a: 'vorhanden' | 'neu') => {
+    setArt(a)
+    setKreditorEingabe(null)
+  }
+  const waehleLieferant = (id: string) => {
+    setLieferantId(id)
+    setKreditorEingabe(null)
+  }
   const [fehler, setFehler] = useState<string | null>(null)
+  // Kreditorenkonto zur aktuellen Wahl: das des gewählten Lieferanten, sonst das nächste freie (R10 Punkt 3)
+  const gewaehlt =
+    art !== 'vorhanden' || !lieferantId
+      ? null
+      : d.lieferant?.id === lieferantId
+        ? d.lieferant
+        : v?.vorhanden?.id === lieferantId
+          ? v.vorhanden
+          : (alle.daten?.lieferanten.find((l) => l.id === lieferantId) ?? null)
+  const standardKreditor = gewaehlt?.kreditorKonto ?? d.naechsterKreditor
+  const kreditor = kreditorEingabe ?? (standardKreditor !== null ? String(standardKreditor) : '')
   const [sendet, setSendet] = useState(false)
   const offeneDubletten = b.dublettenEntscheidung ? [] : d.dublettenVergleich.filter((x) => x.hinweis.stufe === 'gleiche-rechnung')
   const aehnliche = d.dublettenVergleich.filter((x) => x.hinweis.stufe === 'aehnliche-rechnung')
@@ -81,7 +102,7 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
     const konto = kreditor.trim() === '' ? null : Number(kreditor)
     const daten: Record<string, unknown> = art === 'vorhanden' ? { lieferantId } : { neu: { name: name.trim() } }
     // Ein geändertes Kreditorenkonto mitschicken; sonst vergibt die Freigabe das nächste freie (R10)
-    if (!nurBeleg && konto !== null && konto !== d.kreditorVorschlag) daten.kreditorKonto = konto
+    if (!nurBeleg && kreditorEingabe !== null && konto !== null && konto !== standardKreditor) daten.kreditorKonto = konto
     if (art === 'vorhanden' && !lieferantId) {
       setFehler(`Wählen Sie einen ${wer}.`)
       return
@@ -143,7 +164,7 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
           <Auswahl
             label={`${wer} für diesen Beleg`}
             wert={art}
-            aendern={setArt}
+            aendern={waehleArt}
             optionen={[
               { wert: 'vorhanden', text: `Vorhandener ${wer}`, beschreibung: v.vorhanden ? `Vorschlag: ${v.vorhanden.name} (gleicher Schlüssel ${v.schluessel})` : 'aus der Liste wählen' },
               { wert: 'neu', text: `Neuer ${wer}`, beschreibung: `mit den Daten aus der Rechnung (Schlüssel ${v.schluessel})` },
@@ -152,7 +173,7 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
           {art === 'vorhanden' && (
             <div className="feld">
               <label htmlFor="lieferant-wahl">{wer}</label>
-              <select id="lieferant-wahl" value={lieferantId} onChange={(e) => setLieferantId(e.target.value)}>
+              <select id="lieferant-wahl" value={lieferantId} onChange={(e) => waehleLieferant(e.target.value)}>
                 <option value="">bitte wählen</option>
                 {v.vorhanden && <option value={v.vorhanden.id}>{v.vorhanden.name} (Vorschlag)</option>}
                 {andere.map((l) => (
@@ -170,9 +191,13 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
               label="Kreditorenkonto"
               inputMode="numeric"
               wert={kreditor}
-              aendern={(t) => setKreditor(t.replace(/\D/g, ''))}
+              aendern={(t) => setKreditorEingabe(t.replace(/\D/g, ''))}
               breite="schmal"
-              hilfe={d.lieferant?.kreditorKonto ? 'Vergeben; nach der ersten Übergabe nicht mehr änderbar.' : `Vorgeschlagen: ${d.kreditorVorschlag ?? 'kein freies Konto'}; vergeben wird es bei der ersten Freigabe. Sie dürfen es ändern.`}
+              hilfe={
+                gewaehlt?.kreditorKonto
+                  ? `Kreditorenkonto von ${gewaehlt.name}, schon vergeben; nach der ersten Übergabe nicht mehr änderbar.`
+                  : `Vorgeschlagen: ${d.naechsterKreditor ?? 'kein freies Konto'} (nächstes freies Konto); vergeben wird es bei der ersten Freigabe. Sie dürfen es ändern.`
+              }
             />
           )}
           {nurBeleg && <p className="leise">Gutschrift über Ihre eigene Leistung: kein Kreditorenkonto, der Beleg geht nur als Beleg an die Kanzlei.</p>}

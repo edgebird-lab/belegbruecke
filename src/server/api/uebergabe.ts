@@ -1,4 +1,5 @@
 /** Übergabe an die Kanzlei (U1 bis U4) und Prüferexport (R22). */
+import { createHash } from 'node:crypto'
 import type { Hono } from 'hono'
 import { monatsvorschlag } from '../../fach/uebergabe.ts'
 import type { Beleg } from '../../fach/typen.ts'
@@ -54,8 +55,14 @@ export function registriereUebergabe(app: Hono<Umgebung>, d: Dienste): void {
     const lauf = d.exporte.hole((c.req.param('id') ?? '').toUpperCase())
     const datei = lauf?.dateien.find((f) => f.name === c.req.param('name'))
     if (!lauf || !datei) return fehler(c, 404, 'NICHT-GEFUNDEN', 'Diese Datei gibt es nicht.')
-    // Erneuter Download liefert die gespeicherte Datei bytegleich (R21 Punkt 3)
-    const bytes = await d.ablage.lies(`exporte/${lauf.id}/${datei.name}`)
+    // Erneuter Download liefert die gespeicherte Datei bytegleich (R21 Punkt 3); eine fehlende oder
+    // veränderte Datei wird nicht ausgeliefert, denn ihr Hash steht im Übergabeprotokoll der Kanzlei
+    const pfad = `exporte/${lauf.id}/${datei.name}`
+    if ((await d.ablage.hash(pfad)) === null) return fehler(c, 410, 'DATEI-FEHLT', `Die Datei ${datei.name} fehlt im Datenordner. Spielen Sie die Sicherung des Datenordners zurück; neu erzeugen lässt sie sich nicht, weil ihre Belege schon übergeben sind.`)
+    const bytes = await d.ablage.lies(pfad)
+    if (createHash('sha256').update(bytes).digest('hex') !== datei.sha256) {
+      return fehler(c, 409, 'DATEI-VERAENDERT', `Die Datei ${datei.name} stimmt nicht mehr mit dem SHA-256 im Übergabeprotokoll überein und wird nicht ausgeliefert. Spielen Sie die Sicherung des Datenordners zurück.`)
+    }
     const typ = datei.name.endsWith('.zip') ? 'application/zip' : 'text/csv; charset=windows-1252'
     return c.body(bytes as Uint8Array<ArrayBuffer>, 200, { 'Content-Type': typ, 'Content-Disposition': anhangKopf(datei.name) })
   })

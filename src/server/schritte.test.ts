@@ -3,6 +3,8 @@
  * Prüferexports gegen den Server mit Prüfung im Prozess.
  */
 import { createHash } from 'node:crypto'
+import { chmodSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { strFromU8, unzipSync } from 'fflate'
 import { afterEach, describe, expect, it } from 'vitest'
 import { dekodiereWindows1252 } from '../fach/datev/cp1252.ts'
@@ -266,6 +268,8 @@ describe('Übergabe an die Kanzlei (4.4 bis 4.6)', () => {
     expect(s.d.exporte.alle()).toHaveLength(1)
     const { lauf } = (await r.json()) as { lauf: Exportlauf }
     expect(lauf.dateien.map((f) => f.name)).toEqual(['EXTF_Buchungsstapel_1001_1_2016-04.csv', 'Belege_2016-04.zip'])
+    // Mandant im Übergabeprotokoll mit dem Firmennamen, nicht nur mit Nummern (R21 Punkt 5)
+    expect(lauf).toMatchObject({ firma: BEISPIEL_FIRMA.name, beraternummer: 1001, mandantennummer: 1 })
     const letzter = s.d.protokoll.letzter()!
     expect(lauf.kettenanker).toEqual(letzter)
     expect(s.d.protokoll.alle().at(-1)).toMatchObject({ aktion: 'exportiert', belegId: null, daten: { belege: [id], monat: '2016-04' } })
@@ -293,6 +297,17 @@ describe('Übergabe an die Kanzlei (4.4 bis 4.6)', () => {
     const detailLauf = (await (await s.anfrage(`/api/uebergaben/${lauf.id}`)).json()) as { belege: { id: string }[]; benutzer: string }
     expect(detailLauf).toMatchObject({ belege: [{ id }], benutzer: 'Robin' })
     expect((await s.anfrage(`/api/uebergaben/${lauf.id}/dateien/gibtsnicht.csv`)).status).toBe(404)
+    // Prüferfund: Eine veränderte Exportdatei wurde ausgeliefert, obwohl ihr Hash im Übergabeprotokoll steht
+    const pfad = join(s.ordner, 'exporte', lauf.id, lauf.dateien[0].name)
+    chmodSync(pfad, 0o666)
+    writeFileSync(pfad, Buffer.concat([Buffer.from(bytes), Buffer.from('X')]))
+    const veraendert = await s.anfrage(`/api/uebergaben/${lauf.id}/dateien/${lauf.dateien[0].name}`)
+    expect(veraendert.status).toBe(409)
+    expect(((await veraendert.json()) as { fehler: { code: string } }).fehler.code).toBe('DATEI-VERAENDERT')
+    rmSync(pfad)
+    const fehlt = await s.anfrage(`/api/uebergaben/${lauf.id}/dateien/${lauf.dateien[0].name}`)
+    expect(fehlt.status).toBe(410)
+    expect(((await fehlt.json()) as { fehler: { text: string } }).fehler.text).toContain('fehlt im Datenordner')
     expect((await s.anfrage('/api/uebergaben/00000000-0000-4000-8000-000000000000')).status).toBe(404)
     const kette = (await (await s.anfrage('/api/archiv/pruefen', s.json({ anker: [lauf.kettenanker] }))).json()) as { bericht: { ok: boolean } }
     expect(kette.bericht.ok).toBe(true)

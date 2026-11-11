@@ -3,7 +3,7 @@ import { api, fehlerText } from '../api.ts'
 import { Hinweis, Textfeld } from '../gemeinsam/Bausteine.tsx'
 
 /** Anmeldung; beim allerersten Start legt man hier den ersten Benutzer an (bis zu 3 Benutzer). */
-export function Anmeldung({ ersterBenutzer, angemeldet }: { ersterBenutzer: boolean; angemeldet: () => void }) {
+export function Anmeldung({ ersterBenutzer, angemeldet, abgelaufen = false }: { ersterBenutzer: boolean; angemeldet: () => void; abgelaufen?: boolean }) {
   const [name, setName] = useState('')
   const [anmeldename, setAnmeldename] = useState('')
   const [passwort, setPasswort] = useState('')
@@ -36,6 +36,11 @@ export function Anmeldung({ ersterBenutzer, angemeldet }: { ersterBenutzer: bool
         <p className="leise">
           Legen Sie zuerst Ihren Benutzer an. Danach führt ein Assistent durch die Einrichtung: Firma, Kanzlei, Steuerschlüssel und Aufbewahrung. Alle Daten bleiben auf diesem Rechner.
         </p>
+      )}
+      {abgelaufen && (
+        <Hinweis>
+          Ihre Sitzung ist abgelaufen (8 Stunden ohne Aktivität oder Neustart des Servers). Melden Sie sich erneut an; danach geht es auf derselben Seite weiter. Nicht gespeicherte Eingaben müssen Sie neu eingeben.
+        </Hinweis>
       )}
       <form onSubmit={(e) => void senden(e)} className="formular">
         {ersterBenutzer && <Textfeld label="Ihr Name" wert={name} aendern={setName} pflicht autoComplete="name" />}
