@@ -27,5 +27,13 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     testTimeout: 60_000,
     hookTimeout: 120_000,
+    // npm run abdeckung: Zweigabdeckung der Fachlogik mindestens 90 % (Spezifikation 9.3)
+    coverage: {
+      provider: 'v8',
+      include: ['src/fach/**'],
+      exclude: ['src/fach/**/*.test.ts'],
+      reporter: ['text-summary', 'text'],
+      thresholds: { branches: 90 },
+    },
   },
 })

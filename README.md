@@ -27,6 +27,7 @@ npm run vorbereiten   # KoSIT-Artefakte mit Prüfsumme laden, XSLT zu SEF kompil
 npm run server        # Server auf 127.0.0.1:8784 (liefert dist/ aus, wenn gebaut)
 npm run dev           # Oberfläche (Vite, Port 5184) mit Weiterleitung von /api an den Server
 npm test              # Unit-Tests (Vitest)
+npm run abdeckung     # Zweigabdeckung der Fachlogik (Schwelle 90 %)
 npm run e2e           # Browsertests gegen den echten Server auf Port 4184 (lokal mit Edge)
 npm run build         # Typprüfung und Produktions-Build
 npm run referenz      # Referenzlauf mit dem KoSIT-Validator (braucht Java 21 und npm run artefakte -- --referenz)
@@ -53,6 +54,7 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 
 ## Qualität
 
+- Zweigabdeckung der Fachlogik (`src/fach`) 92,7 %, Anweisungen 98,4 %, als Schwelle in `npm run abdeckung`.
 - Unit-Tests für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-H, T-A, T-S) und die Testvektoren der Hashkette.
 - Gleichlauf mit dem KoSIT-Validator für alle 86 Testdateien der KoSIT-Testsuite (`testdaten/referenz/kosit-1.6.3.json`), Extraktion aller 86 Dateien mit stimmigen Summen.
 - Browsertests gegen den echten Server mit axe (hell und dunkel), Sicherheitsheadern, CSP und der Ansicht im Sandbox-iframe (XSS-Testdatei der KoSIT).

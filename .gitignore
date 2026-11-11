@@ -23,9 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
-# Playwright
+# Playwright und Abdeckung
 test-results
 playwright-report
+coverage
 
 # Daten der laufenden App (Belege, Datenbank, Schlüssel) nie ins Repo
 daten/

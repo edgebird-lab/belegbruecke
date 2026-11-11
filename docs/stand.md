@@ -4,6 +4,8 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
+**Kurzstand:** Phasen 0 bis 2 fertig (bis auf 0.6, das Robin und die Kanzlei brauchen). 204 Unit-Tests und 7 Browsertests grün; Zweigabdeckung der Fachlogik 92,7 % (`npm run abdeckung`, Ziel 90 %). Ein frischer Klon besteht `npm ci`, `npm run vorbereiten`, Lint, Tests und Build. Teile von Phase 6 erledigt (Sicherheitsdurchsicht, Wiederherstellungstest, Doku). Nächster Schritt: Phase 3 (Oberfläche), beginnend mit 3.1.
+
 ## Phase 0 – Klärung und Durchstich
 
 - [x] **0.1** Projektgerüst (Vite, React, TypeScript, Vitest, oxlint, Playwright, CI). Gerüst wie beim Prozesslotsen, Ports 4184 (Vorschau, Browsertests) und 8784 (Server). Drei `tsconfig`: Oberfläche (ohne Node-Typen, erzwingt `src/fach` ohne Node-APIs), Server und Prüfung (Node 24 führt TypeScript direkt aus), Werkzeuge.
