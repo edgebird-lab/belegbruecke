@@ -16,7 +16,7 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 1 – Fachkern: Eingang und Prüfung
 
-- [ ] **1.1** Typen, Cent-Beträge (R24), kanonisches JSON
+- [x] **1.1** Typen, Cent-Beträge (R24), kanonisches JSON: `src/fach/typen.ts` (Abschnitt 4 wörtlich), `betrag.ts` (xs:decimal, mehr als 2 Stellen als Befund, exakte Steuerrechnung mit BigInt), `kanonisch.ts`, `hashkette.ts` (Eintragshash, Kettenprüfung R18 Punkte 1 bis 3 und 5). T-H1 grün, T-H2 und T-H3 auf Ebene der Einträge ebenfalls. SHA-256 wird in `src/fach` hereingereicht (`Sha256Funktion`).
 - [ ] **1.2** Annahme, Zeichensatz, XML-Schutz, Formaterkennung (R1 bis R4)
 - [ ] **1.3** ZUGFeRD-Anhänge mit pdf.js im Worker (R5)
 - [ ] **1.4** Prüfpipeline im Worker (R6)
