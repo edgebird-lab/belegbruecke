@@ -56,8 +56,12 @@ export const einstellungenSchema = z
     postfach: z
       .object({
         aktiv: z.boolean(),
-        server: z.string().max(253),
-        port: z.literal(993),
+        server: z
+          .string()
+          .max(253)
+          .regex(/^[A-Za-z0-9.-]*$/, 'Servername nur aus Buchstaben, Ziffern, Punkt und Bindestrich'),
+        // immer TLS; Standard 993, andere Ports nur für Anbieter mit abweichendem TLS-Port und den Testserver
+        port: z.number().int().min(1).max(65535),
         benutzer: z.string().max(200),
         passwortVerschluesselt: z.string(),
         ordner: z.string().min(1).max(200),

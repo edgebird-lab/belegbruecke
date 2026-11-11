@@ -53,12 +53,22 @@ function quelleText(q: Quelle): string {
   return q.art
 }
 
+/**
+ * Herkunft für das Protokoll; bei E-Mail auch Message-ID, Absender und die aufbewahrte Roh-Mail
+ * (Hash und Pfad), damit die Kettenprüfung auch die .eml-Datei prüft (R23 Punkt 5, R18 Punkt 4).
+ */
+function quelleDaten(q: Quelle): Record<string, unknown> {
+  if (q.art !== 'imap') return {}
+  const eml = q.emlSha256 ? { emlSha256: q.emlSha256, emlPfad: `originale/${q.emlSha256.slice(0, 2)}/${q.emlSha256}.eml` } : {}
+  return { messageId: q.messageId, absender: q.absender, ...eml }
+}
+
 /** Nimmt eine Datei an und prüft sie. Abgelehnte Dateien erzeugen keinen Beleg, nur einen Protokolleintrag. */
 export async function nimmAn(d: Dienste, datei: { name: string; bytes: Uint8Array }, quelle: Quelle, akteur: Akteur): Promise<Eingangsergebnis> {
   const dateiname = bereinigeDateiname(datei.name)
   const sha = sha256(datei.bytes)
   const annahme = pruefeAnnahme(datei.bytes)
-  const grunddaten = { dateiname, groesseBytes: datei.bytes.length, sha256: sha, quelle: quelleText(quelle) }
+  const grunddaten = { dateiname, groesseBytes: datei.bytes.length, sha256: sha, quelle: quelleText(quelle), ...quelleDaten(quelle) }
   if (!annahme.ok) {
     d.protokoll.anhaengen({ akteur, aktion: 'eingang-verworfen', belegId: null, daten: { ...grunddaten, grund: annahme.code } })
     return { dateiname, ok: false, code: annahme.code, text: annahme.text }

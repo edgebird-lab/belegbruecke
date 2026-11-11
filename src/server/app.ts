@@ -12,6 +12,7 @@ import { einstellungsAenderungen } from '../fach/einstellungen.ts'
 import type { Benutzer, Einstellungen } from '../fach/typen.ts'
 import { artefaktversionen } from '../pruefung/artefakte.ts'
 import { registriereBelege } from './api/belege.ts'
+import { registrierePostfach } from './api/postfach.ts'
 import { anmeldungSchema, einstellungenSchema, kettenpruefungSchema, neuerBenutzerSchema, zodText } from './api/schemata.ts'
 import { registriereStammdaten } from './api/stammdaten.ts'
 import { registriereUebergabe } from './api/uebergabe.ts'
@@ -168,6 +169,7 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
   registriereBelege(app, d)
   registriereStammdaten(app, d)
   registriereUebergabe(app, d)
+  registrierePostfach(app, d)
 
   // ---------- Archiv ----------
   app.post('/api/archiv/pruefen', async (c) => {

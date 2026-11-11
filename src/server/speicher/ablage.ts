@@ -6,7 +6,7 @@
  */
 import { createHash, randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { chmod, mkdir, open, readdir, readFile, rename, unlink } from 'node:fs/promises'
+import { chmod, link, mkdir, open, readdir, readFile, rename, unlink } from 'node:fs/promises'
 import { dirname, join, normalize, relative, sep } from 'node:path'
 
 export const ENDUNGEN = ['xml', 'pdf', 'jpg', 'png', 'eml'] as const
@@ -32,15 +32,33 @@ async function atomarSchreiben(ziel: string, bytes: Uint8Array): Promise<'neu' |
   } finally {
     await datei.close()
   }
+  // Harter Link legt das Ziel atomar an und scheitert mit EEXIST, wenn es schon da ist. So gewinnt bei
+  // zwei gleichzeitigen Uploads derselben Datei genau einer; rename() würde unter Windows überschreiben.
   try {
-    if (existsSync(ziel)) throw Object.assign(new Error('vorhanden'), { code: 'EEXIST' })
-    await rename(tmp, ziel)
+    await link(tmp, ziel)
   } catch (e) {
-    await unlink(tmp).catch(() => undefined)
-    // Gleichzeitiger zweiter Upload derselben Datei: Ziel existiert schon
-    if (existsSync(ziel)) return 'vorhanden'
-    throw e
+    const code = (e as NodeJS.ErrnoException).code
+    if (code === 'EEXIST') {
+      await unlink(tmp).catch(() => undefined)
+      return 'vorhanden'
+    }
+    // Dateisysteme ohne harte Links: Rückfall auf Umbenennen mit Prüfung vorher
+    if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EXDEV' && code !== 'ENOSYS') {
+      await unlink(tmp).catch(() => undefined)
+      throw e
+    }
+    try {
+      if (existsSync(ziel)) throw Object.assign(new Error('vorhanden'), { code: 'EEXIST' })
+      await rename(tmp, ziel)
+    } catch (x) {
+      await unlink(tmp).catch(() => undefined)
+      if (existsSync(ziel)) return 'vorhanden'
+      throw x
+    }
+    await chmod(ziel, 0o444)
+    return 'neu'
   }
+  await unlink(tmp)
   await chmod(ziel, 0o444)
   return 'neu'
 }

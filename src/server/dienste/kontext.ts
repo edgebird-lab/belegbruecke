@@ -3,6 +3,8 @@ import { mkdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { Syntax } from '../../fach/typen.ts'
 import type { Ausfuehrer } from '../../pruefung/eingang.ts'
+import { Postfachdienst } from '../postfach/dienst.ts'
+import { Schluesselbund, standardSchluesselDatei } from '../postfach/schluessel.ts'
 import { Ablage } from '../speicher/ablage.ts'
 import { Belegspeicher } from '../speicher/belege.ts'
 import { Datenbank } from '../speicher/db.ts'
@@ -28,6 +30,8 @@ export interface Dienste {
   sachkonten: Sachkontenspeicher
   regeln: Regelspeicher
   exporte: Exportspeicher
+  /** IMAP-Abruf mit Zeitgeber (Phase 5); startet erst mit starte() */
+  postfach: Postfachdienst
   pruefer: Pruefer
   sitzungen: Sitzungen
   sperre: Anmeldesperre
@@ -52,13 +56,17 @@ export interface Dienstoptionen {
   uhr?: () => Date
   version?: string
   https?: boolean
+  /** Schlüsseldatei für das Postfach-Passwort; Standard neben dem Datenordner (BB_SCHLUESSEL_DATEI) */
+  schluesselDatei?: string
+  /** zusätzlicher Vertrauensanker für IMAP, nur für den Testserver (BB_IMAP_CA) */
+  imapCa?: string
 }
 
 export function erzeugeDienste(o: Dienstoptionen): Dienste {
   mkdirSync(o.datenOrdner, { recursive: true })
   const db = new Datenbank(join(o.datenOrdner, 'belegbruecke.sqlite'))
   const uhr = o.uhr ?? (() => new Date())
-  return {
+  const d: Dienste = {
     datenOrdner: o.datenOrdner,
     db,
     ablage: new Ablage(o.datenOrdner),
@@ -86,7 +94,10 @@ export function erzeugeDienste(o: Dienstoptionen): Dienste {
         JSON.stringify(angaben.daten ?? {}),
       ])
     },
+    postfach: null as unknown as Postfachdienst,
   }
+  d.postfach = new Postfachdienst(d, new Schluesselbund(o.schluesselDatei ?? standardSchluesselDatei(o.datenOrdner)), { ca: o.imapCa })
+  return d
 }
 
 /** Sicherheitslog aufräumen (Spezifikation 8): IP nach 7 Tagen, übrige Einträge nach 90 Tagen. */

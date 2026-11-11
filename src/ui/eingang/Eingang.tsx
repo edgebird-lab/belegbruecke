@@ -1,10 +1,11 @@
-/** Eingang (Schritt 3.3): Dateien hochladen (Ziehen und Ablegen oder Auswahl, mehrere) und offene Belege. */
+/** Eingang (Schritte 3.3 und 5.4): Dateien hochladen (Ziehen und Ablegen oder Auswahl, mehrere), Postfach, offene Belege. */
 import { useRef, useState, type DragEvent } from 'react'
 import { api, fehlerText, useLaden, type Belegzeile, type Eingangsergebnis } from '../api.ts'
 import { Belegtabelle } from '../belege/Belegtabelle.tsx'
 import { AmpelAnzeige, Hinweis, Laden, Lernhinweis, Seitentitel } from '../gemeinsam/Bausteine.tsx'
 import { useApp } from '../kontext.ts'
 import { routeZuHash } from '../route.ts'
+import { Postfachstatus } from './Postfachstatus.tsx'
 
 export function Eingang() {
   const { aktualisiereZaehler, melde } = useApp()
@@ -79,6 +80,13 @@ export function Eingang() {
         {laeuft && <Laden text="Dateien werden geprüft …" />}
         {fehler && <Hinweis art="fehler">{fehler}</Hinweis>}
       </section>
+
+      <Postfachstatus
+        abgerufen={() => {
+          offen.neu()
+          aktualisiereZaehler()
+        }}
+      />
 
       {ergebnisse.length > 0 && (
         <section className="karte" aria-labelledby="ergebnis-titel">

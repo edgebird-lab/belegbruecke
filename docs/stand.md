@@ -4,7 +4,7 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 4 fertig bis auf die Schritte mit Robin (0.6, 4.7). Oberfläche mit Einrichtung, Eingang, Beleg-Assistent, Übergabe, Archiv und Einstellungen; DATEV-Export als „Vorschau“. 268 Unit-Tests und 16 Browsertests (axe hell und dunkel) grün. Nächster Schritt: Phase 5 (Postfach).
+**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7). Oberfläche mit Einrichtung, Eingang mit Postfach, Beleg-Assistent, Übergabe, Archiv und Einstellungen; DATEV-Export als „Vorschau“. 276 Unit-Tests und 17 Browsertests (axe hell und dunkel) grün. Nächster Schritt: Phase 6 (Qualität und Version 0.1).
 
 ## Phase 0 – Klärung und Durchstich
 
@@ -59,15 +59,15 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 5 – Postfach
 
-- [ ] **5.1** Mailverarbeitung mit mailparser an .eml-Dateien
-- [ ] **5.2** IMAP-Abruf mit imapflow (R23)
-- [ ] **5.3** Passwort verschlüsseln, Verbindungstest, Fehlermeldungen
-- [ ] **5.4** Postfach-Schritt im Assistenten und Statusanzeige
+- [x] **5.1** Mailverarbeitung mit mailparser (`src/server/postfach/mail.ts`): XML- und PDF-Anhänge nach Inhalt, Bilder nicht, höchstens 20 Anhänge und 50 MB, Absenderfilter, Idempotenz über `postfach_gesehen`, Roh-Mail nur bei neuem Beleg, Hash und Pfad im Protokoll. T-I1 und T-I2 grün (`src/server/postfach.test.ts`, Test-Mails aus `src/testhilfen/mails.ts`).
+- [x] **5.2** IMAP-Abruf mit imapflow (`src/server/postfach/abruf.ts`, Zeitgeber `dienst.ts`): nur TLS, Zielordner und `ohne-beleg` anlegen, verschieben, höchstens 50 Mails je Abruf. T-I4 grün gegen den eigenen IMAP-Testserver über TLS (`src/testhilfen/imap-testserver.ts`, statt GreenMail ohne Java, siehe [T13](entscheidungen.md#t13-postfach-phase-5)).
+- [x] **5.3** Passwort mit AES-256-GCM und Schlüsseldatei außerhalb des Datenordners (`src/server/postfach/schluessel.ts`), Verbindungstest, Fehlermeldungen in Klartext (Anmeldung, Server, Port, Zeitlimit, TLS). T-I3 grün (kein Klartext in Datenbank und WAL).
+- [x] **5.4** Postfach-Schritt E4 und Einstellungen, Eingang (Verbindung testen, Passwort erst nach erfolgreichem Test gespeichert), Statusanzeige im Eingang mit „Jetzt abrufen“. Browsertest grün: Mail an den Testserver erscheint als Beleg (`e2e/6-postfach.spec.ts`).
 
 ## Phase 6 – Qualität und Version 0.1
 
 - [ ] **6.1** Barrierefreiheit und Tastaturbedienung (U-5)
-- [ ] **6.2** Sicherheitsdurchsicht und Wiederherstellungstest. Teilweise: Durchsicht für Phasen 0 bis 2 in [sicherheit.md](sicherheit.md), `npm audit` ohne Befund, Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Offen: Postfach-Passwort (Phase 5), `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build), Prüfung der Oberfläche aus Phase 3.
+- [ ] **6.2** Sicherheitsdurchsicht und Wiederherstellungstest. Durchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md) (Postfach-Passwort, Anzeige von PDF und Bildern, atomare Ablage mit hartem Link), `npm audit` ohne Befund, Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build).
 - [ ] **6.3** Fallbeispiel „Oktober“ mit 12 Belegen
 - [ ] **6.4** README, Datenmodell, Regelkatalog, Lizenzen Dritter, `start.cmd`. Teilweise: README auf Stand Phase 2, [datenmodell.md](datenmodell.md), [regelkatalog.md](regelkatalog.md) (erzeugt), [lizenzen-dritter.md](lizenzen-dritter.md) (erzeugt mit `scripts/lizenzen.mjs`), `start.cmd` geschrieben, aber nicht ausgeführt (würde auf Robins Rechner den Browser öffnen; der Serverstart selbst ist durch die Browsertests geprüft). Offen: Bilder für die README (brauchen die Oberfläche), Abnahme von `start.cmd` durch Robin.
 - [ ] **6.5** Version 0.1.0 taggen (Repo privat)

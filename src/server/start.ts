@@ -1,11 +1,13 @@
 /**
  * Startet die Belegbrücke: Server auf 127.0.0.1 (Standard Port 8784), Prüf-Worker, tägliche
  * Sicherung der Datenbank. Umgebungsvariablen: BB_DATEN (Datenordner, Standard ./daten),
- * BB_PORT, BB_OBERFLAECHE (Ordner der gebauten Oberfläche, Standard ./dist).
+ * BB_PORT, BB_OBERFLAECHE (Ordner der gebauten Oberfläche, Standard ./dist), BB_SCHLUESSEL_DATEI
+ * (Schlüssel für das Postfach-Passwort, Standard neben dem Datenordner), BB_IMAP_CA (zusätzlicher
+ * Vertrauensanker für IMAP, nur für den Testserver der Browsertests).
  *
  *   node src/server/start.ts
  */
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
@@ -44,13 +46,16 @@ export function sichereTaeglich(d: Dienste): string | null {
 export async function starteServer(o: Serveroptionen) {
   // PDF, Prüfung und Ansicht laufen im Worker-Pool
   const pool = new Prueferpool()
-  const d = erzeugeDienste({ datenOrdner: o.datenOrdner, port: o.port, pruefer: pool })
+  const imapCa = process.env.BB_IMAP_CA ? readFileSync(process.env.BB_IMAP_CA, 'utf8') : undefined
+  const d = erzeugeDienste({ datenOrdner: o.datenOrdner, port: o.port, pruefer: pool, imapCa })
   raeumeSicherheitslogAuf(d)
   sichereTaeglich(d)
   const offen = await pruefeOffene(d)
   if (offen) console.log(`${offen} Beleg(e) mit unterbrochener Prüfung erneut geprüft.`)
   const app = erzeugeApp(d, { oberflaeche: o.oberflaeche })
   const server = serve({ fetch: app.fetch, port: o.port, hostname: HOST })
+  // Postfach-Abruf nach Zeitplan (R23); ist das Postfach aus, tut der Zeitgeber nichts
+  d.postfach.starte()
   const taeglich = setInterval(
     () => {
       raeumeSicherheitslogAuf(d)
@@ -61,6 +66,7 @@ export async function starteServer(o: Serveroptionen) {
   taeglich.unref()
   const beenden = async () => {
     clearInterval(taeglich)
+    await d.postfach.stoppe()
     server.close()
     await pool.beenden()
     d.db.schliessen()

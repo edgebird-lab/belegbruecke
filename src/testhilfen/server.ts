@@ -17,11 +17,14 @@ export interface Anfrageoptionen extends RequestInit {
   basis?: string
 }
 
-export function testserver(start = '2026-11-11T09:30:00.000Z') {
-  const ordner = mkdtempSync(join(tmpdir(), 'bb-server-'))
+export function testserver(start = '2026-11-11T09:30:00.000Z', optionen: { imapCa?: string } = {}) {
+  // Datenordner und Schlüsseldatei getrennt, wie im Betrieb (Spezifikation 8)
+  const basis = mkdtempSync(join(tmpdir(), 'bb-server-'))
+  const ordner = join(basis, 'daten')
+  const schluesselDatei = join(basis, 'belegbruecke.schluessel')
   let jetzt = new Date(start).getTime()
   const uhr = () => new Date(jetzt)
-  const d: Dienste = erzeugeDienste({ datenOrdner: ordner, port: 8784, uhr, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) } })
+  const d: Dienste = erzeugeDienste({ datenOrdner: ordner, port: 8784, uhr, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) }, schluesselDatei, imapCa: optionen.imapCa })
   const app = erzeugeApp(d)
   let cookie = ''
 
@@ -54,14 +57,15 @@ export function testserver(start = '2026-11-11T09:30:00.000Z') {
 
   function aufraeumen() {
     d.db.schliessen()
-    for (const e of readdirSync(ordner, { recursive: true, withFileTypes: true })) if (e.isFile()) chmodSync(join(e.parentPath, e.name), 0o666)
-    rmSync(ordner, { recursive: true, force: true })
+    for (const e of readdirSync(basis, { recursive: true, withFileTypes: true })) if (e.isFile()) chmodSync(join(e.parentPath, e.name), 0o666)
+    rmSync(basis, { recursive: true, force: true })
   }
 
   return {
     d,
     app,
     ordner,
+    schluesselDatei,
     anfrage,
     json,
     einrichten,

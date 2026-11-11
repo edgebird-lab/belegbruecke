@@ -25,4 +25,5 @@ export function raeumeAlteAuf(ausser?: string) {
 export default function aufraeumen() {
   const ordner = process.env.BB_E2E_DATEN
   if (ordner && existsSync(ordner) && /bb-e2e-/.test(ordner)) loesche(ordner)
+  if (ordner && existsSync(`${ordner}-neben`) && /bb-e2e-/.test(ordner)) loesche(`${ordner}-neben`)
 }
