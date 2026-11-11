@@ -15,16 +15,17 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      # Prüfartefakte (KoSIT-Releases mit Prüfsumme)
+      # Prüfartefakte (KoSIT-Releases mit Prüfsumme) und daraus kompilierte SEF-Dateien
       - uses: actions/cache@v4
         with:
           path: |
             vendor/downloads
             vendor/konfiguration
             vendor/visualisierung
+            vendor/sef
             testdaten/kosit
-          key: artefakte-${{ hashFiles('vendor/artefakte.json', 'scripts/artefakte.mjs') }}
-      - run: npm run artefakte
+          key: artefakte-${{ hashFiles('vendor/artefakte.json', 'scripts/artefakte.mjs', 'scripts/sef.mjs', 'package-lock.json') }}
+      - run: npm run vorbereiten
       - run: npm run lint
       - run: npm test
       - run: npm run build

@@ -50,3 +50,18 @@ Lauf mit KoSIT-Validator 1.6.3, Java 21.0.10, Konfiguration v2026-08-31 über 86
 - **Abweichung M7:** Die Spezifikation nennt `unitCode` `XYZ`. `XYZ` steht aber in der Codeliste von BR-CL-23 (UN/ECE Rec. 21), die Mutation hätte nichts ausgelöst. M7 nutzt deshalb `QQQ`.
 - **Abweichung T-P1:** `01.01a` hat weder BT-72 noch BG-14; nur die erste von zwei Positionen trägt BG-26. Nach R8 Nr. 6 ist der Leistungszeitpunkt damit „pruefen“ (Warnung), nicht „erfüllt über BG-14“. Der Referenzlauf meldet dazu passend `BR-DE-TMP-32`. Die Regel R8 geht vor; T-P1 erwartet für Nr. 6 „pruefen“.
 - **Ampel für 01.01a (U-2):** Hinweise (information) zählen nach der Ampelregel nicht als Warnung; 01.01a ist damit grün.
+
+### T4 SaxonJS statt Java: Gate erfüllt (Schritt 0.4)
+
+`scripts/sef.mjs` kompiliert die 4 Schematron-XSLT (EN 16931 UBL und CII, XRechnung UBL und CII) und die 4 XSLT der Ansicht (UBL-Rechnung, UBL-Gutschrift und CII ins Zwischenmodell, Zwischenmodell nach HTML) mit `xslt3` 2.7.0 zu SEF. Dauer 10 s (3 parallel), zusammen 26 MB SEF.
+
+- **Gate:** Für alle 86 Testdateien und M1, M2, M3, M7, M8 ergibt SaxonJS 2.7.0 dieselbe Szenariowahl und dieselbe Menge aus Regel-ID und Stufe wie der KoSIT-Validator (91 von 91 gleich). Die Szenarien werden dabei mit den unveränderten `match`-Ausdrücken aus `scenarios.xml` über `SaxonJS.XPath.evaluate` gewählt. M4, M5 (nicht wohlgeformt) und M6 (XSD-Fehler, danach keine Schematron-Prüfung) laufen über eigene Schritte. **Entscheidung: SaxonJS bleibt die Prüfung (`SaxonPruefdienst`), der Java-Rückfall wird nicht gebaut.**
+- **Messwerte** (Robins Laptop, Node 24.15, ein Prozess, alle 4 Schematron-SEF geladen): Laden der SEF 50 ms, Prüfung je Datei im Mittel 90 ms, höchstens 524 ms (Dateien bis 436 KB), 91 Dateien in 8,2 s. Speicher 462 MB RSS, davon 318 MB Heap. Das Ziel von 3 s je Rechnung bis 100 KB ist weit unterschritten. Die Speichergrenze des Workers bleibt bei 1 GB.
+- **Ansicht:** Die SEF sind relokierbar (`-relocate:on`). Beim Ausführen setzt `stylesheetBaseURI` die Basis auf die Original-XSLT in `vendor/visualisierung/xsl/`; so finden `unparsed-text()` (CSS, JavaScript) und `doc()` (`l10n/de.xml`) ihre Dateien, ohne dass etwas kopiert wird. 01.01a (UBL und CII): Zwischenmodell 20 bis 50 ms, HTML 20 bis 55 ms, Ergebnis enthält CSS, JavaScript, deutsche Beschriftungen, „123456XX“ und „336,90“.
+- Die erste Stufe der Ansicht liefert das Zwischenmodell `xr:invoice` mit BT-Nummern (`xr:id="BT-1"`); daraus liest die Datenextraktion (Schritt 1.5).
+
+### T5 xmllint-wasm für XSD (Schritt 0.5)
+
+- xmllint-wasm 5.3.0 (libxml2 2.13.8) prüft mit `UBL-Invoice-2.1.xsd` bzw. `CrossIndustryInvoice_100pD16B.xsd`; alle importierten XSD (79 für UBL, 4 für CII) werden in das virtuelle Dateisystem geladen, mit den Unterordnern der Konfiguration. **86 von 86 Testdateien gültig, M1 gültig, M6 ungültig** mit „Element '{…}IssueDat': This element is not expected“ in Zeile 11. Dauer im Mittel 87 ms, höchstens 179 ms je Datei; die Bibliothek startet je Prüfung selbst einen Worker.
+- **Spalte:** libxml2 meldet nur die Zeile. Die Belegbrücke ergänzt die Spalte, indem sie in der gemeldeten Zeile den Beginn des genannten Elements sucht (bei M6 Spalte 5). Xerces meldet das Ende des Start-Tags (Spalte 19); beide zeigen auf dasselbe Element. Ohne Treffer bleibt nur die Zeile.
+- xmllint liest nur UTF-8. Die Prüfung erhält deshalb den nach R3 dekodierten Text, neu als UTF-8 kodiert und mit angepasster XML-Deklaration; Zeilennummern bleiben gleich. Archiviert wird immer das Original.

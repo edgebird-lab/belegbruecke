@@ -9,8 +9,8 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **0.1** Projektgerüst (Vite, React, TypeScript, Vitest, oxlint, Playwright, CI). Gerüst wie beim Prozesslotsen, Ports 4184 (Vorschau, Browsertests) und 8784 (Server). Drei `tsconfig`: Oberfläche (ohne Node-Typen, erzwingt `src/fach` ohne Node-APIs), Server und Prüfung (Node 24 führt TypeScript direkt aus), Werkzeuge.
 - [x] **0.2** Skript `artefakte`: `npm run artefakte` lädt Konfiguration, Visualisierung und Testsuite, `--referenz` zusätzlich Validator 1.6.3 und Mustang-CLI 2.26.0. Prüfsummen in `vendor/artefakte.json` (KoSIT-Werte gleich der Spezifikation), Lizenztexte in `vendor/lizenzen/`, Herkunft in `vendor/LIZENZEN.md`. Die Archive enthalten keine Lizenzdateien; die Texte kommen aus den Repos zum Release-Stand.
 - [x] **0.3** Referenzlauf mit dem KoSIT-Validator: `npm run referenz` (Java 21, 9 s für 94 Dateien). Snapshot `testdaten/referenz/kosit-1.6.3.json`, **86 von 86 angenommen**. Mutationen M1 bis M8 per `scripts/mutationen.mjs` in `testdaten/mutationen/`. Ergebnisse und Abweichungen (M7 mit `QQQ`, T-P1) in [entscheidungen.md](entscheidungen.md#t3-referenzlauf-schritt-03).
-- [ ] **0.4** SaxonJS-Durchstich (Gate)
-- [ ] **0.5** xmllint-wasm-Durchstich
+- [x] **0.4** SaxonJS-Durchstich (Gate): **erfüllt**, 91 von 91 vergleichbaren Dateien gleich der Referenz; Ansicht findet CSS, JavaScript und Übersetzungen. `npm run sef` kompiliert 8 XSLT in 10 s. Messwerte in [entscheidungen.md](entscheidungen.md#t4-saxonjs-statt-java-gate-erfüllt-schritt-04). Die Vergleiche werden in 1.4 zu Tests (T-V1).
+- [x] **0.5** xmllint-wasm-Durchstich: 86 von 86 gültig, M6 mit erwartetem Fehler (Zeile 11). Spalte ermittelt die Belegbrücke selbst, siehe [T5](entscheidungen.md#t5-xmllint-wasm-für-xsd-schritt-05).
 - [ ] **0.6** **(Robin)** DATEV-Formate an der Primärquelle prüfen, Kanzleifragen klären
 - [ ] **0.7** ZUGFeRD sichten, Testdateien wählen, EXTENDED-Prüfung entscheiden
 
