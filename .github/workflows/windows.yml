@@ -1,7 +1,7 @@
 name: Windows-Programm
 
-# Windows-Läufe kosten im privaten Repo mehr Minuten. Deshalb nur, wenn sich der
-# Programmteil ändert (Hülle, Server-Einstieg, Bündel, Abhängigkeiten) oder von Hand.
+# Ein Windows-Lauf dauert rund 15 Minuten. Deshalb nur, wenn sich der Programmteil ändert
+# (Hülle, Server-Einstieg, Bündel, Abhängigkeiten) oder von Hand.
 on:
   push:
     branches: [main]

@@ -1,15 +1,24 @@
 # Belegbrücke
 
-E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe. Die Belegbrücke nimmt eingehende E-Rechnungen an (Upload oder E-Mail-Postfach), prüft sie nach EN 16931 und XRechnung mit den offiziellen KoSIT- und CEN-Artefakten und erklärt Fehler in Klartext. Sie bewahrt das Original unverändert auf, mit Prüfbericht und einem Protokoll, das eine SHA-256-Hashkette sichert, führt durch Zuordnen, Kontieren und Freigeben und erzeugt monatlich die Übergabe an die Steuerkanzlei. Läuft lokal, ohne KI, ohne Cloud und ohne Java.
+E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe, als Windows-Programm. Die Belegbrücke nimmt eingehende E-Rechnungen an (Upload oder E-Mail-Postfach), prüft sie nach EN 16931 und XRechnung mit den offiziellen Regeln der KoSIT und des CEN und erklärt Fehler in Klartext. Sie bewahrt das Original unverändert auf, mit Prüfbericht und einem Protokoll, das eine SHA-256-Hashkette sichert, führt durch Zuordnen, Kontieren und Freigeben und erzeugt monatlich die Übergabe an die Steuerkanzlei. Sie läuft auf dem eigenen Rechner, ohne Cloud, ohne KI und ohne Java.
 
-> **Stand: Version 0.1 in Arbeit.** Fertig sind Fachkern, Prüfung, Archiv, Server, Oberfläche, Kontierung mit DATEV-Übergabe und Postfach (Phasen 0 bis 5) sowie die Qualitätsschritte 6.1 bis 6.3; ein Prüferdurchgang am 11.11.2026 hat die Fachlogik nachgerechnet und zehn Fehler behoben (gleichzeitige Anfragen, Kleinbetrag bei negativem Betrag, Sperren nach Kontenänderungen, Erfassung von Hand bei 1280 Pixel, Umbruch bei 320 Pixel, Druck, Kreditorenkonto im Schritt „Zuordnen“, abgelaufene Sitzung, veränderte Exportdateien beim erneuten Download, Firmenname im Übergabeprotokoll). Seit dem 11.11.2026 gibt es die Belegbrücke auch als Windows-Programm mit Installer (Phase 7, Weg A: Tauri-Hülle, der Server läuft als Sidecar mit). Offen sind die Schritte mit Robin und der Kanzlei: DATEV-Formate an der Primärquelle prüfen (0.6), der Probeimport (4.7) und die Abnahme von `start.cmd`; bis dahin heißt der Export „Vorschau“. Stand: [docs/stand.md](docs/stand.md). Annahmen, die noch eine Entscheidung brauchen: [docs/entscheidungen.md](docs/entscheidungen.md). Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
+**Version 0.1.0** · Windows 10 und 11 · kostenlos · die Daten bleiben auf dem eigenen Rechner · die DATEV-Übergabe ist noch eine **Vorschau** (siehe [Stand und Grenzen](#stand-und-grenzen))
 
 ![Eingang mit offenen Belegen](docs/bilder/eingang.png)
+
+## Herunterladen und installieren
+
+**[Belegbruecke-Setup.exe herunterladen](https://github.com/edgebird-lab/belegbruecke/releases/latest/download/Belegbruecke-Setup.exe)** (rund 26 MB; alle Versionen unter [Releases](https://github.com/edgebird-lab/belegbruecke/releases))
+
+- **Voraussetzung:** Windows 10 oder 11 (64 Bit) mit WebView2. Auf aktuellen Systemen ist WebView2 schon vorhanden; fehlt es, lädt der Installer es von Microsoft nach (dafür einmal Internet).
+- **Installation pro Benutzer, ohne Admin-Rechte.** Der Installer legt „Belegbrücke“ im Startmenü und auf dem Desktop an.
+- **Nicht signiert:** Installer und Programm tragen keine Code-Signatur. Windows SmartScreen kann deshalb beim ersten Start nachfragen („Der Computer wurde durch Windows geschützt“): „Weitere Informationen“, dann „Trotzdem ausführen“.
+- **Erster Start:** Man legt den ersten Benutzer an; danach führt ein Assistent durch Firma, Kanzlei, Steuerschlüssel und Konten, Eingang (auf Wunsch mit Postfach) und Aufbewahrung.
 
 ## Was es kann
 
 - **Eingang:** Upload per Ziehen und Ablegen (mehrere Dateien) und IMAP-Postfach mit Abruf in festem Abstand, nur über TLS. XML- und PDF-Anhänge werden Belege; jede Datei bekommt eine Belegnummer und einen Protokolleintrag.
-- **Prüfung wie der KoSIT-Validator, ohne Java.** Die offiziellen Schematron-Regeln (CEN EN 16931 1.3.16, XRechnung 2.6.0) laufen als vorkompilierte XSLT in SaxonJS, das XML-Schema mit libxml2 als WebAssembly. Für alle 86 Testdateien der KoSIT-Testsuite und 8 Mutationen ergeben sich dieselben Szenarien, Regel-IDs, Stufen und Annahmen wie beim KoSIT-Validator 1.6.3 (Referenzlauf mit Java, Ergebnis als Test eingefroren).
+- **Prüfung mit den offiziellen Regeln, ohne Java.** Die Schematron-Regeln der KoSIT und des CEN (EN 16931 1.3.16, XRechnung 2.6.0) laufen als vorkompilierte XSLT in SaxonJS, das XML-Schema mit libxml2 als WebAssembly. Für alle 86 Testdateien der KoSIT-Testsuite und 8 Mutationen ergeben sich dieselben Szenarien, Regel-IDs, Stufen und Annahmen wie beim KoSIT-Validator 1.6.3 (Referenzlauf mit Java, Ergebnis als Test eingefroren).
 - **Formate:** XRechnung 3.0 (UBL, CII, Extension, CVD), EN 16931, ZUGFeRD/Factur-X als PDF mit eingebettetem XML (EN 16931, BASIC, EXTENDED, XRECHNUNG). MINIMUM, BASIC WL, ZUGFeRD 1.0, PDF ohne XML und Fotos sind „sonstige Rechnungen“ und werden von Hand erfasst.
 - **Klartext:** 61 Regeln der Regelwerke und 36 eigene mit deutscher Erklärung, Handlung und Einordnung nach dem BMF-Schreiben vom 15.10.2025 (Formatfehler, Geschäftsregelfehler, Inhaltsfehler; umsatzsteuerlich relevant oder nicht): [docs/regelkatalog.md](docs/regelkatalog.md). Ein Knopf kopiert eine fertige Rückfrage an den Lieferanten.
 - **Pflichtangaben** nach § 14 Abs. 4 UStG, Kleinbetrag (§ 33 UStDV), Kleinunternehmer (§ 34a UStDV), Empfängerprüfung gegen die eigene Firma und Plausibilität (Steuersatz, IBAN-Prüfziffer, Datum, Währung). Ampel immer mit Symbol und Text.
@@ -17,9 +26,9 @@ E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe. Die Bel
 - **Dubletten** in drei Stufen (identische Datei, gleiche Rechnung auch über Formate hinweg, ähnliche Rechnung) mit Vergleich nebeneinander.
 - **Kontierung:** Lieferanten mit Kreditorenkonto, Vorschlag aus der Historie je Lieferant, Kategorie und Steuersatz, BU-Schlüssel je Steuerfall, Soll/Haben auch für Gutschriften, Gründe für „von Hand prüfen“ (Anzahlung, Rundung, § 13b, Fremdwährung).
 - **Freigabe** mit Bestätigung nach BMF Rn. 35a, Begründung bei Fehlern, Ablehnen mit Grund; danach sind Daten und Kontierung eingefroren.
-- **Übergabe an die Kanzlei:** monatlich nach Rechnungsdatum, Nachträge für spätere Belege, EXTF-Buchungsstapel (Windows-1252) und Belegpaket (ZIP mit Originalen, Ansicht, Prüfberichten und `index.csv`), Übergabeprotokoll mit Kettenanker zum Drucken. Sperren nennen den Beleg und den Grund.
-- **GoBD-Archiv:** Originale inhaltsadressiert und schreibgeschützt, Prüfbericht je Beleg, Protokoll mit SHA-256-Hashkette, Kettenprüfung samt Dateien und Kettenanker, Aufbewahrungsfrist nach § 147 AO und § 14b UStG, Suche nach Name, E-Mail, Nummer, Betrag und Zeitraum, Prüferexport für die Betriebsprüfung, tägliche Sicherung mit Wiederherstellungstest.
-- **Server** auf 127.0.0.1 mit Anmeldung (scrypt, bis 3 Benutzer), Sperre nach Fehlversuchen, Schutz gegen CSRF und DNS-Rebinding, strenger CSP, Prüfung in Workern mit Zeit- und Speichergrenze; Postfach-Passwort mit AES-256-GCM.
+- **Übergabe an die Kanzlei (Vorschau):** monatlich nach Rechnungsdatum, Nachträge für spätere Belege, DATEV-Buchungsstapel im EXTF-Format (Windows-1252) und Belegpaket (ZIP mit Originalen, Ansicht, Prüfberichten und `index.csv`), Übergabeprotokoll mit Kettenanker zum Drucken. Sperren nennen den Beleg und den Grund.
+- **GoBD-Archiv mit Hashkette:** Originale inhaltsadressiert und schreibgeschützt, Prüfbericht je Beleg, Protokoll mit SHA-256-Hashkette, Kettenprüfung samt Dateien und Kettenanker, Aufbewahrungsfrist nach § 147 AO und § 14b UStG, Suche nach Name, E-Mail, Nummer, Betrag und Zeitraum, Prüferexport für die Betriebsprüfung, tägliche Sicherung mit Wiederherstellungstest.
+- **Sicher im Kleinen:** bis 3 Benutzer mit Anmeldung (scrypt), Sperre nach Fehlversuchen, Schutz gegen CSRF und DNS-Rebinding, strenge CSP, Prüfung in Workern mit Zeit- und Speichergrenze; Postfach-Passwort mit AES-256-GCM verschlüsselt.
 
 | Prüfen | Kontieren |
 | --- | --- |
@@ -27,9 +36,33 @@ E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe. Die Bel
 | **Übergabeprotokoll** | **Archiv prüfen** |
 | ![Übergabeprotokoll mit Dateien und Kettenanker](docs/bilder/uebergabe.png) | ![Kettenprüfung im Archiv](docs/bilder/archiv.png) |
 
+## Daten bleiben lokal
+
+- Die Belegbrücke läuft vollständig auf dem eigenen Rechner. Das Programm startet seinen Server selbst im Hintergrund, auf einem zufälligen Port von 127.0.0.1 und nur für das eigene Fenster erreichbar, und beendet ihn beim Schließen.
+- Keine Cloud, kein Konto, keine Telemetrie, keine KI. Nach außen verbindet sich die Belegbrücke nur mit dem eigenen E-Mail-Postfach, wenn man eins einrichtet.
+- Daten liegen in `%LOCALAPPDATA%\de.olbricht-digital.belegbruecke\daten`, der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel`, das Protokoll des Servers in `server.log`. Die tägliche Sicherung liegt im selben Ordner; eine Sicherung auf einem anderen Datenträger ist Sache des Betriebs.
+- Die Deinstallation lässt das Archiv immer stehen (Rechnungen sind acht Jahre aufzubewahren); das Häkchen „Lösche die Anwendungsdaten“ entfernt nur Browserdaten und Protokolle des Programms.
+
+## Stand und Grenzen
+
+Version 0.1.0 vom 11.11.2026. Fertig sind Prüfung, Archiv, Oberfläche, Kontierung, Übergabe, Postfach und das Windows-Programm; ein Prüferdurchgang hat die Fachlogik nachgerechnet. Offen ist die Bestätigung des DATEV-Formats: Die Feldliste folgt einer quelloffenen Sekundärquelle und ist weder an der DATEV-Formatbeschreibung geprüft noch von einer Kanzlei importiert. **Bis dahin heißt der Export „Vorschau“; vor dem ersten echten Einsatz bitte mit der eigenen Kanzlei einen Probeimport machen.** Fortschritt im Einzelnen: [docs/stand.md](docs/stand.md); Annahmen: [docs/entscheidungen.md](docs/entscheidungen.md); Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
+
+- Die DATEV-Formate sind noch nicht an der Primärquelle bestätigt und nicht von einer Kanzlei importiert (siehe oben). Das DUO-Paket (Belege online) ist aus.
+- ZUGFeRD EXTENDED wird gegen EN 16931 geprüft; 12 Regeln, die bei gültigen EXTENDED-Rechnungen anschlagen, zählen dort nur als Warnung. ZUGFeRD 2.0 mit `urn:zugferd.de:2p0:`-Kennung ist noch nicht zugeordnet.
+- Postfach nur mit Passwort oder App-Passwort über IMAP mit TLS; OAuth2 (Microsoft 365, Gmail) folgt später.
+- Fremdwährung, PDF/A, Signaturen und Zeitstempel werden nicht geprüft bzw. nicht übergeben; Löschen nach Fristablauf kommt später.
+- Listen laden alle Belege auf einmal (für Kleinbetriebe ausreichend, bei mehreren tausend Belegen langsam). Ein Upload darf zusammen höchstens 120 MB groß sein; größere Mengen in mehreren Schritten hochladen.
+- Die Kettenprüfung umfasst wie spezifiziert nur `originale/` und `berichte/`. Exportdateien prüft die Belegbrücke beim erneuten Download gegen ihren Hash und liefert eine veränderte Datei nicht aus.
+- Sitzungen liegen nur im Speicher des Servers: Nach einem Neustart oder 8 Stunden ohne Aktivität zeigt die Oberfläche wieder die Anmeldung; nicht gespeicherte Eingaben gehen dabei verloren.
+- Das Programm gibt es nur für Windows; die Browser-Fassung aus dem Quelltext (siehe unten) ist für Entwickler gedacht.
+
+## Haftungshinweis
+
+Die Belegbrücke wird kostenlos und ohne Gewähr bereitgestellt. Sie prüft Rechnungen technisch; die Pflicht zur eigenen Rechnungsprüfung bleibt (BMF-Schreiben vom 15.10.2025, Rn. 35a). Sie ist keine Steuer- oder Rechtsberatung. Software allein macht kein Verfahren GoBD-konform; nötig sind Verfahrensdokumentation, Zugriffsregeln und Sicherung. Die DATEV-Übergabe ist eine Vorschau und vor dem Einsatz mit der Kanzlei zu prüfen. DATEV, ZUGFeRD und Factur-X werden nur beschreibend genannt; die Belegbrücke steht in keiner Verbindung zu DATEV, KoSIT, CEN oder Saxonica.
+
 ## Fallbeispiel „Oktober“
 
-Zwölf Belege eines Monats vom Eingang bis zur Übergabe; jede Zahl prüft [src/server/fallbeispiel.test.ts](src/server/fallbeispiel.test.ts). Die Rechnungen stammen aus der KoSIT-Testsuite, nur das Rechnungsdatum liegt im Oktober 2026 ([testdaten/fallbeispiel](testdaten/fallbeispiel), erzeugt mit `node scripts/fallbeispiel.mjs`); dazu eine PDF ohne XML, von Hand erfasst. Firma ist „[Buyer name]“ wie in den Testdateien, Kontenplan 4900 und 4901 (Automatikkonto).
+Zwölf Belege eines Monats vom Eingang bis zur Übergabe; jede Zahl prüft [src/server/fallbeispiel.test.ts](src/server/fallbeispiel.test.ts). Die Rechnungen stammen aus der KoSIT-Testsuite, nur das Rechnungsdatum liegt im Oktober 2026 ([testdaten/fallbeispiel](testdaten/fallbeispiel), erzeugt mit `node scripts/fallbeispiel.mjs`); dazu eine PDF ohne XML, von Hand erfasst. Firma ist „[Buyer name]“ wie in den Testdateien, Kontenplan 4900 und 4901 (Automatikkonto). Alle Daten sind Testdaten.
 
 | Nr. | Rechnung | Brutto | Was passiert |
 | --- | --- | ---: | --- |
@@ -48,13 +81,21 @@ Zwölf Belege eines Monats vom Eingang bis zur Übergabe; jede Zahl prüft [src/
 
 Übergabe 10/2026: 10 Belege, 10 Buchungszeilen, Nr. 9 bleibt offen. Summen der Buchungen: S 19 % 20.760,91 €, S 7 % 658,38 €, O 0 % 120,00 €, zusammen 21.539,29 €. Das Belegpaket enthält 10 Originale, 9 Ansichten, 10 Prüfberichte und `index.csv`; die Kettenprüfung mit dem Kettenanker des Laufs ist in Ordnung.
 
-## Starten
+## Rechte
 
-**Windows-Programm:** Den Installer `Belegbrücke_0.0.1_x64-setup.exe` ausführen (pro Benutzer, ohne Admin-Rechte; bauen mit `npx tauri build`, siehe „Entwickeln“). Er legt „Belegbrücke“ im Startmenü und auf dem Desktop an. Das Programm startet den Server selbst im Hintergrund, auf einem zufälligen Port von 127.0.0.1 und nur für das eigene Fenster erreichbar, und beendet ihn beim Schließen. Der Ablauf ist derselbe wie im Browser: erster Benutzer, Einrichtung, Eingang. Daten liegen in `%LOCALAPPDATA%\de.olbricht-digital.belegbruecke\daten`, der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel`, das Protokoll des Servers in `server.log`. Die Deinstallation lässt das Archiv immer stehen; das Häkchen „Lösche die Anwendungsdaten“ entfernt nur Browserdaten und Protokolle des Programms. Installer und Programm sind nicht signiert; SmartScreen fragt deshalb beim ersten Start nach.
+© 2026 Robin Olbricht – olbricht-digital. Alle Rechte vorbehalten. Die Programme dürfen kostenlos genutzt werden; eine offene Lizenz ist noch nicht gewählt. Fremdbestandteile stehen unter ihren eigenen Lizenzen, siehe [docs/lizenzen-dritter.md](docs/lizenzen-dritter.md).
 
-**Browser-Fassung:** Unter Windows genügt ein Doppelklick auf `start.cmd`: Beim ersten Start installiert es die Abhängigkeiten, lädt die Prüfartefakte und baut die Oberfläche; danach öffnet sich der Browser auf `http://127.0.0.1:8784`. Beim ersten Aufruf legt man den ersten Benutzer an, danach führt ein Assistent durch Firma, Kanzlei, Steuerschlüssel und Konten, Eingang (auf Wunsch mit Postfach) und Aufbewahrung. Daten liegen in `daten/` (änderbar mit `BB_DATEN`), der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel` (`BB_SCHLUESSEL_DATEI`).
+Im Windows-Programm liegen alle Lizenztexte in `LIZENZEN.txt` und `vendor/lizenzen/` im Programmordner (`%LOCALAPPDATA%\Belegbrücke\belegbruecke-server`). Die Prüfregeln stammen von der KoSIT (Apache-2.0) und vom CEN (EUPL-1.2), SaxonJS steht unter der Saxonica-Lizenz.
 
-## Entwickeln
+## Für Entwickler
+
+### Aus dem Quelltext starten
+
+**Browser-Fassung:** Unter Windows genügt ein Doppelklick auf `start.cmd` (braucht Node 24.15 oder neuer): Beim ersten Start installiert es die Abhängigkeiten, lädt die Prüfartefakte und baut die Oberfläche; danach öffnet sich der Browser auf `http://127.0.0.1:8784`. Daten liegen in `daten/` (änderbar mit `BB_DATEN`), der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel` (`BB_SCHLUESSEL_DATEI`).
+
+**Windows-Programm selbst bauen:** `npx tauri build` (braucht zusätzlich Rust) erzeugt den Installer `Belegbrücke_0.1.0_x64-setup.exe` unter `src-tauri/target/release/bundle/nsis/`. Ein Tag `v*` baut ihn in GitHub Actions (`.github/workflows/release.yml`) und hängt ihn an einen Release-Entwurf, zusätzlich als `Belegbruecke-Setup.exe`.
+
+### Entwickeln
 
 ```bash
 npm install
@@ -68,11 +109,11 @@ npm run build         # Typprüfung und Produktions-Build
 npm run referenz      # Referenzlauf mit dem KoSIT-Validator (braucht Java 21 und npm run artefakte -- --referenz)
 ```
 
-Windows-Programm (Rust und Tauri-CLI; Rust liegt auf Robins Rechner in `%USERPROFILE%\.cargo\bin`, gebaut wird mit `CARGO_TARGET_DIR=C:/Users/Robin/AppData/Local/cargo-ziel`):
+Windows-Programm (Rust und Tauri-CLI):
 
 ```bash
 npm run programm:server        # Server-Bündel und Node-Laufzeit nach src-tauri/ (nach npm run build)
-npm run programm:server-test   # API-Test des Bündels: Token, Prüfung und PDF im Worker, Ansicht, Kette
+npm run programm:server-test   # API-Test des Bündels: SaxonJS unverändert, Token, Prüfung und PDF im Worker, Ansicht, Kette
 cargo test --manifest-path src-tauri/Cargo.toml
 npx tauri build --debug --no-bundle && npm run desktop:test   # Programm im Fenster testen (CDP-Port 9337)
 npx tauri build                # Release mit NSIS-Installer (baut vorher Oberfläche und Bündel)
@@ -82,7 +123,7 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 
 **API** (JSON unter `/api`, ändernde Anfragen mit `X-Belegbruecke: 1` und passendem `Origin`): Sitzung (`/einrichtung/benutzer`, `/anmelden`, `/abmelden`, `/sitzung`, `/benutzer`), `/einstellungen`, Belege (`POST /belege` als multipart, `GET /belege?status=&monat=&suche=&von=&bis=&betrag=&offen=1`, `GET /belege/:id` mit Vorschlägen, `/original`, `/bericht`, `/ansicht`), Assistentenschritte (`POST /belege/:id/dublette`, `PUT /lieferant`, `PUT /kontierung`, `PUT /handerfassung`, `POST /freigeben`, `/ablehnen`, `/freigabe-zuruecknehmen`, `/ablehnung-aufheben`), Stammdaten (`/lieferanten`, `/sachkonten` mit CSV-Import), Übergabe (`GET /uebergaben`, `/uebergaben/plan?monat=`, `POST /uebergaben`, `/uebergaben/:id/dateien/:name`), Archiv (`POST /archiv/pruefen`, `/archiv/prueferexport`), Postfach (`/postfach/status`, `/postfach/test`, `/postfach/abrufen`, `PUT /postfach/passwort`).
 
-## Aufbau
+### Aufbau
 
 | Ordner | Inhalt |
 | --- | --- |
@@ -91,35 +132,17 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 | `src/server` | Hono-Server: API, Eingang, Assistentenschritte, Übergabe, Prüferexport, Kettenprüfung, Postfach (imapflow, mailparser), SQLite (`node:sqlite`), Dateiablage, Anmeldung und Schutz; Einstieg und Programmtor für das Windows-Programm (`programm.ts`) |
 | `src/ui` | React-Oberfläche: Anmeldung, Einrichtung, Eingang, Beleg-Assistent, Übergabe, Archiv, Einstellungen |
 | `src-tauri` | Windows-Programm: Tauri-Hülle (Rust) mit Ladeseite, Start des Servers als Sidecar (Job-Objekt, Einmal-Token), Symbol, Installer-Test |
-| `src/testhilfen` | Testserver, Test-Kontenplan, Test-Mails, IMAP-Testserver und Testzertifikat |
+| `src/testhilfen` | Testserver, Test-Kontenplan, Test-Mails, IMAP-Testserver und Testzertifikat (zur Laufzeit erzeugt) |
 | `scripts` | Artefakte laden, SEF kompilieren, Referenzläufe, Testdaten, Bilder, Doku; Server-Bündel, API-Test und Desktop-Test des Windows-Programms |
-| `testdaten` | Mutationen, ZUGFeRD-Test-PDFs, Fallbeispiel, DATEV-Golden-File, Referenz-Snapshots (KoSIT-Testsuite per Skript) |
+| `testdaten` | Mutationen, ZUGFeRD-Test-PDFs, Fallbeispiel, DATEV-Golden-File, Referenz-Snapshots (KoSIT-Testsuite per Skript); nur Testdaten, keine echten Rechnungen |
 | `docs` | [Spezifikation](docs/spezifikation.md), [Stand](docs/stand.md), [Entscheidungen](docs/entscheidungen.md), [Datenmodell](docs/datenmodell.md), [Regelkatalog](docs/regelkatalog.md), [DATEV-Feldnotizen](docs/datev-felder.md), [Sicherheit](docs/sicherheit.md), [Lizenzen Dritter](docs/lizenzen-dritter.md) |
 
 **Technik:** TypeScript 7, Node 24 (führt den Server direkt als TypeScript aus), React 19, Vite 8, Hono 4, zod 4, SaxonJS 2.7, xmllint-wasm 5, pdf.js 6, fflate, imapflow, mailparser, SQLite über `node:sqlite`, Vitest, Playwright mit axe; für das Windows-Programm Tauri 2 (Rust, WebView2) und rolldown.
 
-## Qualität
+### Qualität
 
 - 291 Unit-Tests (Vitest) für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-K, T-E, T-I, T-H, T-A, T-S), die Testvektoren der Hashkette, das Fallbeispiel und gleichzeitige Anfragen (Doppelklick, zweites Fenster: nichts wird still überschrieben oder doppelt protokolliert); Zweigabdeckung der Fachlogik 94,7 % (Schwelle 90 % in `npm run abdeckung`).
 - Gleichlauf mit dem KoSIT-Validator für alle 86 Testdateien der KoSIT-Testsuite (`testdaten/referenz/kosit-1.6.3.json`); EXTF-Ausgabe bytegleich mit einer Golden File (`testdaten/datev/EXTF_03.01a.csv`).
 - 21 Browsertests gegen den echten Server: Einrichtung nur per Tastatur, Beleg bis zur Freigabe, Dublette, Erfassung von Hand, Übergabe, Archiv, Postfach gegen einen IMAP-Testserver, Kreditorenkonto im Schritt „Zuordnen“, abgelaufene Sitzung; jeder Schritt mit axe hell und dunkel ohne schwere Befunde; elf Hauptseiten bei 1280 und 320 Pixel ohne seitliches Verschieben (WCAG 1.4.10); Sicherheitsheader und CSP ohne Verstöße.
-- Windows-Programm: 8 Rust-Tests (`cargo test`: Bereit-Zeile, Navigation nur zum eigenen Server, Pfade, Protokoll ohne Token, Job-Objekt), Unit-Tests für Programmtor und Einstieg, API-Test des Server-Bündels (`npm run programm:server-test`: Einmal-Token, XRechnung und ZUGFeRD-PDF im Worker, Ansicht, Kette, Ende mit stdin) und ein Desktop-Test gegen das echte Programm mit 37 Prüfungen (`npm run desktop:test`: Einrichtung, Upload aus der KoSIT-Testsuite, Ansicht, Archiv, Download, Schließen, zweiter Start, `taskkill /F`, keine CSP-Meldung).
-- Bei jedem Push auf `main` laufen Lint, Unit-Tests und Build in der CI des privaten Repos `edgebird-lab/belegbruecke` (GitHub Actions, `.github/workflows/ci.yml`); die Browsertests lokal vor jedem Commit. Ändert sich das Programm, baut `.github/workflows/windows.yml` Programm und Installer unter Windows, installiert still, testet den installierten Server und deinstalliert (die Daten bleiben).
-
-## Grenzen
-
-- Die DATEV-Formate sind noch nicht an der Primärquelle bestätigt und nicht von einer Kanzlei importiert; der Export heißt deshalb „Vorschau“. Das DUO-Paket (Belege online) ist aus.
-- ZUGFeRD EXTENDED wird gegen EN 16931 geprüft; 12 Regeln, die bei gültigen EXTENDED-Rechnungen anschlagen, zählen dort nur als Warnung. ZUGFeRD 2.0 mit `urn:zugferd.de:2p0:`-Kennung ist noch nicht zugeordnet.
-- Postfach nur mit Passwort oder App-Passwort über IMAP mit TLS; OAuth2 (Microsoft 365, Gmail) folgt später.
-- Fremdwährung, PDF/A, Signaturen und Zeitstempel werden nicht geprüft bzw. nicht übergeben; Löschen nach Fristablauf kommt später.
-- Listen laden alle Belege auf einmal (für Kleinbetriebe ausreichend, bei mehreren tausend Belegen langsam). Ein Upload darf zusammen höchstens 120 MB groß sein; größere Mengen in mehreren Schritten hochladen.
-- Die Kettenprüfung umfasst wie spezifiziert nur `originale/` und `berichte/`. Exportdateien prüft die Belegbrücke beim erneuten Download gegen ihren Hash und liefert eine veränderte Datei nicht aus.
-- Sitzungen liegen nur im Speicher des Servers: Nach einem Neustart des Servers oder 8 Stunden ohne Aktivität zeigt die Oberfläche wieder die Anmeldung; nicht gespeicherte Eingaben gehen dabei verloren.
-
-## Rechtliches
-
-Technische Prüfung ohne Gewähr; die Pflicht zur eigenen Rechnungsprüfung bleibt (BMF-Schreiben vom 15.10.2025, Rn. 35a). Keine Steuer- oder Rechtsberatung. Software allein macht kein Verfahren GoBD-konform; nötig sind Verfahrensdokumentation, Zugriffsregeln und Sicherung. DATEV, ZUGFeRD und Factur-X werden nur beschreibend genannt.
-
-## Lizenz
-
-Noch nicht festgelegt (offene Frage 9 der Spezifikation). Das Repo ist privat. SaxonJS steht unter einer proprietären, kostenlosen Lizenz; Einzelheiten in [docs/lizenzen-dritter.md](docs/lizenzen-dritter.md).
+- Windows-Programm: 8 Rust-Tests (`cargo test`: Bereit-Zeile, Navigation nur zum eigenen Server, Pfade, Protokoll ohne Token, Job-Objekt), Unit-Tests für Programmtor und Einstieg, API-Test des Server-Bündels (`npm run programm:server-test`: SaxonJS unverändert, Einmal-Token, XRechnung und ZUGFeRD-PDF im Worker, Ansicht, Kette, Ende mit stdin) und ein Desktop-Test gegen das echte Programm mit 37 Prüfungen (`npm run desktop:test`: Einrichtung, Upload aus der KoSIT-Testsuite, Ansicht, Archiv, Download, Schließen, zweiter Start, `taskkill /F`, keine CSP-Meldung).
+- Bei jedem Push auf `main` laufen Lint, Unit-Tests und Build in GitHub Actions (`.github/workflows/ci.yml`); die Browsertests laufen lokal vor jedem Commit. Ändert sich das Programm, baut `.github/workflows/windows.yml` Programm und Installer unter Windows, installiert still, testet den installierten Server und deinstalliert (die Daten bleiben).

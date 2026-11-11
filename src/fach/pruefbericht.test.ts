@@ -8,7 +8,7 @@ const KONTEXT: Pruefkontext = {
   firma: BEISPIEL_FIRMA,
   heute: '2026-11-11',
   zeitpunkt: '2026-11-11T09:30:02.000Z',
-  pruefprogramm: 'belegbruecke 0.0.1',
+  pruefprogramm: 'belegbruecke 0.1.0',
   artefakte: { konfiguration: 'k', enSchematron: 'e', xrSchematron: 'x' },
 }
 
@@ -20,7 +20,7 @@ async function bericht(bytes: Uint8Array, art: 'xml' | 'pdf' = 'xml') {
 describe('Prüfergebnis und Ampel (R6 Punkt 9, Abschnitt 5.3)', () => {
   it('03.01a ist grün: angenommen, keine Warnung', async () => {
     const { t, p } = await bericht(kosit('standard/03.01a-INVOICE_ubl.xml'))
-    expect(p).toMatchObject({ formatVersion: 1, angenommen: true, szenario: 'EN16931 XRechnung (UBL Invoice)', pruefprogramm: 'belegbruecke 0.0.1' })
+    expect(p).toMatchObject({ formatVersion: 1, angenommen: true, szenario: 'EN16931 XRechnung (UBL Invoice)', pruefprogramm: 'belegbruecke 0.1.0' })
     expect(p.pflichtangaben?.regelwerk).toBe('§ 14 Abs. 4 UStG')
     expect(ampel(t.format, p)).toEqual({ farbe: 'gruen', symbol: '✓', text: 'Gültige XRechnung 3.0 (UBL)' })
   })

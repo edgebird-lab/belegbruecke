@@ -4,14 +4,14 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. Prüferdurchgang am 11.11.2026 abgeschlossen (siehe unten). Windows-Programm (Phase 7, Weg A) gebaut und am 11.11.2026 auf Robins Rechner installiert; Docker und Server bleiben aus. 291 Unit-Tests, 21 Browsertests (axe hell und dunkel), 8 Rust-Tests, der API-Test des Server-Bündels und der Desktop-Test (37 Prüfungen) grün. Privates Repo `edgebird-lab/belegbruecke` mit `main` auf GitHub; CI `ci.yml` (Lint, Tests, Build) und `windows.yml` (Programm, Installer, Installation in der CI) grün.
+**Kurzstand:** Version 0.1.0 (Tag `v0.1.0`, 11.11.2026): Robin hat den Tag und die Veröffentlichung freigegeben, obwohl 0.6 und 4.7 (DATEV/Kanzlei) noch offen sind; der DATEV-Export bleibt deshalb „Vorschau“. Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 und 6.5 fertig, 6.4 bis auf die Abnahme von `start.cmd`. Prüferdurchgang am 11.11.2026 abgeschlossen (siehe unten). Windows-Programm (Phase 7, Weg A) gebaut und am 11.11.2026 auf Robins Rechner installiert; Docker und Server bleiben aus. Veröffentlichung siehe [unten](#veröffentlichung-11112026). 291 Unit-Tests, 21 Browsertests (axe hell und dunkel), 8 Rust-Tests, der API-Test des Server-Bündels und der Desktop-Test (37 Prüfungen) grün. Repo `edgebird-lab/belegbruecke` mit `main` auf GitHub; CI `ci.yml` (Lint, Tests, Build), `windows.yml` (Programm, Installer, Installation in der CI) und `release.yml` (Installer am Release bei Tag `v*`).
 
 ## Für Robin (in dieser Reihenfolge)
 
 1. `start.cmd` einmal ausprobieren (Schritt 6.4): Einrichtung durchklicken, eine Rechnung aus `testdaten/fallbeispiel/` hochladen.
 2. Annahmen durchsehen: Tabelle oben in [entscheidungen.md](entscheidungen.md) (offene Fragen 1 bis 15) sowie T11 bis T14 (Kontierung, Oberfläche, Postfach, Prüferdurchgang).
 3. Schritt 0.6: DATEV-Formatbeschreibung (Dok.-Nr. 1036228) neben [datev-felder.md](datev-felder.md) legen und die Feldliste vergleichen; Kanzlei nach BU-Schlüsseln, Automatikkonten, Berater- und Mandantennummer fragen.
-4. Schritt 4.7: Probeimport mit der Kanzlei (Fragen in [datev-felder.md](datev-felder.md), unten); danach den Export von „Vorschau“ auf endgültig umstellen und Version 0.1.0 taggen (6.5).
+4. Schritt 4.7: Probeimport mit der Kanzlei (Fragen in [datev-felder.md](datev-felder.md), unten); danach den Export von „Vorschau“ auf endgültig umstellen und eine neue Version taggen (0.1.0 ist schon getaggt, siehe 6.5).
 5. Entscheiden, ob `npm audit` in die CI kommt (siehe [sicherheit.md](sicherheit.md)).
 6. Das Windows-Programm ausprobieren: „Belegbrücke“ auf dem Desktop (installiert am 11.11.2026). Docker und Server bleiben bis zur Freigabe aus.
 
@@ -79,7 +79,7 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **6.2** Sicherheitsdurchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md), `npm audit` ohne Befund (lokal), Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Seit dem Prüferdurchgang: gleichzeitige Anfragen auf denselben Beleg überschreiben nichts still (`src/server/nebenlaeufigkeit.test.ts`). Bewusst offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build; Robin entscheidet) und die Sicherung außerhalb des Rechners (später restic).
 - [x] **6.3** Fallbeispiel „Oktober“ mit 12 Belegen (`testdaten/fallbeispiel/`, erzeugt mit `scripts/fallbeispiel.mjs`, dazu eine PDF ohne XML): `src/server/fallbeispiel.test.ts` grün; alle Zahlen des README-Abschnitts stehen dort als Erwartung (Summen von Hand nachgerechnet).
 - [ ] **6.4** README mit Haftungshinweis, Fallbeispiel und Bildern (erzeugt mit `scripts/readme-bilder.mjs` nach `docs/bilder/`), [datenmodell.md](datenmodell.md) und [sicherheit.md](sicherheit.md) auf Stand Phase 5, [regelkatalog.md](regelkatalog.md) und [lizenzen-dritter.md](lizenzen-dritter.md) neu erzeugt, [datev-felder.md](datev-felder.md). `start.cmd` baut die Oberfläche jetzt bei jedem Start neu. Offen: Abnahme von `start.cmd` durch Robin (nicht ausgeführt, weil es auf Robins Rechner den Browser öffnet).
-- [ ] **6.5** Version 0.1.0 taggen (Repo privat `edgebird-lab/belegbruecke`, CI grün). Wartet auf Robin: 0.6, 4.7 und die Abnahme von `start.cmd`.
+- [x] **6.5** Version 0.1.0 getaggt (`v0.1.0`, 11.11.2026, CI grün). Robin hat den Tag ausdrücklich freigegeben, obwohl 0.6 und 4.7 (DATEV-Format an der Primärquelle, Probeimport mit der Kanzlei) und die Abnahme von `start.cmd` noch offen sind; der DATEV-Export bleibt bis dahin „Vorschau“. Version einheitlich 0.1.0 in `package.json` (daraus `tauri.conf.json` und die Anzeige unter Einstellungen), `Cargo.toml` und den Lock-Dateien.
 
 ## Prüferdurchgang (11.11.2026)
 
@@ -106,3 +106,11 @@ Robin hat am 11.11.2026 das Windows-Programm freigegeben (7.2 bis 7.5); Docker u
 - [x] **7.3** Tauri-2-Hülle (`src-tauri`): Ladeseite, Server als Sidecar ohne geerbte Umgebung und im Job-Objekt, zufälliger Port, Einmal-Token gegen Cookie (Programmtor), sauberes Ende beim Schließen, Single-Instance, Navigation nur zum eigenen Server, keine Tauri-Rechte für die Oberfläche, Daten in `%LOCALAPPDATA%\de.olbricht-digital.belegbruecke`. `cargo test` und `npm run desktop:test` grün (Einrichtung, Upload 01.01a, Prüfen, Ansicht, Archiv, Prüferexport, Schließen, zweiter Start, `taskkill /F`).
 - [x] **7.4** NSIS-Installer pro Benutzer (`npx tauri build`), ohne Admin-Rechte; CI `windows.yml` installiert still, testet den installierten Server und deinstalliert (Daten bleiben). Größe und Startzeit gemessen (T15). Auf Robins Wunsch am 11.11.2026 auf seinem Rechner installiert, mit Desktop-Verknüpfung.
 - [x] **7.5** Entscheidung: Weg A (Sidecar), Begründung in [T15](entscheidungen.md#t15-windows-programm-phase-7).
+
+## Veröffentlichung (11.11.2026)
+
+Robin hat entschieden: Das Repo wird öffentlich und bekommt ein Release mit Windows-Installer. Lizenz vorerst keine (alle Rechte vorbehalten, Quelltext sichtbar, kostenlose Nutzung). Einzelheiten in [T16](entscheidungen.md#t16-veröffentlichung-11112026).
+
+- [x] Prüfung der ganzen Git-Historie (alle 37 Commits, beide Zweige `main` und `sicherung/belegbruecke-pruefung`): keine Zugangsdaten, Tokens, privaten Schlüssel oder `.env`-Dateien; Passwörter nur als Testwerte in Tests, IMAP nur gegen `127.0.0.1` und `*.example`, das Testzertifikat entsteht zur Laufzeit. Keine echten Rechnungen oder Belege (nur KoSIT-Testsuite, daraus abgeleitete Dateien mit Änderungsvermerk und selbst erzeugte), keine echten Berater- oder Mandantennummern (nur 1001/1 und Testwerte).
+- [x] Lizenzen der Fremdbestandteile geprüft: KoSIT (Apache-2.0, mit NOTICE), CEN-Schematron (EUPL-1.2, Quelle genannt), Testsuite (Apache-2.0, Änderungsvermerke), SaxonJS (Saxonica-Lizenz: Weitergabe nur unverändert als Teil einer Anwendung). Behoben: SaxonJS lag im Installer von rolldown umformatiert in `saxon.cjs`; jetzt bytegleich in `node_modules/saxon-js/`, geprüft im API-Test. Ergänzt: Lizenztexte der 225 Rust-Crates in `LIZENZEN.txt`.
+- [x] README für Besucher (Download, Voraussetzungen, SmartScreen, Daten lokal, Haftung, Rechte), Version 0.1.0, Release-Workflow mit `Belegbruecke-Setup.exe` und deutschen Release-Notizen.

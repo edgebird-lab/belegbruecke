@@ -20,7 +20,7 @@ export function leeresPruefergebnis(angenommen = true): Pruefergebnis {
   return {
     formatVersion: 1,
     zeitpunkt: '2026-11-11T09:30:02.000Z',
-    pruefprogramm: 'belegbruecke 0.0.1',
+    pruefprogramm: 'belegbruecke 0.1.0',
     artefakte: { konfiguration: 'test', enSchematron: 'test', xrSchematron: 'test' },
     szenario: 'EN16931 XRechnung (UBL Invoice)',
     wohlgeformt: true,

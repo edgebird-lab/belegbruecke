@@ -24,7 +24,7 @@ export function testserver(start = '2026-11-11T09:30:00.000Z', optionen: { imapC
   const schluesselDatei = join(basis, 'belegbruecke.schluessel')
   let jetzt = new Date(start).getTime()
   const uhr = () => new Date(jetzt)
-  const d: Dienste = erzeugeDienste({ datenOrdner: ordner, port: 8784, uhr, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) }, schluesselDatei, imapCa: optionen.imapCa })
+  const d: Dienste = erzeugeDienste({ datenOrdner: ordner, port: 8784, uhr, version: '0.1.0', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) }, schluesselDatei, imapCa: optionen.imapCa })
   const app = erzeugeApp(d)
   let cookie = ''
 

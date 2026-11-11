@@ -303,7 +303,7 @@ mod tests {
     #[test]
     fn verwirft_alles_andere() {
         let falsch = [
-            "Belegbrücke 0.0.1 läuft auf http://127.0.0.1:64439".to_string(),
+            "Belegbrücke 0.1.0 läuft auf http://127.0.0.1:64439".to_string(),
             format!("BELEGBRUECKE-BEREIT 0 {TOKEN}"),
             format!("BELEGBRUECKE-BEREIT 65536 {TOKEN}"),
             format!("BELEGBRUECKE-BEREIT +80 {TOKEN}"),

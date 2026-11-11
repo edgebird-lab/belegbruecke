@@ -15,7 +15,7 @@ $ordner = Join-Path $env:LOCALAPPDATA $name
 $exe = Join-Path $ordner 'belegbruecke.exe'
 $server = Join-Path $ordner 'belegbruecke-server.exe'
 $buendel = Join-Path $ordner 'belegbruecke-server'
-foreach ($datei in @($exe, $server, (Join-Path $buendel 'server.mjs'), (Join-Path $buendel 'worker.mjs'), (Join-Path $buendel 'saxon.cjs'), (Join-Path $buendel 'xmllint.wasm'), (Join-Path $buendel 'oberflaeche\index.html'), (Join-Path $buendel 'vendor\sef\verzeichnis.json'), (Join-Path $buendel 'LIZENZEN.txt'))) {
+foreach ($datei in @($exe, $server, (Join-Path $buendel 'server.mjs'), (Join-Path $buendel 'worker.mjs'), (Join-Path $buendel 'node_modules\saxon-js\SaxonJS2N.js'), (Join-Path $buendel 'node_modules\saxon-js\LICENSE.txt'), (Join-Path $buendel 'node_modules\axios\index.js'),(Join-Path $buendel 'xmllint.wasm'), (Join-Path $buendel 'oberflaeche\index.html'), (Join-Path $buendel 'vendor\sef\verzeichnis.json'), (Join-Path $buendel 'LIZENZEN.txt'))) {
   if (-not (Test-Path $datei)) { throw "Nicht installiert: $datei" }
 }
 $groesse = (Get-ChildItem $ordner -Recurse -File | Measure-Object Length -Sum).Sum

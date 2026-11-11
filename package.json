@@ -1,7 +1,7 @@
 {
   "name": "belegbruecke",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "E-Rechnungen annehmen, nach EN 16931 und XRechnung prüfen, GoBD-gerecht archivieren und monatlich an die Steuerkanzlei (DATEV) übergeben.",
   "type": "module",
   "engines": {

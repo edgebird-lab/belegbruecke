@@ -1,6 +1,6 @@
 [package]
 name = "belegbruecke"
-version = "0.0.1"
+version = "0.1.0"
 description = "Belegbrücke: E-Rechnungen prüfen, GoBD-gerecht archivieren und an die Kanzlei übergeben"
 authors = ["Robin Olbricht"]
 edition = "2024"

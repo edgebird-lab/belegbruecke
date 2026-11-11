@@ -43,7 +43,7 @@ describe('HTTP-API: Upload-Ablauf (2.5)', () => {
     const { beleg, protokoll, aufbewahrung } = (await r.json()) as { beleg: Beleg; protokoll: Protokolleintrag[]; aufbewahrung: string }
     expect(beleg.pruefung?.angenommen).toBe(true)
     expect(beleg.pruefung?.szenario).toBe('EN16931 XRechnung (UBL Invoice)')
-    expect(beleg.pruefung?.pruefprogramm).toBe('belegbruecke 0.0.1')
+    expect(beleg.pruefung?.pruefprogramm).toBe('belegbruecke 0.1.0')
     expect(beleg.daten?.rechnungsnummer).toBe('123456XX')
     expect(beleg.original).toMatchObject({ sha256: '0efafa05c74d06ff25bbc2b70bcb2e9f14b97d22a4b33c5e92838bf2cc8986cb', groesseBytes: 6887, mimeTyp: 'application/xml' })
     expect(beleg.aufbewahrenBis).toBe('2034-12-31')
@@ -183,7 +183,7 @@ describe('HTTP-API: Upload-Ablauf (2.5)', () => {
   it('meldet die Prüfartefakte im Status', async () => {
     const s = neu()
     const st = (await (await s.anfrage('/api/status')).json()) as { version: string; artefakte: { konfiguration: string } | null; einrichtungNoetig: boolean }
-    expect(st.version).toBe('0.0.1')
+    expect(st.version).toBe('0.1.0')
     expect(st.einrichtungNoetig).toBe(true)
     expect(st.artefakte?.konfiguration).toContain('XRechnung 3.0.2')
   })

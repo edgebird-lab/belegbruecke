@@ -2,9 +2,14 @@
 
 Erzeugt mit `node scripts/lizenzen.mjs` aus `package-lock.json` und `vendor/artefakte.json`; nicht von Hand ändern.
 
+Die Belegbrücke selbst: © 2026 Robin Olbricht – olbricht-digital. Alle Rechte vorbehalten. Die Programme dürfen kostenlos genutzt werden; eine offene Lizenz ist noch nicht gewählt. Die folgenden Fremdbestandteile stehen unter ihren eigenen Lizenzen.
+
 ## Besonderheit SaxonJS
 
-`saxon-js` (Prüfung, Ansicht) und `xslt3` (Kompilierung, nur Entwicklung) stehen unter der proprietären **Saxonica-Lizenz** (kostenlos). Nutzung und Weitergabe als Teil einer Anwendung sind erlaubt, wenn der Copyright-Hinweis beiliegt (`node_modules/saxon-js/LICENSE.txt`), kein Reverse Engineering erfolgt, nicht mit dem Namen Saxonica geworben wird und die Weitergabe nicht auf Seiten geschieht, deren Hauptzweck die Verteilung ist (Spezifikation 7.1). Vor einer Veröffentlichung der Belegbrücke ist die Lizenzfrage zu klären (offene Frage 9).
+`saxon-js` (Prüfung, Ansicht) und `xslt3` (Kompilierung, nur Entwicklung) stehen unter der proprietären **Saxonica-Lizenz** (kostenlos). Weitergabe ist erlaubt, unverändert und als Teil einer Anwendung, die SaxonJS nutzt, wenn der Copyright-Hinweis samt Haftungsausschluss beiliegt (`node_modules/saxon-js/LICENSE.txt`), kein Reverse Engineering erfolgt, nicht mit dem Namen Saxonica geworben wird und SaxonJS nicht auf eine Seite kopiert wird, deren Hauptzweck es ist, SaxonJS Dritten bereitzustellen (Spezifikation 7.1).
+
+- **Repo:** enthält SaxonJS nicht; `npm install` lädt es von npm.
+- **Windows-Programm:** SaxonJS liegt bytegleich aus dem npm-Paket in `node_modules/saxon-js/` neben dem Server-Bündel (mit `LICENSE.txt`), nicht mitgebündelt; `npm run programm:server-test` prüft das mit SHA-256, auch an der installierten Fassung. Verteilt wird es nur als Teil des Installers der Belegbrücke.
 
 ## Prüfartefakte
 
@@ -137,5 +142,5 @@ Entwicklungswerkzeuge (Vite, TypeScript, Vitest, Playwright, axe, oxlint, xslt3,
 Das Windows-Programm (Phase 7) liefert zusätzlich mit:
 
 - **Node.js** (MIT, mit den Lizenzen seiner Bestandteile) als Laufzeit des Servers: `belegbruecke-server.exe` ist die unveränderte `node.exe` mit der Signatur der OpenJS Foundation.
-- Die Laufzeit-Abhängigkeiten oben, mit rolldown gebündelt in `server.mjs`, `worker.mjs` und `saxon.cjs`. `scripts/programm-server.mjs` legt die Lizenztexte dieser Pakete (darunter der Saxonica-Hinweis) und von Node.js als `LIZENZEN.txt` neben das Bündel; die Lizenzen der KoSIT- und CEN-Artefakte liegen dort in `vendor/lizenzen/`.
-- Die Tauri-Hülle (Rust: `tauri`, `tauri-plugin-single-instance`, `windows-sys` und deren Abhängigkeiten, überwiegend MIT oder Apache-2.0; Liste in `src-tauri/Cargo.lock`). WebView2 gehört zu Windows und wird bei Bedarf über den Bootstrapper von Microsoft nachinstalliert.
+- Die Laufzeit-Abhängigkeiten oben, mit rolldown gebündelt in `server.mjs`, `worker.mjs` und `node_modules/axios/`; SaxonJS unverändert (siehe oben). `scripts/programm-server.mjs` legt die Lizenztexte dieser Pakete (darunter der Saxonica-Hinweis), von Node.js und der Rust-Crates als `LIZENZEN.txt` neben das Bündel; die Lizenzen der KoSIT- und CEN-Artefakte liegen dort in `vendor/lizenzen/`, ihre Quellen in `vendor/LIZENZEN.md` (EUPL-1.2 Art. 5).
+- Die Tauri-Hülle (Rust: `tauri`, `tauri-plugin-single-instance`, `windows-sys` und deren Abhängigkeiten, überwiegend MIT oder Apache-2.0, einzelne unter Unicode-3.0, BSD-3-Clause, Zlib und MPL-2.0). `LIZENZEN.txt` enthält für jedes Crate, das in `belegbruecke.exe` eingeht (aus `cargo metadata`), Lizenz, Lizenztexte und die Quelle auf crates.io. WebView2 gehört zu Windows und wird bei Bedarf über den Bootstrapper von Microsoft nachinstalliert.

@@ -19,7 +19,7 @@ function aufbau() {
   mkdirSync(join(ui, 'assets'))
   writeFileSync(join(ui, 'index.html'), '<!doctype html><title>Belegbrücke</title>')
   writeFileSync(join(ui, 'assets', 'index-abc.js'), 'console.log(1)')
-  const d = erzeugeDienste({ datenOrdner: daten, port: 8784, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) } })
+  const d = erzeugeDienste({ datenOrdner: daten, port: 8784, version: '0.1.0', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, s) => ansicht(t, s) } })
   ordner.push(daten)
   return { d, app: erzeugeApp(d, { oberflaeche: ui }) }
 }

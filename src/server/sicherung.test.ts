@@ -39,7 +39,7 @@ describe('Sicherung und Wiederherstellung (6.2)', () => {
     cpSync(join(s.ordner, 'berichte'), join(ziel, 'berichte'), { recursive: true })
     s.aufraeumen()
 
-    const d = erzeugeDienste({ datenOrdner: ziel, port: 8784, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, x) => ansicht(t, x) } })
+    const d = erzeugeDienste({ datenOrdner: ziel, port: 8784, version: '0.1.0', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, x) => ansicht(t, x) } })
     try {
       const belege = d.belege.liste()
       expect(belege.map((b) => b.laufnummer)).toEqual([2, 1])
@@ -61,7 +61,7 @@ describe('Sicherung und Wiederherstellung (6.2)', () => {
     ordner.push(ziel)
     cpSync(sicherung, join(ziel, 'belegbruecke.sqlite'))
     s.aufraeumen()
-    const d = erzeugeDienste({ datenOrdner: ziel, port: 8784, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, x) => ansicht(t, x) } })
+    const d = erzeugeDienste({ datenOrdner: ziel, port: 8784, version: '0.1.0', pruefer: { ...lokalerAusfuehrer, ansicht: async (t, x) => ansicht(t, x) } })
     try {
       const bericht = await pruefeArchiv(d.db, d.ablage, d.protokoll)
       expect(bericht.ok).toBe(false)

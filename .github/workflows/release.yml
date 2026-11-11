@@ -1,7 +1,10 @@
 name: Version vorbereiten
 
-# Bei einem Tag wie v0.1.0 entsteht ein Release-Entwurf mit Installer. Veröffentlicht wird
-# nichts: Der Entwurf bleibt privat wie das Repo, bis Robin ihn von Hand freigibt.
+# Bei einem Tag wie v0.1.0 entsteht ein Release-Entwurf mit dem Installer, einmal mit der
+# Versionsnummer im Namen und einmal als Belegbruecke-Setup.exe (fester ASCII-Name für den Link
+# releases/latest/download/Belegbruecke-Setup.exe auf olbricht-digital.de). Veröffentlicht wird der
+# Entwurf erst von Hand, nachdem beide Dateien geprüft sind:
+#   gh release edit <tag> --draft=false --latest
 on:
   push:
     tags: ['v*']
@@ -38,6 +41,37 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: Belegbrücke ${{ github.ref_name }}
-          releaseBody: Installer für Windows (pro Benutzer, ohne Admin-Rechte). Noch nicht signiert; SmartScreen fragt beim ersten Start nach. Entwurf, nicht veröffentlicht.
+          releaseBody: |
+            E-Rechnungen annehmen, mit den offiziellen Regeln der KoSIT und des CEN prüfen, GoBD-gerecht archivieren und monatlich an die Steuerkanzlei übergeben. Läuft lokal unter Windows, ohne Cloud, ohne KI und ohne Java.
+
+            **Download:** `Belegbruecke-Setup.exe` (dieselbe Datei wie der Installer mit der Versionsnummer im Namen)
+
+            ### Enthalten
+            - Eingang per Upload oder IMAP-Postfach (nur TLS); XRechnung (UBL, CII) und ZUGFeRD/Factur-X
+            - Prüfung nach EN 16931 und XRechnung mit den offiziellen KoSIT- und CEN-Regeln, Ergebnis wie beim KoSIT-Validator; Fehler in Klartext mit Einordnung nach dem BMF-Schreiben vom 15.10.2025
+            - Pflichtangaben, Dubletten, Zuordnen, Kontieren und Freigeben
+            - GoBD-Archiv: Originale unverändert und schreibgeschützt, Protokoll mit SHA-256-Hashkette, Kettenprüfung, Prüferexport, tägliche Sicherung
+            - Übergabe an die Kanzlei (DATEV-Buchungsstapel und Belegpaket) als **Vorschau**: Das DATEV-Format ist noch nicht an der Primärquelle bestätigt und nicht von einer Kanzlei importiert. Vor dem ersten echten Einsatz bitte einen Probeimport mit der eigenen Kanzlei machen.
+
+            ### Installation
+            - Windows 10 oder 11 (64 Bit) mit WebView2; fehlt WebView2, lädt der Installer es von Microsoft nach.
+            - Installation pro Benutzer, ohne Admin-Rechte; Verknüpfungen im Startmenü und auf dem Desktop.
+            - Installer und Programm sind nicht signiert. SmartScreen kann deshalb nachfragen: „Weitere Informationen“, dann „Trotzdem ausführen“.
+            - Die Daten bleiben auf dem eigenen Rechner (`%LOCALAPPDATA%\de.olbricht-digital.belegbruecke`). Die Deinstallation lässt das Archiv stehen.
+
+            ### Hinweise
+            Technische Prüfung ohne Gewähr; die Pflicht zur eigenen Rechnungsprüfung bleibt (BMF-Schreiben vom 15.10.2025, Rn. 35a). Keine Steuer- oder Rechtsberatung.
+
+            © 2026 Robin Olbricht – olbricht-digital. Alle Rechte vorbehalten. Die Programme dürfen kostenlos genutzt werden; eine offene Lizenz ist noch nicht gewählt. Fremdbestandteile stehen unter ihren eigenen Lizenzen: `LIZENZEN.txt` im Programmordner und [docs/lizenzen-dritter.md](https://github.com/edgebird-lab/belegbruecke/blob/main/docs/lizenzen-dritter.md).
           releaseDraft: true
           prerelease: false
+      - name: Installer zusätzlich als Belegbruecke-Setup.exe anhängen
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $setup = @(Get-ChildItem 'src-tauri/target/release/bundle/nsis/*-setup.exe')
+          if ($setup.Count -ne 1) { throw "Erwartet genau einen Installer, gefunden: $($setup.Count)" }
+          Copy-Item $setup[0].FullName 'Belegbruecke-Setup.exe'
+          Write-Host ("{0}: {1:N1} MB, SHA-256 {2}" -f $setup[0].Name, ($setup[0].Length / 1MB), (Get-FileHash 'Belegbruecke-Setup.exe').Hash)
+          gh release upload '${{ github.ref_name }}' 'Belegbruecke-Setup.exe' --clobber --repo '${{ github.repository }}'

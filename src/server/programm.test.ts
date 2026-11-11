@@ -31,7 +31,7 @@ function neuerOrdner() {
 describe('Programmtor', () => {
   function app() {
     const basis = neuerOrdner()
-    const d = erzeugeDienste({ datenOrdner: join(basis, 'daten'), port: 8784, version: '0.0.1', pruefer: { ...lokalerAusfuehrer, ansicht: async () => '' }, schluesselDatei: join(basis, 'x.schluessel') })
+    const d = erzeugeDienste({ datenOrdner: join(basis, 'daten'), port: 8784, version: '0.1.0', pruefer: { ...lokalerAusfuehrer, ansicht: async () => '' }, schluesselDatei: join(basis, 'x.schluessel') })
     const tor = erzeugeProgrammtor()
     const a = erzeugeApp(d, { programmtor: tor.middleware })
     const anfrage = (pfad: string, o: RequestInit = {}) => a.request(pfad.startsWith('http') ? pfad : `http://127.0.0.1:8784${pfad}`, o)

@@ -3,7 +3,7 @@
  * mitgelieferte Laufzeit mit server.mjs wie die Tauri-Hülle (Datenordner, stdin offen), liest die
  * Bereit-Zeile, löst das Einmal-Token ein und prüft dann Einrichtung, Upload einer XRechnung aus der
  * KoSIT-Testsuite und einer ZUGFeRD-PDF (Prüfung und PDF im Worker), Ansicht, Archivprüfung und das
- * Ende mit stdin. Ohne Fenster, ohne Tauri.
+ * Ende mit stdin. Vorher: SaxonJS liegt bytegleich mit dem npm-Paket bei. Ohne Fenster, ohne Tauri.
  *
  * Vorher: npm run build && npm run programm:server
  * Aufruf:  node scripts/programm-server-test.mjs
@@ -11,6 +11,7 @@
  * Ordner (z. B. die installierte Fassung im Installer-Test).
  */
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
@@ -23,6 +24,13 @@ for (const p of [EXE, SKRIPT]) if (!existsSync(p)) throw new Error(`${p} fehlt. 
 const XML = 'testdaten/kosit/instances/standard/01.01a-INVOICE_ubl.xml'
 const PDF = 'testdaten/zugferd/zf-en16931.pdf'
 for (const p of [XML, PDF]) if (!existsSync(p)) throw new Error(`${p} fehlt. Vorher: npm run vorbereiten`)
+
+// Saxonica-Lizenz: Weitergabe nur unverändert. Das Bündel muss SaxonJS bytegleich mit dem npm-Paket enthalten.
+const sha256 = (datei) => createHash('sha256').update(readFileSync(datei)).digest('hex')
+const SAXON = join('node_modules', 'saxon-js')
+for (const datei of ['SaxonJS2N.js', 'LICENSE.txt']) {
+  pruefe(sha256(join(ORDNER, SAXON, datei)) === sha256(join(SAXON, datei)), `SaxonJS liegt unverändert bei (${datei})`)
+}
 
 const basis = mkdtempSync(join(tmpdir(), 'bb-programm-server-'))
 const PASSWORT = 'sehr-geheim-123'

@@ -4,20 +4,26 @@
  *
  *   server.mjs        Server (src/server/programm.ts) als eine ES-Moduldatei, mit rolldown gebündelt
  *   worker.mjs        Prüf-Worker (src/pruefung/worker.ts) samt pdf.js-Worker
- *   saxon.cjs         SaxonJS mit axios als CommonJS: SaxonJS setzt globale Variablen ohne
+ *   node_modules/saxon-js/   SaxonJS bytegleich aus dem npm-Paket: Die Saxonica-Lizenz erlaubt die
+ *                     Weitergabe nur unverändert; außerdem setzt SaxonJS globale Variablen ohne
  *                     Deklaration und läuft deshalb nicht im strikten Modus eines ES-Moduls
+ *   node_modules/axios/      axios (lädt SaxonJS per require) als eine CommonJS-Datei
  *   xmllint-node.js, xmllint.wasm   unverändert aus xmllint-wasm (startet eigene Worker aus Dateien)
  *   oberflaeche/      gebaute Oberfläche (dist/, vorher npm run build)
  *   vendor/           KoSIT-Konfiguration, Visualisierung, SEF und Lizenztexte (vorher npm run vorbereiten)
- *   LIZENZEN.txt      Lizenztexte aller gebündelten Pakete, von Node.js und Hinweise zu den Artefakten
+ *   LIZENZEN.txt      Lizenztexte aller mitgelieferten npm-Pakete, von Node.js und der Rust-Crates
+ *                     der Hülle (aus cargo metadata) sowie Hinweise zu den Artefakten
  *
  * Die Laufzeit ist die node.exe, mit der dieses Skript läuft (mindestens 24.15), unverändert und
  * damit mit gültiger Signatur der OpenJS Foundation. Warum keine Node-Einzeldatei (SEA):
- * docs/entscheidungen.md, T15.
+ * docs/entscheidungen.md, T15. SaxonJS und Lizenztexte: T16.
  *
  *   node scripts/programm-server.mjs
  */
+import { execFileSync, spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { rolldown } from 'rolldown'
@@ -81,11 +87,21 @@ function ersetzungen(erwartet) {
   }
 }
 
-/** SaxonJS nicht ins ES-Bündel, sondern aus saxon.cjs daneben laden. */
+/** SaxonJS nicht ins ES-Bündel: Node lädt es aus node_modules/saxon-js/ neben dem Bündel. */
 function saxonExtern() {
   return {
     name: 'belegbruecke-saxon-extern',
-    resolveId: (id) => (id === 'saxon-js' ? { id: './saxon.cjs', external: true } : null),
+    resolveId: (id) => (id === 'saxon-js' ? { id: 'saxon-js', external: true } : null),
+  }
+}
+
+/** axios für SaxonJS: Einstieg per require, damit module.exports wie im Paket die axios-Funktion ist. */
+const AXIOS_EINSTIEG = '\0axios-fuer-saxon'
+function axiosEinstieg() {
+  return {
+    name: 'belegbruecke-axios-einstieg',
+    resolveId: (id) => (id === AXIOS_EINSTIEG ? id : null),
+    load: (id) => (id === AXIOS_EINSTIEG ? "module.exports = require('axios')" : null),
   }
 }
 
@@ -136,6 +152,29 @@ async function buendle(eingabe, datei, plugins, alleErsetzungen, format = 'esm')
   await bundle.close()
 }
 
+const sha256 = (datei) => createHash('sha256').update(readFileSync(datei)).digest('hex')
+
+/** SaxonJS unverändert neben das Bündel legen (Saxonica-Lizenz: Weitergabe nur ohne Änderung). */
+function legeSaxonAb() {
+  const quelle = join(WURZEL, 'node_modules', 'saxon-js')
+  const ziel = join(ZIEL, 'node_modules', 'saxon-js')
+  cpSync(quelle, ziel, { recursive: true })
+  for (const datei of readdirSync(quelle)) {
+    if (sha256(join(quelle, datei)) !== sha256(join(ziel, datei))) throw new Error(`SaxonJS: ${datei} ist nach dem Kopieren nicht bytegleich`)
+  }
+  pakete.add('saxon-js')
+}
+
+/** axios als node_modules/axios/index.js, damit require('axios') in SaxonJS es findet. */
+async function legeAxiosAb() {
+  await buendle(AXIOS_EINSTIEG, join('node_modules', 'axios', 'index.js'), [axiosEinstieg()], false, 'cjs')
+  const axios = JSON.parse(readFileSync(join(WURZEL, 'node_modules', 'axios', 'package.json'), 'utf8'))
+  const beschreibung = `axios ${axios.version} mit seinen Abhängigkeiten als eine Datei gebündelt; Lizenzen in LIZENZEN.txt`
+  writeFileSync(join(ZIEL, 'node_modules', 'axios', 'package.json'), `${JSON.stringify({ name: 'axios', version: axios.version, description: beschreibung, license: axios.license, main: 'index.js', type: 'commonjs' }, null, 2)}\n`)
+  const text = lizenztext(join(WURZEL, 'node_modules', 'axios'))
+  if (text) writeFileSync(join(ZIEL, 'node_modules', 'axios', 'LICENSE'), `${text}\n`)
+}
+
 function kopiere(von, nach, filter) {
   cpSync(join(WURZEL, von), join(ZIEL, nach), { recursive: true, filter })
 }
@@ -145,29 +184,111 @@ function lizenztext(ordner) {
   return name ? readFileSync(join(ordner, name), 'utf8').trim() : null
 }
 
+/** cargo aus CARGO, dem PATH oder %USERPROFILE%\.cargo\bin (dort liegt es auf Robins Rechner). */
+function cargo() {
+  if (process.env.CARGO) return process.env.CARGO
+  if (spawnSync('cargo', ['--version'], { stdio: 'ignore' }).status === 0) return 'cargo'
+  const daheim = join(homedir(), '.cargo', 'bin', 'cargo.exe')
+  if (existsSync(daheim)) return daheim
+  throw new Error('cargo nicht gefunden: Für die Lizenztexte der Rust-Crates wird Rust gebraucht (wie für den Bau des Programms).')
+}
+
+/**
+ * Rust-Crates, die in belegbruecke.exe eingehen: alle normalen Abhängigkeiten der Hülle für
+ * Windows x64 (ohne Build- und Entwicklungsabhängigkeiten), mit den Lizenzdateien aus dem Crate.
+ */
+function rustCrates() {
+  const meta = JSON.parse(
+    execFileSync(cargo(), ['metadata', '--format-version', '1', '--locked', '--manifest-path', join(WURZEL, 'src-tauri', 'Cargo.toml'), '--filter-platform', 'x86_64-pc-windows-msvc'], {
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+    }),
+  )
+  const knoten = new Map(meta.resolve.nodes.map((n) => [n.id, n]))
+  const erreicht = new Set()
+  const offen = [meta.resolve.root]
+  while (offen.length > 0) {
+    for (const d of knoten.get(offen.pop()).deps) {
+      if (!d.dep_kinds.some((k) => k.kind === null) || erreicht.has(d.pkg)) continue
+      erreicht.add(d.pkg)
+      offen.push(d.pkg)
+    }
+  }
+  return meta.packages
+    .filter((p) => erreicht.has(p.id))
+    .sort((a, b) => a.name.localeCompare(b.name) || a.version.localeCompare(b.version))
+    .map((p) => {
+      const ordner = dirname(p.manifest_path)
+      const dateien = readdirSync(ordner, { withFileTypes: true })
+        .filter((e) => e.isFile() && /^(licen[cs]e|copying|copyright|notice)/i.test(e.name))
+        .map((e) => e.name)
+        .sort()
+      return { name: p.name, version: p.version, lizenz: p.license ?? 'nicht angegeben', autoren: p.authors ?? [], quelle: p.repository, ordner, dateien }
+    })
+}
+
 function schreibeLizenzen() {
+  const linie = '='.repeat(78)
   const teile = [
     'Belegbrücke – Lizenzen der mitgelieferten Teile',
     '',
-    'Die Belegbrücke selbst ist noch nicht lizenziert (privat). Mitgeliefert werden:',
+    `Belegbrücke ${paket.version}: © 2026 Robin Olbricht – olbricht-digital. Alle Rechte vorbehalten.`,
+    'Das Programm darf kostenlos genutzt werden; eine offene Lizenz ist noch nicht gewählt.',
+    'Quelltext: https://github.com/edgebird-lab/belegbruecke',
+    '',
+    'Mitgeliefert werden:',
     '',
     '1. Node.js als Laufzeit des Servers (belegbruecke-server.exe ist die unveränderte node.exe).',
     '2. Die Prüfartefakte der KoSIT und des CEN in vendor/ mit ihren Lizenztexten in vendor/lizenzen/',
-    '   (Herkunft und Prüfsummen: vendor/LIZENZEN.md). Die SEF-Dateien in vendor/sef/ sind mit xslt3',
-    '   aus den XSLT-Dateien dieser Artefakte kompiliert und behalten deren Lizenz (EUPL-1.2 für die',
-    '   CEN-Schematron, sonst Apache-2.0).',
-    '3. Die folgenden npm-Pakete, gebündelt in server.mjs und worker.mjs bzw. als Datei (xmllint-wasm).',
+    '   (Herkunft, Quellen und Prüfsummen: vendor/LIZENZEN.md). Die SEF-Dateien in vendor/sef/ sind mit',
+    '   xslt3 aus den XSLT-Dateien dieser Artefakte kompiliert und behalten deren Lizenz (EUPL-1.2 für die',
+    '   CEN-Schematron, Quelle github.com/ConnectingEurope/eInvoicing-EN16931; sonst Apache-2.0).',
+    '3. Die folgenden npm-Pakete, gebündelt in server.mjs, worker.mjs und node_modules/axios/ bzw. als',
+    '   Datei (xmllint-wasm). SaxonJS liegt unverändert in node_modules/saxon-js/ (Saxonica-Lizenz).',
+    '4. Die Rust-Crates der Programmhülle belegbruecke.exe (Tauri und Abhängigkeiten), am Ende dieser Datei.',
     '',
   ]
   const nodeLizenz = join(dirname(process.execPath), 'LICENSE')
-  teile.push('='.repeat(78), `Node.js ${process.version}`, '='.repeat(78), existsSync(nodeLizenz) ? readFileSync(nodeLizenz, 'utf8').trim() : 'MIT-Lizenz, siehe https://github.com/nodejs/node/blob/main/LICENSE', '')
+  teile.push(linie, `Node.js ${process.version}`, linie, existsSync(nodeLizenz) ? readFileSync(nodeLizenz, 'utf8').trim() : 'MIT-Lizenz, siehe https://github.com/nodejs/node/blob/main/LICENSE', '')
   for (const name of [...pakete].sort()) {
     const ordner = join(WURZEL, 'node_modules', name)
     const p = JSON.parse(readFileSync(join(ordner, 'package.json'), 'utf8'))
     const text = lizenztext(ordner)
-    teile.push('='.repeat(78), `${name} ${p.version} (${p.license ?? 'Lizenz nicht angegeben'})`, '='.repeat(78), text ?? `Kein Lizenztext im Paket; Lizenz laut package.json: ${p.license}`, '')
+    teile.push(linie, `${name} ${p.version} (${p.license ?? 'Lizenz nicht angegeben'})`, linie, text ?? `Kein Lizenztext im Paket; Lizenz laut package.json: ${p.license}`, '')
+  }
+
+  // Rust: gleiche Texte nur einmal, danach Verweis auf das erste Crate mit diesem Text
+  const crates = rustCrates()
+  teile.push(
+    linie,
+    `Rust-Crates der Programmhülle belegbruecke.exe (${crates.length})`,
+    linie,
+    'Quelltext jedes Crates: https://crates.io/crates/<Name>/<Version> (auch für MPL-2.0, Abschnitt 3.2).',
+    'Gleiche Lizenztexte stehen nur beim ersten Crate; spätere verweisen darauf.',
+    '',
+  )
+  const schonDa = new Map()
+  for (const c of crates) {
+    teile.push('-'.repeat(78), `${c.name} ${c.version} (${c.lizenz})`, `Quelle: https://crates.io/crates/${c.name}/${c.version}${c.quelle ? ` · ${c.quelle}` : ''}`)
+    if (c.dateien.length === 0) {
+      teile.push(`Kein Lizenztext im Crate. Lizenz laut Cargo.toml: ${c.lizenz}; Autoren: ${c.autoren.join(', ') || 'nicht angegeben'}.`, '')
+      continue
+    }
+    for (const datei of c.dateien) {
+      const text = readFileSync(join(c.ordner, datei), 'utf8').trim()
+      const hash = createHash('sha256').update(text).digest('hex')
+      const erstes = schonDa.get(hash)
+      if (erstes) {
+        teile.push(`${datei}: gleicher Text wie bei ${erstes}`)
+      } else {
+        schonDa.set(hash, `${c.name} ${c.version} (${datei})`)
+        teile.push(`${datei}:`, '', text)
+      }
+    }
+    teile.push('')
   }
   writeFileSync(join(ZIEL, 'LIZENZEN.txt'), teile.join('\r\n'))
+  return crates.length
 }
 
 function legeLaufzeitAb() {
@@ -185,7 +306,8 @@ mkdirSync(ZIEL, { recursive: true })
 // Der Server enthält start.ts, pool.ts und kontext.ts: dort müssen alle Ersetzungen greifen
 await buendle(join(WURZEL, 'src', 'server', 'programm.ts'), 'server.mjs', [saxonExtern()], true)
 await buendle(WORKER_EINSTIEG, 'worker.mjs', [saxonExtern(), workerEinstieg()], false)
-await buendle('saxon-js', 'saxon.cjs', [], false, 'cjs')
+legeSaxonAb()
+await legeAxiosAb()
 
 // xmllint-wasm startet seinen Worker aus einer Datei neben dem Bündel und lädt die WASM von dort
 pakete.add('xmllint-wasm')
@@ -204,7 +326,7 @@ for (const datei of readdirSync(join(WURZEL, 'vendor', 'lizenzen'))) {
   if (/^(validator|mustang|testsuite)-/.test(datei)) continue
   copyFileSync(join(WURZEL, 'vendor', 'lizenzen', datei), join(ZIEL, 'vendor', 'lizenzen', datei))
 }
-schreibeLizenzen()
+const crates = schreibeLizenzen()
 legeLaufzeitAb()
 
 let groesse = 0
@@ -215,4 +337,4 @@ for (const e of readdirSync(ZIEL, { recursive: true, withFileTypes: true })) {
   dateien++
 }
 const mb = (b) => `${(b / 1024 / 1024).toFixed(1)} MB`
-console.log(`Programm-Server gebaut in ${((performance.now() - beginn) / 1000).toFixed(1)} s: ${dateien} Dateien, ${mb(groesse)} in ${relative(WURZEL, ZIEL)}; Laufzeit Node ${process.version} (${mb(statSync(LAUFZEIT).size)}); ${pakete.size} Pakete gebündelt`)
+console.log(`Programm-Server gebaut in ${((performance.now() - beginn) / 1000).toFixed(1)} s: ${dateien} Dateien, ${mb(groesse)} in ${relative(WURZEL, ZIEL)}; Laufzeit Node ${process.version} (${mb(statSync(LAUFZEIT).size)}); ${pakete.size} npm-Pakete und ${crates} Rust-Crates in LIZENZEN.txt`)
