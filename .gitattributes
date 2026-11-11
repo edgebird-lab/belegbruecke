@@ -5,3 +5,5 @@
 *.eml binary
 # Testdateien byte-genau halten: Hashwerte in Tests hängen an jedem Byte
 testdaten/** -text
+# Windows-Stapeldateien mit CRLF
+*.cmd text eol=crlf
