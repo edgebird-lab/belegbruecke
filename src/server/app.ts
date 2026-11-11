@@ -5,7 +5,7 @@
 import { randomUUID } from 'node:crypto'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { extname, join, normalize, relative, sep } from 'node:path'
-import { Hono, type Context } from 'hono'
+import { Hono, type Context, type MiddlewareHandler } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
 import { deleteCookie, getCookie, setCookie } from 'hono/cookie'
 import { einstellungsAenderungen } from '../fach/einstellungen.ts'
@@ -27,6 +27,8 @@ export const MAX_BENUTZER = 3
 export interface Appoptionen {
   /** Ordner der gebauten Oberfläche (dist); null = nur API */
   oberflaeche?: string | null
+  /** Windows-Programm: nur das Fenster der Hülle darf den Server nutzen (sicherheit/programmtor.ts) */
+  programmtor?: MiddlewareHandler
 }
 
 function oeffentlicherBenutzer(b: Benutzer) {
@@ -53,6 +55,7 @@ const MIME: Record<string, string> = {
 export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebung> {
   const app = new Hono<Umgebung>()
   app.use('*', kopfzeilen)
+  if (optionen.programmtor) app.use('*', optionen.programmtor)
   app.use('*', schutz(d))
   app.use('/api/*', bodyLimit({ maxSize: 120 * 1024 * 1024, onError: (c) => fehler(c, 413, 'ZU-GROSS', 'Die Anfrage ist zu groß (höchstens 120 MB je Upload).') }))
   app.onError((e, c) => {

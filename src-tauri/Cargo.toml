@@ -1,0 +1,30 @@
+[package]
+name = "belegbruecke"
+version = "0.0.1"
+description = "Belegbrücke: E-Rechnungen prüfen, GoBD-gerecht archivieren und an die Kanzlei übergeben"
+authors = ["Robin Olbricht"]
+edition = "2024"
+rust-version = "1.90"
+publish = false
+
+[lib]
+name = "belegbruecke_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+tauri = { version = "2.12.5", features = [] }
+tauri-plugin-single-instance = "2"
+
+# Job-Objekt: Der Server endet mit dem Programm, auch wenn es abstürzt oder hart beendet wird.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Security", "Win32_System_JobObjects"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

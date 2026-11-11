@@ -37,7 +37,15 @@ Lizenzen: ${[...zaehlung].sort((a, b) => b[1] - a[1]).map(([l, n]) => `${l} (${n
 | --- | --- | --- |
 ${zeilen.map((z) => `| ${z.name} | ${z.version} | ${z.lizenz} |`).join('\n')}
 
-Entwicklungswerkzeuge (Vite, TypeScript, Vitest, Playwright, axe, oxlint, xslt3) sind nicht Teil der ausgelieferten App; ihre Lizenzen stehen in \`package-lock.json\`.
+Entwicklungswerkzeuge (Vite, TypeScript, Vitest, Playwright, axe, oxlint, xslt3, rolldown, Tauri-CLI) sind nicht Teil der ausgelieferten App; ihre Lizenzen stehen in \`package-lock.json\`.
+
+## Windows-Programm
+
+Das Windows-Programm (Phase 7) liefert zusätzlich mit:
+
+- **Node.js** (MIT, mit den Lizenzen seiner Bestandteile) als Laufzeit des Servers: \`belegbruecke-server.exe\` ist die unveränderte \`node.exe\` mit der Signatur der OpenJS Foundation.
+- Die Laufzeit-Abhängigkeiten oben, mit rolldown gebündelt in \`server.mjs\`, \`worker.mjs\` und \`saxon.cjs\`. \`scripts/programm-server.mjs\` legt die Lizenztexte dieser Pakete (darunter der Saxonica-Hinweis) und von Node.js als \`LIZENZEN.txt\` neben das Bündel; die Lizenzen der KoSIT- und CEN-Artefakte liegen dort in \`vendor/lizenzen/\`.
+- Die Tauri-Hülle (Rust: \`tauri\`, \`tauri-plugin-single-instance\`, \`windows-sys\` und deren Abhängigkeiten, überwiegend MIT oder Apache-2.0; Liste in \`src-tauri/Cargo.lock\`). WebView2 gehört zu Windows und wird bei Bedarf über den Bootstrapper von Microsoft nachinstalliert.
 `
 await writeFile(new URL('../docs/lizenzen-dritter.md', import.meta.url), md)
 console.log(`docs/lizenzen-dritter.md: ${zeilen.length} Pakete`)

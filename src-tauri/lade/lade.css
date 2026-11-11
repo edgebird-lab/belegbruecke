@@ -1,0 +1,49 @@
+:root {
+  color-scheme: light dark;
+  --flaeche: #f9f9f7;
+  --text: #0b0b0b;
+  --text-2: #52514e;
+  --schlecht: #b42c2c;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --flaeche: #0d0d0d;
+    --text: #f1f0ec;
+    --text-2: #b8b7b0;
+    --schlecht: #f08a8a;
+  }
+}
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  display: grid;
+  place-items: center;
+  background: var(--flaeche);
+  color: var(--text);
+  font: 16px/1.5 'Segoe UI', system-ui, sans-serif;
+}
+main {
+  max-width: 40rem;
+  padding: 1rem;
+  text-align: center;
+}
+h1 {
+  margin: 0.75rem 0 0.25rem;
+  font-size: 1.5rem;
+}
+#meldung {
+  color: var(--text-2);
+}
+body.fehler #meldung {
+  color: var(--schlecht);
+  font-weight: 600;
+}
+pre {
+  text-align: left;
+  white-space: pre-wrap;
+  font-size: 0.875rem;
+  color: var(--text-2);
+}

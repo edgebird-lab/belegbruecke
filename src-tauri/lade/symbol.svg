@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Symbol der Belegbrücke: ein Beleg über einem Brückenbogen, in den Farben der App -->
+  <rect x="32" y="32" width="960" height="960" rx="216" fill="#1c5cab"/>
+  <path d="M312 128h292l152 152v384a48 48 0 0 1-48 48H312a48 48 0 0 1-48-48V176a48 48 0 0 1 48-48z" fill="#ffffff"/>
+  <path d="M604 128v104a48 48 0 0 0 48 48h104z" fill="#cde2fb"/>
+  <path d="M344 368h256M344 456h256M344 544h160" stroke="#1c5cab" stroke-width="44" stroke-linecap="round"/>
+  <path d="M120 900C240 720 784 720 904 900" fill="none" stroke="#ffffff" stroke-width="64" stroke-linecap="round"/>
+  <path d="M96 900h832" stroke="#ffffff" stroke-width="56" stroke-linecap="round"/>
+  <path d="M332 790v110M512 768v132M692 790v110" stroke="#ffffff" stroke-width="40" stroke-linecap="round"/>
+</svg>

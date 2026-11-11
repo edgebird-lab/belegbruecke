@@ -4,7 +4,7 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. Prüferdurchgang am 11.11.2026 abgeschlossen (siehe unten). 286 Unit-Tests und 21 Browsertests (axe hell und dunkel) grün. Privates Repo `edgebird-lab/belegbruecke` mit `main` auf GitHub; die CI (Lint, Tests, Build) ist grün. Phase 7 nur nach Robins Freigabe.
+**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. Prüferdurchgang am 11.11.2026 abgeschlossen (siehe unten). Windows-Programm (Phase 7, Weg A) gebaut und am 11.11.2026 auf Robins Rechner installiert; Docker und Server bleiben aus. 291 Unit-Tests, 21 Browsertests (axe hell und dunkel), 8 Rust-Tests, der API-Test des Server-Bündels und der Desktop-Test (37 Prüfungen) grün. Privates Repo `edgebird-lab/belegbruecke` mit `main` auf GitHub; CI `ci.yml` (Lint, Tests, Build) und `windows.yml` (Programm, Installer, Installation in der CI) grün.
 
 ## Für Robin (in dieser Reihenfolge)
 
@@ -13,7 +13,7 @@ Letzte Aktualisierung: 11.11.2026
 3. Schritt 0.6: DATEV-Formatbeschreibung (Dok.-Nr. 1036228) neben [datev-felder.md](datev-felder.md) legen und die Feldliste vergleichen; Kanzlei nach BU-Schlüsseln, Automatikkonten, Berater- und Mandantennummer fragen.
 4. Schritt 4.7: Probeimport mit der Kanzlei (Fragen in [datev-felder.md](datev-felder.md), unten); danach den Export von „Vorschau“ auf endgültig umstellen und Version 0.1.0 taggen (6.5).
 5. Entscheiden, ob `npm audit` in die CI kommt (siehe [sicherheit.md](sicherheit.md)).
-6. Phase 7 (Docker, Windows-Programm) erst nach Freigabe.
+6. Das Windows-Programm ausprobieren: „Belegbrücke“ auf dem Desktop (installiert am 11.11.2026). Docker und Server bleiben bis zur Freigabe aus.
 
 ## Phase 0 – Klärung und Durchstich
 
@@ -97,10 +97,12 @@ Kritische Durchsicht gegen die Spezifikation, Einzelheiten und Entscheidungen in
 - [x] Zeittests T-F2 und T-S6 („< 100 ms“) messen den schnellsten von fünf Läufen; ein einzelner Lauf schlug unter Last (parallele Testdateien) fehl.
 - [ ] Offen geblieben (siehe README, Grenzen): Listen ohne Seitenaufteilung, ein Upload je Anfrage höchstens 120 MB, nicht gespeicherte Eingaben gehen beim Ablauf der Sitzung verloren.
 
-## Phase 7 – Betrieb vorbereiten (nur nach Robins Freigabe)
+## Phase 7 – Betrieb vorbereiten
 
-- [ ] **7.1** Dockerfile und `compose.yaml` ohne Bereitstellung
-- [ ] **7.2** Server als Node-Einzeldatei (Machbarkeitsprobe)
-- [ ] **7.3** Tauri-2-Hülle mit Sidecar
-- [ ] **7.4** Installer pro Benutzer
-- [ ] **7.5** Entscheidung Weg A oder Weg B
+Robin hat am 11.11.2026 das Windows-Programm freigegeben (7.2 bis 7.5); Docker und jede Bereitstellung auf einem Server bleiben aus. Einzelheiten und Messwerte in [T15](entscheidungen.md#t15-windows-programm-phase-7).
+
+- [ ] **7.1** Dockerfile und `compose.yaml` ohne Bereitstellung. Nicht freigegeben.
+- [x] **7.2** Machbarkeitsprobe Node-Einzeldatei: verworfen, weil Node 24.15 dafür einen CommonJS-Einstieg verlangt und `postject` die Signatur der `node.exe` ungültig macht, während Worker, xmllint-wasm, SaxonJS, Oberfläche und Artefakte ohnehin als Dateien daneben liegen müssen. Rückfall nach Spezifikation: unveränderte `node.exe` als `belegbruecke-server.exe`, Server-Bündel aus `npm run programm:server` (rolldown) daneben. `npm run programm:server-test` grün (Token, Prüfung, ZUGFeRD-PDF, Ansicht, Kette, Ende mit stdin).
+- [x] **7.3** Tauri-2-Hülle (`src-tauri`): Ladeseite, Server als Sidecar ohne geerbte Umgebung und im Job-Objekt, zufälliger Port, Einmal-Token gegen Cookie (Programmtor), sauberes Ende beim Schließen, Single-Instance, Navigation nur zum eigenen Server, keine Tauri-Rechte für die Oberfläche, Daten in `%LOCALAPPDATA%\de.olbricht-digital.belegbruecke`. `cargo test` und `npm run desktop:test` grün (Einrichtung, Upload 01.01a, Prüfen, Ansicht, Archiv, Prüferexport, Schließen, zweiter Start, `taskkill /F`).
+- [x] **7.4** NSIS-Installer pro Benutzer (`npx tauri build`), ohne Admin-Rechte; CI `windows.yml` installiert still, testet den installierten Server und deinstalliert (Daten bleiben). Größe und Startzeit gemessen (T15). Auf Robins Wunsch am 11.11.2026 auf seinem Rechner installiert, mit Desktop-Verknüpfung.
+- [x] **7.5** Entscheidung: Weg A (Sidecar), Begründung in [T15](entscheidungen.md#t15-windows-programm-phase-7).

@@ -2,7 +2,7 @@
 
 E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe. Die Belegbrücke nimmt eingehende E-Rechnungen an (Upload oder E-Mail-Postfach), prüft sie nach EN 16931 und XRechnung mit den offiziellen KoSIT- und CEN-Artefakten und erklärt Fehler in Klartext. Sie bewahrt das Original unverändert auf, mit Prüfbericht und einem Protokoll, das eine SHA-256-Hashkette sichert, führt durch Zuordnen, Kontieren und Freigeben und erzeugt monatlich die Übergabe an die Steuerkanzlei. Läuft lokal, ohne KI, ohne Cloud und ohne Java.
 
-> **Stand: Version 0.1 in Arbeit.** Fertig sind Fachkern, Prüfung, Archiv, Server, Oberfläche, Kontierung mit DATEV-Übergabe und Postfach (Phasen 0 bis 5) sowie die Qualitätsschritte 6.1 bis 6.3; ein Prüferdurchgang am 11.11.2026 hat die Fachlogik nachgerechnet und zehn Fehler behoben (gleichzeitige Anfragen, Kleinbetrag bei negativem Betrag, Sperren nach Kontenänderungen, Erfassung von Hand bei 1280 Pixel, Umbruch bei 320 Pixel, Druck, Kreditorenkonto im Schritt „Zuordnen“, abgelaufene Sitzung, veränderte Exportdateien beim erneuten Download, Firmenname im Übergabeprotokoll). Offen sind die Schritte mit Robin und der Kanzlei: DATEV-Formate an der Primärquelle prüfen (0.6), der Probeimport (4.7) und die Abnahme von `start.cmd`; bis dahin heißt der Export „Vorschau“. Stand: [docs/stand.md](docs/stand.md). Annahmen, die noch eine Entscheidung brauchen: [docs/entscheidungen.md](docs/entscheidungen.md). Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
+> **Stand: Version 0.1 in Arbeit.** Fertig sind Fachkern, Prüfung, Archiv, Server, Oberfläche, Kontierung mit DATEV-Übergabe und Postfach (Phasen 0 bis 5) sowie die Qualitätsschritte 6.1 bis 6.3; ein Prüferdurchgang am 11.11.2026 hat die Fachlogik nachgerechnet und zehn Fehler behoben (gleichzeitige Anfragen, Kleinbetrag bei negativem Betrag, Sperren nach Kontenänderungen, Erfassung von Hand bei 1280 Pixel, Umbruch bei 320 Pixel, Druck, Kreditorenkonto im Schritt „Zuordnen“, abgelaufene Sitzung, veränderte Exportdateien beim erneuten Download, Firmenname im Übergabeprotokoll). Seit dem 11.11.2026 gibt es die Belegbrücke auch als Windows-Programm mit Installer (Phase 7, Weg A: Tauri-Hülle, der Server läuft als Sidecar mit). Offen sind die Schritte mit Robin und der Kanzlei: DATEV-Formate an der Primärquelle prüfen (0.6), der Probeimport (4.7) und die Abnahme von `start.cmd`; bis dahin heißt der Export „Vorschau“. Stand: [docs/stand.md](docs/stand.md). Annahmen, die noch eine Entscheidung brauchen: [docs/entscheidungen.md](docs/entscheidungen.md). Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
 
 ![Eingang mit offenen Belegen](docs/bilder/eingang.png)
 
@@ -50,7 +50,9 @@ Zwölf Belege eines Monats vom Eingang bis zur Übergabe; jede Zahl prüft [src/
 
 ## Starten
 
-Unter Windows genügt ein Doppelklick auf `start.cmd`: Beim ersten Start installiert es die Abhängigkeiten, lädt die Prüfartefakte und baut die Oberfläche; danach öffnet sich der Browser auf `http://127.0.0.1:8784`. Beim ersten Aufruf legt man den ersten Benutzer an, danach führt ein Assistent durch Firma, Kanzlei, Steuerschlüssel und Konten, Eingang (auf Wunsch mit Postfach) und Aufbewahrung. Daten liegen in `daten/` (änderbar mit `BB_DATEN`), der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel` (`BB_SCHLUESSEL_DATEI`).
+**Windows-Programm:** Den Installer `Belegbrücke_0.0.1_x64-setup.exe` ausführen (pro Benutzer, ohne Admin-Rechte; bauen mit `npx tauri build`, siehe „Entwickeln“). Er legt „Belegbrücke“ im Startmenü und auf dem Desktop an. Das Programm startet den Server selbst im Hintergrund, auf einem zufälligen Port von 127.0.0.1 und nur für das eigene Fenster erreichbar, und beendet ihn beim Schließen. Der Ablauf ist derselbe wie im Browser: erster Benutzer, Einrichtung, Eingang. Daten liegen in `%LOCALAPPDATA%\de.olbricht-digital.belegbruecke\daten`, der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel`, das Protokoll des Servers in `server.log`. Die Deinstallation lässt das Archiv immer stehen; das Häkchen „Lösche die Anwendungsdaten“ entfernt nur Browserdaten und Protokolle des Programms. Installer und Programm sind nicht signiert; SmartScreen fragt deshalb beim ersten Start nach.
+
+**Browser-Fassung:** Unter Windows genügt ein Doppelklick auf `start.cmd`: Beim ersten Start installiert es die Abhängigkeiten, lädt die Prüfartefakte und baut die Oberfläche; danach öffnet sich der Browser auf `http://127.0.0.1:8784`. Beim ersten Aufruf legt man den ersten Benutzer an, danach führt ein Assistent durch Firma, Kanzlei, Steuerschlüssel und Konten, Eingang (auf Wunsch mit Postfach) und Aufbewahrung. Daten liegen in `daten/` (änderbar mit `BB_DATEN`), der Schlüssel für das Postfach-Passwort daneben in `daten.schluessel` (`BB_SCHLUESSEL_DATEI`).
 
 ## Entwickeln
 
@@ -66,6 +68,16 @@ npm run build         # Typprüfung und Produktions-Build
 npm run referenz      # Referenzlauf mit dem KoSIT-Validator (braucht Java 21 und npm run artefakte -- --referenz)
 ```
 
+Windows-Programm (Rust und Tauri-CLI; Rust liegt auf Robins Rechner in `%USERPROFILE%\.cargo\bin`, gebaut wird mit `CARGO_TARGET_DIR=C:/Users/Robin/AppData/Local/cargo-ziel`):
+
+```bash
+npm run programm:server        # Server-Bündel und Node-Laufzeit nach src-tauri/ (nach npm run build)
+npm run programm:server-test   # API-Test des Bündels: Token, Prüfung und PDF im Worker, Ansicht, Kette
+cargo test --manifest-path src-tauri/Cargo.toml
+npx tauri build --debug --no-bundle && npm run desktop:test   # Programm im Fenster testen (CDP-Port 9337)
+npx tauri build                # Release mit NSIS-Installer (baut vorher Oberfläche und Bündel)
+```
+
 Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scripts/zugferd-testdaten.mjs` (Test-PDFs), `node scripts/fallbeispiel.mjs` (Fallbeispiel Oktober), `node scripts/readme-bilder.mjs` (Bilder dieser Seite, nach `npm run build`), `node scripts/referenz-mustang.mjs` (Mustang-Referenz, Java), `node scripts/regelkatalog.mjs` und `node scripts/lizenzen.mjs` (Doku).
 
 **API** (JSON unter `/api`, ändernde Anfragen mit `X-Belegbruecke: 1` und passendem `Origin`): Sitzung (`/einrichtung/benutzer`, `/anmelden`, `/abmelden`, `/sitzung`, `/benutzer`), `/einstellungen`, Belege (`POST /belege` als multipart, `GET /belege?status=&monat=&suche=&von=&bis=&betrag=&offen=1`, `GET /belege/:id` mit Vorschlägen, `/original`, `/bericht`, `/ansicht`), Assistentenschritte (`POST /belege/:id/dublette`, `PUT /lieferant`, `PUT /kontierung`, `PUT /handerfassung`, `POST /freigeben`, `/ablehnen`, `/freigabe-zuruecknehmen`, `/ablehnung-aufheben`), Stammdaten (`/lieferanten`, `/sachkonten` mit CSV-Import), Übergabe (`GET /uebergaben`, `/uebergaben/plan?monat=`, `POST /uebergaben`, `/uebergaben/:id/dateien/:name`), Archiv (`POST /archiv/pruefen`, `/archiv/prueferexport`), Postfach (`/postfach/status`, `/postfach/test`, `/postfach/abrufen`, `PUT /postfach/passwort`).
@@ -76,21 +88,23 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 | --- | --- |
 | `src/fach` | Fachlogik ohne React und ohne Node-APIs: Datenmodell, Beträge, Formaterkennung, Pflichtangaben, Plausibilität, Dubletten, Lieferanten, Kontierung, Freigabe, Erfassung von Hand, Übergabe, DATEV (EXTF, Windows-1252, Belegpaket), Aufbewahrung, Hashkette, Klartext-Katalog |
 | `src/pruefung` | Prüfung in Node-Workern: Szenarien, XSD (xmllint-wasm), Schematron und Ansicht (SaxonJS), PDF (pdf.js), Worker-Pool |
-| `src/server` | Hono-Server: API, Eingang, Assistentenschritte, Übergabe, Prüferexport, Kettenprüfung, Postfach (imapflow, mailparser), SQLite (`node:sqlite`), Dateiablage, Anmeldung und Schutz |
+| `src/server` | Hono-Server: API, Eingang, Assistentenschritte, Übergabe, Prüferexport, Kettenprüfung, Postfach (imapflow, mailparser), SQLite (`node:sqlite`), Dateiablage, Anmeldung und Schutz; Einstieg und Programmtor für das Windows-Programm (`programm.ts`) |
 | `src/ui` | React-Oberfläche: Anmeldung, Einrichtung, Eingang, Beleg-Assistent, Übergabe, Archiv, Einstellungen |
+| `src-tauri` | Windows-Programm: Tauri-Hülle (Rust) mit Ladeseite, Start des Servers als Sidecar (Job-Objekt, Einmal-Token), Symbol, Installer-Test |
 | `src/testhilfen` | Testserver, Test-Kontenplan, Test-Mails, IMAP-Testserver und Testzertifikat |
-| `scripts` | Artefakte laden, SEF kompilieren, Referenzläufe, Testdaten, Bilder, Doku |
+| `scripts` | Artefakte laden, SEF kompilieren, Referenzläufe, Testdaten, Bilder, Doku; Server-Bündel, API-Test und Desktop-Test des Windows-Programms |
 | `testdaten` | Mutationen, ZUGFeRD-Test-PDFs, Fallbeispiel, DATEV-Golden-File, Referenz-Snapshots (KoSIT-Testsuite per Skript) |
 | `docs` | [Spezifikation](docs/spezifikation.md), [Stand](docs/stand.md), [Entscheidungen](docs/entscheidungen.md), [Datenmodell](docs/datenmodell.md), [Regelkatalog](docs/regelkatalog.md), [DATEV-Feldnotizen](docs/datev-felder.md), [Sicherheit](docs/sicherheit.md), [Lizenzen Dritter](docs/lizenzen-dritter.md) |
 
-**Technik:** TypeScript 7, Node 24 (führt den Server direkt als TypeScript aus), React 19, Vite 8, Hono 4, zod 4, SaxonJS 2.7, xmllint-wasm 5, pdf.js 6, fflate, imapflow, mailparser, SQLite über `node:sqlite`, Vitest, Playwright mit axe.
+**Technik:** TypeScript 7, Node 24 (führt den Server direkt als TypeScript aus), React 19, Vite 8, Hono 4, zod 4, SaxonJS 2.7, xmllint-wasm 5, pdf.js 6, fflate, imapflow, mailparser, SQLite über `node:sqlite`, Vitest, Playwright mit axe; für das Windows-Programm Tauri 2 (Rust, WebView2) und rolldown.
 
 ## Qualität
 
-- 286 Unit-Tests (Vitest) für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-K, T-E, T-I, T-H, T-A, T-S), die Testvektoren der Hashkette, das Fallbeispiel und gleichzeitige Anfragen (Doppelklick, zweites Fenster: nichts wird still überschrieben oder doppelt protokolliert); Zweigabdeckung der Fachlogik 94,7 % (Schwelle 90 % in `npm run abdeckung`).
+- 291 Unit-Tests (Vitest) für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-K, T-E, T-I, T-H, T-A, T-S), die Testvektoren der Hashkette, das Fallbeispiel und gleichzeitige Anfragen (Doppelklick, zweites Fenster: nichts wird still überschrieben oder doppelt protokolliert); Zweigabdeckung der Fachlogik 94,7 % (Schwelle 90 % in `npm run abdeckung`).
 - Gleichlauf mit dem KoSIT-Validator für alle 86 Testdateien der KoSIT-Testsuite (`testdaten/referenz/kosit-1.6.3.json`); EXTF-Ausgabe bytegleich mit einer Golden File (`testdaten/datev/EXTF_03.01a.csv`).
 - 21 Browsertests gegen den echten Server: Einrichtung nur per Tastatur, Beleg bis zur Freigabe, Dublette, Erfassung von Hand, Übergabe, Archiv, Postfach gegen einen IMAP-Testserver, Kreditorenkonto im Schritt „Zuordnen“, abgelaufene Sitzung; jeder Schritt mit axe hell und dunkel ohne schwere Befunde; elf Hauptseiten bei 1280 und 320 Pixel ohne seitliches Verschieben (WCAG 1.4.10); Sicherheitsheader und CSP ohne Verstöße.
-- Bei jedem Push auf `main` laufen Lint, Unit-Tests und Build in der CI des privaten Repos `edgebird-lab/belegbruecke` (GitHub Actions, `.github/workflows/ci.yml`); die Browsertests lokal vor jedem Commit.
+- Windows-Programm: 8 Rust-Tests (`cargo test`: Bereit-Zeile, Navigation nur zum eigenen Server, Pfade, Protokoll ohne Token, Job-Objekt), Unit-Tests für Programmtor und Einstieg, API-Test des Server-Bündels (`npm run programm:server-test`: Einmal-Token, XRechnung und ZUGFeRD-PDF im Worker, Ansicht, Kette, Ende mit stdin) und ein Desktop-Test gegen das echte Programm mit 37 Prüfungen (`npm run desktop:test`: Einrichtung, Upload aus der KoSIT-Testsuite, Ansicht, Archiv, Download, Schließen, zweiter Start, `taskkill /F`, keine CSP-Meldung).
+- Bei jedem Push auf `main` laufen Lint, Unit-Tests und Build in der CI des privaten Repos `edgebird-lab/belegbruecke` (GitHub Actions, `.github/workflows/ci.yml`); die Browsertests lokal vor jedem Commit. Ändert sich das Programm, baut `.github/workflows/windows.yml` Programm und Installer unter Windows, installiert still, testet den installierten Server und deinstalliert (die Daten bleiben).
 
 ## Grenzen
 

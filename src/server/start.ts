@@ -11,6 +11,7 @@ import { existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
+import type { MiddlewareHandler } from 'hono'
 import { Prueferpool } from '../pruefung/pool.ts'
 import { erzeugeApp } from './app.ts'
 import { pruefeOffene } from './dienste/eingang.ts'
@@ -22,6 +23,8 @@ export interface Serveroptionen {
   datenOrdner: string
   port: number
   oberflaeche: string | null
+  /** nur im Windows-Programm (src/server/programm.ts) */
+  programmtor?: MiddlewareHandler
 }
 
 export function optionenAusUmgebung(): Serveroptionen {
@@ -52,8 +55,13 @@ export async function starteServer(o: Serveroptionen) {
   sichereTaeglich(d)
   const offen = await pruefeOffene(d)
   if (offen) console.log(`${offen} Beleg(e) mit unterbrochener Prüfung erneut geprüft.`)
-  const app = erzeugeApp(d, { oberflaeche: o.oberflaeche })
+  const app = erzeugeApp(d, { oberflaeche: o.oberflaeche, programmtor: o.programmtor })
   const server = serve({ fetch: app.fetch, port: o.port, hostname: HOST })
+  // erfüllt, sobald der Server lauscht; abgelehnt z. B. bei belegtem Port (EADDRINUSE)
+  const lauscht = new Promise<void>((ok, fehler) => {
+    server.once('listening', () => ok())
+    server.once('error', fehler)
+  })
   // Postfach-Abruf nach Zeitplan (R23); ist das Postfach aus, tut der Zeitgeber nichts
   d.postfach.starte()
   const taeglich = setInterval(
@@ -71,13 +79,14 @@ export async function starteServer(o: Serveroptionen) {
     await pool.beenden()
     d.db.schliessen()
   }
-  return { d, app, server, beenden, url: `http://${HOST}:${o.port}` }
+  return { d, app, server, lauscht, beenden, url: `http://${HOST}:${o.port}` }
 }
 
 // Direkt gestartet (node src/server/start.ts): Server starten und bei Strg+C sauber beenden
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const o = optionenAusUmgebung()
   const s = await starteServer(o)
+  await s.lauscht
   console.log(`Belegbrücke ${s.d.version} läuft auf ${s.url} (Daten: ${o.datenOrdner}${o.oberflaeche ? '' : ', ohne Oberfläche: erst npm run build'})`)
   const stopp = () => {
     void s.beenden().then(() => process.exit(0))

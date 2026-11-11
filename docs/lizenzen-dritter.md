@@ -130,4 +130,12 @@ Lizenzen: MIT (94), BSD-2-Clause (5), (MIT OR EUPL-1.1+) (1), BSD-3-Clause (1), 
 | xmllint-wasm | 5.3.0 | MIT |
 | zod | 4.6.7 | MIT |
 
-Entwicklungswerkzeuge (Vite, TypeScript, Vitest, Playwright, axe, oxlint, xslt3) sind nicht Teil der ausgelieferten App; ihre Lizenzen stehen in `package-lock.json`.
+Entwicklungswerkzeuge (Vite, TypeScript, Vitest, Playwright, axe, oxlint, xslt3, rolldown, Tauri-CLI) sind nicht Teil der ausgelieferten App; ihre Lizenzen stehen in `package-lock.json`.
+
+## Windows-Programm
+
+Das Windows-Programm (Phase 7) liefert zusätzlich mit:
+
+- **Node.js** (MIT, mit den Lizenzen seiner Bestandteile) als Laufzeit des Servers: `belegbruecke-server.exe` ist die unveränderte `node.exe` mit der Signatur der OpenJS Foundation.
+- Die Laufzeit-Abhängigkeiten oben, mit rolldown gebündelt in `server.mjs`, `worker.mjs` und `saxon.cjs`. `scripts/programm-server.mjs` legt die Lizenztexte dieser Pakete (darunter der Saxonica-Hinweis) und von Node.js als `LIZENZEN.txt` neben das Bündel; die Lizenzen der KoSIT- und CEN-Artefakte liegen dort in `vendor/lizenzen/`.
+- Die Tauri-Hülle (Rust: `tauri`, `tauri-plugin-single-instance`, `windows-sys` und deren Abhängigkeiten, überwiegend MIT oder Apache-2.0; Liste in `src-tauri/Cargo.lock`). WebView2 gehört zu Windows und wird bei Bedarf über den Bootstrapper von Microsoft nachinstalliert.

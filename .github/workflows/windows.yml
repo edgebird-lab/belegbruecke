@@ -1,0 +1,62 @@
+name: Windows-Programm
+
+# Windows-Läufe kosten im privaten Repo mehr Minuten. Deshalb nur, wenn sich der
+# Programmteil ändert (Hülle, Server-Einstieg, Bündel, Abhängigkeiten) oder von Hand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src-tauri/**'
+      - 'src/server/programm.ts'
+      - 'src/server/start.ts'
+      - 'src/server/sicherheit/programmtor.ts'
+      - 'src/server/dienste/kontext.ts'
+      - 'src/pruefung/pool.ts'
+      - 'scripts/programm-server.mjs'
+      - 'scripts/programm-server-test.mjs'
+      - 'scripts/desktop-test.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/windows.yml'
+  workflow_dispatch:
+
+jobs:
+  bauen:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+      - run: npm ci
+      # Prüfartefakte (KoSIT-Releases mit Prüfsumme) und daraus kompilierte SEF-Dateien
+      - uses: actions/cache@v4
+        with:
+          path: |
+            vendor/downloads
+            vendor/konfiguration
+            vendor/visualisierung
+            vendor/sef
+            testdaten/kosit
+          key: artefakte-windows-${{ hashFiles('vendor/artefakte.json', 'scripts/artefakte.mjs', 'scripts/sef.mjs', 'package-lock.json') }}
+      - run: npm run vorbereiten
+      - name: Programm und Installer bauen (vorher Oberfläche und Server-Bündel)
+        run: npx tauri build
+      - name: Rust-Tests
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+      - name: API-Test des Server-Bündels (Prüfung und PDF im Worker)
+        run: npm run programm:server-test
+      - name: Installer prüfen (still installieren, Server testen, deinstallieren, Daten bleiben)
+        shell: pwsh
+        run: ./src-tauri/windows/installer-test.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: belegbruecke-windows
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe
+          retention-days: 14

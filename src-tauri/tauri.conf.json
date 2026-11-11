@@ -1,0 +1,40 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Belegbrücke",
+  "mainBinaryName": "belegbruecke",
+  "version": "../package.json",
+  "identifier": "de.olbricht-digital.belegbruecke",
+  "build": {
+    "frontendDist": "./lade",
+    "beforeBuildCommand": "npm run build && npm run programm:server"
+  },
+  "app": {
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "freezePrototype": true
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Robin Olbricht",
+    "category": "Business",
+    "shortDescription": "E-Rechnungen prüfen, GoBD-gerecht archivieren und an die Steuerkanzlei übergeben",
+    "copyright": "© 2026 Robin Olbricht",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/128x128@2x.png", "icons/icon.icns", "icons/icon.ico"],
+    "externalBin": ["binaries/belegbruecke-server"],
+    "resources": {
+      "server/": "belegbruecke-server/"
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["German"],
+        "compression": "lzma",
+        "installerHooks": "./windows/hooks.nsh"
+      }
+    }
+  }
+}

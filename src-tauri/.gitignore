@@ -1,0 +1,9 @@
+# Von Cargo erzeugt
+/target/
+
+# Von Tauri erzeugt (Schemas für die Rechte)
+/gen/schemas
+
+# Von scripts/programm-server.mjs erzeugt: Server-Bündel und Node-Laufzeit
+/server/
+/binaries/
