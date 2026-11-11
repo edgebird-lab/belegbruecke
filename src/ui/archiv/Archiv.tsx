@@ -8,7 +8,7 @@ import type { Belegstatus, Protokolleintrag } from '../../fach/typen.ts'
 import { api, fehlerText, herunterladen, useLaden, type Belegdetail, type Belegzeile, type Kettenbericht } from '../api.ts'
 import { Belegtabelle } from '../belege/Belegtabelle.tsx'
 import { Eckdaten } from '../beleg/Eckdaten.tsx'
-import { AmpelAnzeige, Feld, Hashwert, Hinweis, Laden, Lernhinweis, Seitentitel, Statusmarke, Textfeld } from '../gemeinsam/Bausteine.tsx'
+import { AmpelAnzeige, Feld, Hashwert, Hinweis, Laden, Lernhinweis, Seitentitel, Statusmarke, Tabellenrahmen, Textfeld } from '../gemeinsam/Bausteine.tsx'
 import { betrag, datum, groesse, status, useApp, zeit } from '../kontext.ts'
 import { routeZuHash } from '../route.ts'
 
@@ -107,7 +107,8 @@ function Archivsuche() {
         <Lernhinweis titel="Hashkette">
           Jeder Protokolleintrag enthält den SHA-256-Hash seines Vorgängers. Die Prüfung rechnet die Kette nach und vergleicht jede Datei unter originale/ und berichte/ mit dem Hash aus dem Protokoll. Ein Kettenanker aus einem Übergabeprotokoll zeigt zusätzlich, dass bis dahin nichts neu geschrieben wurde.
         </Lernhinweis>
-        <fieldset className="feldreihe">
+        {/* Im Druck nicht: Der Kettenbericht nennt die abgeglichenen Anker selbst */}
+        <fieldset className="feldreihe nicht-drucken">
           <legend>Kettenanker aus einem Übergabeprotokoll (freiwillig)</legend>
           <Textfeld label="Nummer" inputMode="numeric" wert={anker.nr} aendern={(nr) => setAnker({ ...anker, nr: nr.replace(/\D/g, '') })} breite="schmal" />
           <Textfeld label="Hash" wert={anker.hash} aendern={(hash) => setAnker({ ...anker, hash })} />
@@ -248,6 +249,7 @@ function Belegakte({ id }: { id: string }) {
       </section>
       <section className="karte" aria-labelledby="akte-protokoll">
         <h2 id="akte-protokoll">Protokoll des Belegs</h2>
+        <Tabellenrahmen label="Protokoll des Belegs" bedienbar>
         <table className="tabelle">
           <caption className="unsichtbar">Protokolleinträge</caption>
           <thead>
@@ -273,6 +275,7 @@ function Belegakte({ id }: { id: string }) {
             ))}
           </tbody>
         </table>
+        </Tabellenrahmen>
       </section>
     </>
   )

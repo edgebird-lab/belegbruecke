@@ -700,8 +700,11 @@ label.knopf:focus-within {
   margin: 0;
   padding: 6px;
   display: flex;
+  /* Bei schmalem Fenster umbrechen statt die Seite seitlich zu verschieben (WCAG 1.4.10) */
+  flex-wrap: wrap;
   gap: 4px;
-  overflow-x: auto;
+  /* hält die unsichtbaren Texte (position: absolute) in der Leiste */
+  position: relative;
 }
 .schrittleiste button {
   display: flex;
@@ -770,6 +773,12 @@ label.knopf:focus-within {
 
 .tabellenrahmen {
   overflow-x: auto;
+  /* sonst ragen unsichtbare Beschriftungen (position: absolute) aus dem Rahmen und verbreitern die Seite */
+  position: relative;
+}
+.tabellenrahmen:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
 }
 .tabelle {
   width: 100%;
@@ -830,6 +839,8 @@ label.knopf:focus-within {
 .eckdaten dd {
   margin: 0;
   min-width: 0;
+  /* IBAN, Dateinamen und Hashes brechen bei wenig Platz um, statt über den Rand zu ragen */
+  overflow-wrap: anywhere;
 }
 .hash-voll {
   display: block;
@@ -1048,8 +1059,33 @@ details summary {
   color: var(--akzent-text);
   font-weight: 600;
 }
-.steuerzeilen input[type='text'] {
-  min-width: 60px;
+/* Erfassung von Hand: je Steuerzeile ein Block, dessen Felder bei wenig Platz umbrechen */
+.steuerzeilen-titel {
+  font-size: 1rem;
+  margin: 16px 0 6px;
+}
+fieldset.steuerzeile {
+  border: 1px solid var(--linie);
+  border-radius: 8px;
+  padding: 6px 12px 10px;
+  margin: 0 0 10px;
+}
+.steuerzeile legend {
+  padding: 0 4px;
+  font-size: 0.88rem;
+}
+.steuerzeile-felder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+.steuerzeile-felder .betrag-eingabe input {
+  width: 100%;
+  min-width: 0;
+}
+.steuerzeile-felder .betrag-eingabe {
+  display: flex;
 }
 .kontierung input[type='text'] {
   min-width: 160px;
@@ -1103,6 +1139,26 @@ details summary {
   .kopf {
     flex-wrap: wrap;
     padding: 10px 16px;
+  }
+  /* Lange Beschriftungen und Dateinamen umbrechen statt über den Rand zu ragen */
+  .knopf {
+    white-space: normal;
+    text-align: center;
+  }
+  .dateiliste .knopf,
+  .dateiname {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Eckdaten untereinander: Beschriftung über dem Wert */
+  .eckdaten {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .eckdaten dd {
+    margin-bottom: 8px;
   }
 }
 
@@ -1168,5 +1224,13 @@ details summary {
   }
   .ansicht-rahmen {
     display: none;
+  }
+  /* Fokusrahmen (z. B. der Überschrift nach dem Seitenwechsel) gehört nicht aufs Papier */
+  :focus,
+  :focus-visible {
+    outline: none !important;
+  }
+  .tabellenrahmen {
+    overflow: visible;
   }
 }

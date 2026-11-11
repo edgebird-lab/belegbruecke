@@ -7,7 +7,7 @@ import { STEUERFALL_TEXT } from '../../fach/kontierung.ts'
 import { sucheSachkonten } from '../../fach/kontenplan.ts'
 import type { Kontierungszeile } from '../../fach/typen.ts'
 import { api, fehlerText, useLaden, type Sachkontenantwort } from '../api.ts'
-import { Hinweis, Laden, Lernhinweis } from '../gemeinsam/Bausteine.tsx'
+import { Hinweis, Laden, Lernhinweis, Tabellenrahmen } from '../gemeinsam/Bausteine.tsx'
 import { betrag, useApp } from '../kontext.ts'
 import { routeZuHash } from '../route.ts'
 import { Schrittknoepfe, type Schrittprops } from './gemeinsam.tsx'
@@ -102,6 +102,7 @@ export function SchrittKontieren({ d, fertig, gesperrt }: Schrittprops) {
             <label htmlFor="konto-suche">Sachkonten filtern (Nummer oder Bezeichnung)</label>
             <input id="konto-suche" type="search" value={suche} onChange={(e) => setSuche(e.target.value)} disabled={!!gesperrt} />
           </div>
+          <Tabellenrahmen label="Buchungszeilen" bedienbar>
           <table className="tabelle kontierung">
             <caption className="unsichtbar">Buchungszeilen</caption>
             <thead>
@@ -180,6 +181,7 @@ export function SchrittKontieren({ d, fertig, gesperrt }: Schrittprops) {
               </tr>
             </tfoot>
           </table>
+          </Tabellenrahmen>
         </>
       )}
       {fehler && <Hinweis art="fehler">{fehler}</Hinweis>}

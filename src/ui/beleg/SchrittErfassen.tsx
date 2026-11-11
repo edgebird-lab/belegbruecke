@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { steuerAusSatz } from '../../fach/betrag.ts'
 import type { Handerfassung } from '../../fach/typen.ts'
 import { api, fehlerText } from '../api.ts'
-import { Betragsfeld, Hinweis, Lernhinweis, Textfeld } from '../gemeinsam/Bausteine.tsx'
+import { Betragsfeld, Feld, Hinweis, Lernhinweis, Textfeld } from '../gemeinsam/Bausteine.tsx'
 import { betrag, useApp } from '../kontext.ts'
 import { Schrittknoepfe, type Schrittprops } from './gemeinsam.tsx'
 
@@ -96,60 +96,51 @@ export function SchrittErfassen({ d, fertig, gesperrt }: Schrittprops) {
               <Textfeld label="Rechnungsdatum" typ="date" wert={kopf.rechnungsdatum} aendern={(rechnungsdatum) => setKopf({ ...kopf, rechnungsdatum })} pflicht />
               <Textfeld label="Leistungsdatum" typ="date" wert={kopf.leistungsdatum ?? ''} aendern={(v) => setKopf({ ...kopf, leistungsdatum: v || null })} />
             </div>
-            <table className="tabelle steuerzeilen">
-              <caption>Steuerzeilen</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Kategorie</th>
-                  <th scope="col">Satz in %</th>
-                  <th scope="col">Netto</th>
-                  <th scope="col">Steuer</th>
-                  <th scope="col">
-                    <span className="unsichtbar">Aktionen</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {zeilen.map((z, i) => (
-                  <tr key={i}>
-                    <td>
-                      <select aria-label={`Kategorie Zeile ${i + 1}`} value={z.kategorie} onChange={(e) => aendereZeile(i, { kategorie: e.target.value as Zeile['kategorie'], ...(e.target.value !== 'S' ? { steuerCent: 0 } : {}) })}>
+            {/* Je Steuerzeile ein Block statt einer Tabelle: In der rechten Spalte neben der PDF war die Tabelle
+                breiter als der Platz (bei 1280 px schob sie die Seite seitlich, die Kategorie war abgeschnitten). */}
+            <h3 className="steuerzeilen-titel">Steuerzeilen</h3>
+            {zeilen.map((z, i) => (
+              <fieldset key={i} className="steuerzeile">
+                <legend>Zeile {i + 1}</legend>
+                <div className="steuerzeile-felder">
+                  <Feld label="Kategorie">
+                    {(id) => (
+                      <select id={id} aria-label={`Kategorie Zeile ${i + 1}`} value={z.kategorie} onChange={(e) => aendereZeile(i, { kategorie: e.target.value as Zeile['kategorie'], ...(e.target.value !== 'S' ? { steuerCent: 0 } : {}) })}>
                         <option value="S">Normal (S)</option>
                         <option value="E">steuerfrei (E)</option>
                         <option value="AE">Reverse Charge (AE)</option>
                       </select>
-                    </td>
-                    <td>
-                      <input type="text" inputMode="decimal" className="breite-schmal" aria-label={`Steuersatz Zeile ${i + 1}`} disabled={z.kategorie !== 'S'} value={z.kategorie === 'S' ? z.satz : '0'} onChange={(e) => aendereZeile(i, { satz: e.target.value })} />
-                    </td>
-                    <td>
-                      <Betragsfeld ariaLabel={`Netto Zeile ${i + 1}`} cent={z.bemessungCent} aendern={(c) => aendereZeile(i, { bemessungCent: c })} />
-                    </td>
-                    <td>
-                      <Betragsfeld ariaLabel={`Steuer Zeile ${i + 1}`} cent={z.steuerCent} aendern={(c) => aendereZeile(i, { steuerCent: c })} />
-                    </td>
-                    <td>
-                      <div className="knopfreihe">
-                        <button
-                          type="button"
-                          className="knopf knopf-klein"
-                          disabled={z.kategorie !== 'S' || z.bemessungCent === null}
-                          onClick={() => aendereZeile(i, { steuerCent: steuerAusSatz(z.bemessungCent ?? 0, z.satz.replace(',', '.')) })}
-                          aria-label={`Steuer für Zeile ${i + 1} berechnen`}
-                        >
-                          berechnen
-                        </button>
-                        {zeilen.length > 1 && (
-                          <button type="button" className="knopf knopf-klein knopf-gefahr" onClick={() => setZeilen(zeilen.filter((_, j) => j !== i))} aria-label={`Zeile ${i + 1} entfernen`}>
-                            entfernen
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    )}
+                  </Feld>
+                  <Feld label="Steuersatz">
+                    {(id) => (
+                      <span className="betrag-eingabe">
+                        <input id={id} type="text" inputMode="decimal" aria-label={`Steuersatz Zeile ${i + 1}`} disabled={z.kategorie !== 'S'} value={z.kategorie === 'S' ? z.satz : '0'} onChange={(e) => aendereZeile(i, { satz: e.target.value })} />
+                        <span aria-hidden="true">%</span>
+                      </span>
+                    )}
+                  </Feld>
+                  <Betragsfeld label="Netto" ariaLabel={`Netto Zeile ${i + 1}`} cent={z.bemessungCent} aendern={(c) => aendereZeile(i, { bemessungCent: c })} />
+                  <Betragsfeld label="Steuer" ariaLabel={`Steuer Zeile ${i + 1}`} cent={z.steuerCent} aendern={(c) => aendereZeile(i, { steuerCent: c })} />
+                </div>
+                <div className="knopfreihe">
+                  <button
+                    type="button"
+                    className="knopf knopf-klein"
+                    disabled={z.kategorie !== 'S' || z.bemessungCent === null}
+                    onClick={() => aendereZeile(i, { steuerCent: steuerAusSatz(z.bemessungCent ?? 0, z.satz.replace(',', '.')) })}
+                    aria-label={`Steuer berechnen (Zeile ${i + 1})`}
+                  >
+                    Steuer berechnen
+                  </button>
+                  {zeilen.length > 1 && (
+                    <button type="button" className="knopf knopf-klein knopf-gefahr" onClick={() => setZeilen(zeilen.filter((_, j) => j !== i))}>
+                      Zeile {i + 1} entfernen
+                    </button>
+                  )}
+                </div>
+              </fieldset>
+            ))}
             <div className="knopfreihe">
               <button type="button" className="knopf knopf-klein" onClick={() => setZeilen([...zeilen, { kategorie: 'S', satz: '7', bemessungCent: null, steuerCent: null }])}>
                 Steuerzeile hinzufügen

@@ -6,7 +6,7 @@ import { useState, type ChangeEvent } from 'react'
 import { STEUERFALL_TEXT } from '../../fach/kontierung.ts'
 import type { DatevEinstellungen, Einstellungen, Firma, Sachkonto, Steuerfall } from '../../fach/typen.ts'
 import { api, fehlerText, useLaden, type Sachkontenantwort } from '../api.ts'
-import { Auswahl, Feld, Haken, Hinweis, Laden, Textfeld } from '../gemeinsam/Bausteine.tsx'
+import { Auswahl, Feld, Haken, Hinweis, Laden, Tabellenrahmen, Textfeld } from '../gemeinsam/Bausteine.tsx'
 import { useApp } from '../kontext.ts'
 import { STEUERFAELLE, type Fehlerliste } from './pruefen.ts'
 
@@ -215,6 +215,7 @@ export function Kontenplan() {
       {konten.laedt && !konten.daten && <Laden />}
       {konten.daten && konten.daten.sachkonten.length === 0 && <p>Noch keine Sachkonten. Legen Sie sie unten an oder laden Sie eine CSV-Datei.</p>}
       {konten.daten && konten.daten.sachkonten.length > 0 && (
+        <Tabellenrahmen label="Sachkonten" bedienbar>
         <table className="tabelle">
           <caption className="unsichtbar">Sachkonten</caption>
           <thead>
@@ -240,6 +241,7 @@ export function Kontenplan() {
             ))}
           </tbody>
         </table>
+        </Tabellenrahmen>
       )}
       <fieldset className="inline-formular">
         <legend>Sachkonto hinzufügen</legend>

@@ -7,7 +7,7 @@ import { useState } from 'react'
 import type { Exportlauf } from '../../fach/typen.ts'
 import { api, fehlerText, useLaden, type Belegzeile, type Sperre, type Uebergabeplan } from '../api.ts'
 import { Belegtabelle } from '../belege/Belegtabelle.tsx'
-import { Hinweis, Laden, Lernhinweis, Schrittleiste, Seitentitel } from '../gemeinsam/Bausteine.tsx'
+import { Hinweis, Laden, Lernhinweis, Schrittleiste, Seitentitel, Tabellenrahmen } from '../gemeinsam/Bausteine.tsx'
 import { betrag, datum, groesse, status, useApp, zeit } from '../kontext.ts'
 import { routeZuHash } from '../route.ts'
 
@@ -296,29 +296,34 @@ function Uebergabeprotokoll({ laufId }: { laufId: string }) {
           </dd>
         </dl>
         <Summen summen={l.summenJeSteuersatz} gesamt={l.summeBruttoCent} />
-        <table className="tabelle">
-          <caption>Dateien</caption>
-          <thead>
-            <tr>
-              <th scope="col">Datei</th>
-              <th scope="col" className="zahl">
-                Größe
-              </th>
-              <th scope="col">SHA-256</th>
-            </tr>
-          </thead>
-          <tbody>
-            {l.dateien.map((f) => (
-              <tr key={f.name}>
-                <th scope="row">{f.name}</th>
-                <td className="zahl">{groesse(f.bytes)}</td>
-                <td>
-                  <code className="hash-voll">{f.sha256}</code>
-                </td>
+        <Tabellenrahmen label="Dateien der Übergabe">
+          <table className="tabelle">
+            <caption>Dateien</caption>
+            <thead>
+              <tr>
+                <th scope="col">Datei</th>
+                <th scope="col" className="zahl">
+                  Größe
+                </th>
+                <th scope="col">SHA-256</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {l.dateien.map((f) => (
+                <tr key={f.name}>
+                  <th scope="row" className="dateiname">
+                    {f.name}
+                  </th>
+                  <td className="zahl">{groesse(f.bytes)}</td>
+                  <td>
+                    <code className="hash-voll">{f.sha256}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Tabellenrahmen>
+        <Tabellenrahmen label="Belege der Übergabe">
         <table className="tabelle">
           <caption>Belege</caption>
           <thead>
@@ -344,6 +349,7 @@ function Uebergabeprotokoll({ laufId }: { laufId: string }) {
             ))}
           </tbody>
         </table>
+        </Tabellenrahmen>
         {nurBeleg.length > 0 && (
           <section aria-labelledby="nurbeleg-titel">
             <h3 id="nurbeleg-titel">Nur Beleg, Buchung durch die Kanzlei</h3>

@@ -250,6 +250,20 @@ export function Seitentitel({ children, unter }: { children: ReactNode; unter?: 
   )
 }
 
+/**
+ * Rahmen für breite Tabellen: Bei schmalem Fenster oder starker Vergrößerung scrollt nur die Tabelle
+ * seitlich, nicht die ganze Seite (WCAG 1.4.10). Enthält die Tabelle nichts Bedienbares, ist der Rahmen
+ * selbst per Tastatur erreichbar, damit er sich auch ohne Maus verschieben lässt.
+ */
+export function Tabellenrahmen({ label, bedienbar = false, children }: { label: string; bedienbar?: boolean; children: ReactNode }) {
+  if (bedienbar) return <div className="tabellenrahmen">{children}</div>
+  return (
+    <div className="tabellenrahmen" role="region" aria-label={label} tabIndex={0}>
+      {children}
+    </div>
+  )
+}
+
 /** SHA-256 gekürzt, ausklappbar. */
 export function Hashwert({ wert, label = 'SHA-256' }: { wert: string; label?: string }) {
   return (

@@ -21,7 +21,7 @@ test('PDF ohne XML: erfassen, zuordnen, kontieren, freigeben', async ({ page, ba
   await page.getByLabel('Kategorie Zeile 1').selectOption('S')
   await page.getByLabel('Steuersatz Zeile 1').fill('7')
   await page.getByLabel('Netto Zeile 1').fill('10,00')
-  await page.getByRole('button', { name: 'Steuer für Zeile 1 berechnen' }).click()
+  await page.getByRole('button', { name: 'Steuer berechnen (Zeile 1)' }).click()
   await expect(page.getByLabel('Steuer Zeile 1')).toHaveValue('0,70')
   await page.getByRole('button', { name: 'Summe als Brutto übernehmen' }).click()
   await expect(page.getByLabel('Bruttobetrag')).toHaveValue('10,70')
