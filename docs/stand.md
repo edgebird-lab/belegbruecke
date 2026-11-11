@@ -29,8 +29,8 @@ Letzte Aktualisierung: 11.11.2026
 
 - [x] **2.1** SQLite-Schema mit Migrationen und Protokoll-Triggern: `src/server/speicher/db.ts` (einziger Zugang, WAL, Transaktionen, `VACUUM INTO`), `migrationen.ts` (11 STRICT-Tabellen, Version über `user_version`). T-H5 grün, Sicherung und Wiederherstellung getestet.
 - [x] **2.2** Dateiablage nach SHA-256: `src/server/speicher/ablage.ts`, atomar (Temporärdatei, fsync, umbenennen), danach schreibgeschützt, gleicher Hash ohne zweite Datei, auch bei gleichzeitigem Upload; Berichte nie überschreibbar, Pfade nur innerhalb der Ablage. Tests grün.
-- [ ] **2.3** Protokoll mit Hashkette und Kettenprüfung (R17, R18)
-- [ ] **2.4** Aufbewahrungsfrist (R15)
+- [x] **2.3** Protokoll mit Hashkette und Kettenprüfung (R17, R18): `src/server/speicher/protokoll.ts` (Eintrag in der Transaktion der Änderung), `src/server/dienste/kette.ts` (Nummern, Verkettung, Hashes, Dateien unter originale/ und berichte/, Dateien ohne Eintrag, Kettenanker; Kettenbericht als Text; Eintrag `kette-geprueft`). T-H1 bis T-H4 grün auf Datenbank- und Dateiebene; 10.300 Einträge und 300 Dateien in rund 2 s (Ziel: 10.000 und 2.000 in unter 30 s).
+- [x] **2.4** Aufbewahrungsfrist (R15): `src/fach/aufbewahrung.ts` mit Ortszeit Europe/Berlin über `Intl`. T-A1 bis T-A5 grün, dazu Sommerzeit und Schaltjahr.
 - [ ] **2.5** HTTP-API mit Hono und zod für den Upload-Ablauf
 - [ ] **2.6** Anmeldung, Sitzung, CSRF, Host- und Origin-Prüfung, Ratenbegrenzung, Sicherheitsheader
 
