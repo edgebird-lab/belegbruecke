@@ -88,3 +88,13 @@ Nicht erledigt: Die DATEV-Formatbeschreibungen (Dok.-Nr. 1036228 und 1035732) si
 - **pdf.js 6:** Die Option `isEvalSupported` gibt es nicht mehr, weil pdf.js keinen eval-Pfad mehr enthält. Die Belegbrücke rendert keine Seiten und liest nur Anhänge. Anhänge kommen über `getAttachments()` (Map mit Metadaten) und `getAttachmentContent(id)`.
 - **Bekannte Grenze:** `resourceLimits` begrenzt nur den JavaScript-Heap. Dekomprimierte PDF-Ströme liegen in ArrayBuffern außerhalb davon; eine Dekomprimierungsbombe in einem PDF-Anhang begrenzt deshalb nur das Zeitlimit. Bei T-Z5 (21 MB XML) bleibt der Worker unauffällig und arbeitet weiter.
 - **Daten auch bei Fehlern:** Die Extraktion läuft immer, wenn Syntax und Wohlgeformtheit es erlauben, auch nach XSD- oder Schematron-Fehlern und bei MINIMUM; R8 braucht die Daten, und bei sonstigen Rechnungen dienen sie als Vorschlag für die Erfassung von Hand.
+
+### T9 Pflichtangaben, Ampel und Plausibilität (Schritt 1.7)
+
+- **01.01a ist gelb, nicht grün (U-2):** R8 Nr. 6 meldet den Leistungszeitpunkt als „pruefen“ mit Warnung, weil nur eine von zwei Positionen BG-26 trägt (siehe T3). Nach der Ampelregel („gelb = angenommen mit Warnungen, auch aus R8“) zeigt 01.01a deshalb „Gültig mit Hinweisen“. Grün ist etwa 03.01a („Gültige XRechnung 3.0 (UBL)“). Der Browsertest U-2 in Phase 3 muss gelb erwarten.
+- **Nr. 7 (Entgelt nach Steuersätzen):** Die Extraktion liefert für fehlende Beträge 0; ob BT-116 in einer Zeile fehlt, ist danach nicht mehr erkennbar. R8 prüft deshalb, ob mindestens eine Steueraufschlüsselung (BG-23) vorhanden ist; fehlende Beträge in einer Zeile meldet das Regelwerk selbst (Schematron).
+- **Steuervertreter:** `Rechnungsdaten` erhält additiv `steuervertreterUstId` (BT-63), damit Nr. 2 die Bedingung „BT-31 oder BT-32 oder BT-63“ prüfen kann.
+- **Kategorien L und M** (Kanaren, Ceuta/Melilla) behandelt Nr. 8 wie S (Steuersatz nötig); Z (Nullsatz) und unbekannte Kategorien sind „pruefen“.
+- **Kleinunternehmer (§ 34a UStDV):** Heuristik wie spezifiziert; zusätzlich ein Hinweis `USTDV-34A`, der die Heuristik nennt.
+- **R8 nur für E-Rechnungen:** Sonstige Rechnungen (auch MINIMUM mit auslesbaren Daten) erhalten die Pflichtangabenprüfung erst nach der Erfassung von Hand (`pruefePflichtangabenHand`); dort sind nicht erfasste Angaben (Anschriften, Menge und Art) „pruefen“, nicht „fehlt“.
+- **Empfängerprüfung:** `normName` entfernt Rechtsformen als ganze Wörter, auch „e. K.“ und „haftungsbeschränkt“ in beiden Schreibweisen (ä wird nach NFKD zu a). Der Handelsname (BT-45) zählt ebenfalls.

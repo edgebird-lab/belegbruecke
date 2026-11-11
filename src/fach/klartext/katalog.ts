@@ -24,6 +24,24 @@ export interface Katalogeintrag {
 const SONSTIGE_RECHNUNG =
   'Die Datei ist keine E-Rechnung, sondern eine sonstige Rechnung (BMF-Schreiben vom 15.10.2025, Rn. 6a). Fordern Sie eine E-Rechnung an. Ausnahmen: Kleinbetrag bis 250 €, Rechnung eines Kleinunternehmers, Fahrausweis und die Übergangszeit für Umsätze bis Ende 2026 (bei höchstens 800.000 € Vorjahresumsatz des Ausstellers bis Ende 2027).'
 
+function pflicht(angabe: string, btBezug: string[], rechtsgrundlage: string): Katalogeintrag {
+  return {
+    titel: `Pflichtangabe fehlt: ${angabe}`,
+    klartext: `Pflichtangabe fehlt: ${angabe}. Vorsteuerabzug gefährdet.`,
+    handlung: 'Korrigierte Rechnung anfordern; Vorsteuer nur aus einer vollständigen Rechnung.',
+    ustRelevant: true,
+    btBezug,
+    quelle: 'ustg',
+    stufe: 'fehler',
+    fehlerklasse: 'inhaltsfehler',
+    rechtsgrundlage,
+  }
+}
+
+function plaus(titel: string, klartext: string, stufe: Stufe, ustRelevant: boolean | 'unklar', btBezug: string[]): Katalogeintrag {
+  return { titel, klartext, handlung: 'Angabe prüfen; bei Fehlern korrigierte Rechnung anfordern.', ustRelevant, btBezug, quelle: 'plausibilitaet', stufe, fehlerklasse: 'keine' }
+}
+
 /** Eigene Regeln der Belegbrücke (Annahme, Format, Prüfablauf, PDF, Pflichtangaben, Plausibilität). */
 export const EIGENE_REGELN: Record<string, Katalogeintrag> = {
   'SICHERHEIT-DTD': {
@@ -194,6 +212,64 @@ export const EIGENE_REGELN: Record<string, Katalogeintrag> = {
     stufe: 'fehler',
     fehlerklasse: 'formatfehler',
   },
+  'USTG-14-4-1-LEISTENDER': pflicht('Name und Anschrift des Leistenden', ['BT-27', 'BT-35', 'BT-37', 'BT-38', 'BT-40'], '§ 14 Abs. 4 Satz 1 Nr. 1 UStG'),
+  'USTG-14-4-1-EMPFAENGER': pflicht('Name und Anschrift des Empfängers', ['BT-44', 'BT-50', 'BT-52', 'BT-53', 'BT-55'], '§ 14 Abs. 4 Satz 1 Nr. 1 UStG'),
+  'USTG-14-4-2': pflicht('Steuernummer oder USt-IdNr. des Leistenden', ['BT-31', 'BT-32', 'BT-63'], '§ 14 Abs. 4 Satz 1 Nr. 2 UStG'),
+  'USTG-14-4-3': pflicht('Ausstellungsdatum', ['BT-2'], '§ 14 Abs. 4 Satz 1 Nr. 3 UStG'),
+  'USTG-14-4-4': pflicht('Rechnungsnummer', ['BT-1'], '§ 14 Abs. 4 Satz 1 Nr. 4 UStG'),
+  'USTG-14-4-5': pflicht('Menge und Art der Leistung', ['BT-153', 'BT-129'], '§ 14 Abs. 4 Satz 1 Nr. 5 UStG'),
+  'USTG-14-4-6': {
+    titel: 'Zeitpunkt der Leistung nicht in den Feldern',
+    klartext: 'Der Zeitpunkt der Leistung steht in keinem Datenfeld (BT-72, BG-14 oder BG-26 in jeder Position); er steht evtl. nur im Bemerkungstext.',
+    handlung: 'Leistungszeitpunkt in der Ansicht suchen; fehlt er ganz, korrigierte Rechnung anfordern.',
+    ustRelevant: 'unklar',
+    btBezug: ['BT-72', 'BG-14', 'BG-26'],
+    quelle: 'ustg',
+    stufe: 'warnung',
+    fehlerklasse: 'keine',
+    rechtsgrundlage: '§ 14 Abs. 4 Satz 1 Nr. 6 UStG',
+  },
+  'USTG-14-4-7': pflicht('Entgelt nach Steuersätzen', ['BG-23', 'BT-116'], '§ 14 Abs. 4 Satz 1 Nr. 7 UStG'),
+  'USTG-14-4-8': pflicht('Steuersatz und Steuerbetrag oder Hinweis auf eine Befreiung', ['BT-119', 'BT-117', 'BT-120', 'BT-121'], '§ 14 Abs. 4 Satz 1 Nr. 8 UStG'),
+  'USTG-14-4-10': {
+    titel: 'Angabe „Gutschrift“ prüfen',
+    klartext: 'Bei einer Gutschrift im Gutschriftverfahren (BT-3 = 389) muss die Angabe „Gutschrift“ auf dem Beleg stehen; in den Bemerkungen (BT-22) wurde sie nicht gefunden.',
+    handlung: 'Angabe in der Ansicht prüfen.',
+    ustRelevant: 'unklar',
+    btBezug: ['BT-3', 'BT-22'],
+    quelle: 'ustg',
+    stufe: 'hinweis',
+    fehlerklasse: 'keine',
+    rechtsgrundlage: '§ 14 Abs. 4 Satz 1 Nr. 10 UStG',
+  },
+  'USTG-EMPFAENGER': {
+    titel: 'Eigene Firma nicht Empfänger',
+    klartext: 'Als Rechnungsempfänger steht nicht Ihre Firma (Vergleich über USt-IdNr. und Namen samt Varianten aus den Einstellungen). Eine Rechnung an einen anderen Empfänger berechtigt nicht zum Vorsteuerabzug.',
+    handlung: 'Prüfen, ob die Rechnung an Sie gerichtet ist; sonst korrigierte Rechnung anfordern oder Namensvariante ergänzen.',
+    ustRelevant: true,
+    btBezug: ['BT-44', 'BT-48'],
+    quelle: 'ustg',
+    stufe: 'warnung',
+    fehlerklasse: 'keine',
+    rechtsgrundlage: '§ 15 Abs. 1 Satz 1 Nr. 1 UStG',
+  },
+  'USTDV-34A': {
+    titel: 'Rechnung eines Kleinunternehmers',
+    klartext: 'Alle Steuerzeilen sind steuerfrei mit Hinweis auf § 19 UStG; es gelten die Pflichtangaben nach § 34a UStDV. Die Erkennung ist eine Heuristik.',
+    handlung: 'Prüfen, ob der Lieferant Kleinunternehmer ist; eine solche Rechnung berechtigt nicht zum Vorsteuerabzug.',
+    ustRelevant: 'unklar',
+    btBezug: ['BT-118', 'BT-120'],
+    quelle: 'ustg',
+    stufe: 'hinweis',
+    fehlerklasse: 'keine',
+    rechtsgrundlage: '§ 34a UStDV',
+  },
+  'PLAUS-STEUERSATZ': plaus('Unüblicher Steuersatz', 'Kategorie S mit einem anderen Satz als 19 % oder 7 %. Ein falscher Steuersatz fällt bei der Validierung nicht auf (BMF Rn. 35a).', 'warnung', true, ['BT-118', 'BT-119']),
+  'PLAUS-DATUM': plaus('Rechnungsdatum in der Zukunft', 'Das Rechnungsdatum liegt mehr als einen Tag in der Zukunft.', 'warnung', 'unklar', ['BT-2']),
+  'PLAUS-FAELLIG': plaus('Fälligkeit vor Rechnungsdatum', 'Das Fälligkeitsdatum liegt vor dem Rechnungsdatum.', 'hinweis', false, ['BT-9', 'BT-2']),
+  'PLAUS-WAEHRUNG': plaus('Fremdwährung', 'Die Rechnung lautet nicht auf Euro; der Export an die Kanzlei ist für diesen Beleg gesperrt (Fremdwährung folgt später).', 'warnung', 'unklar', ['BT-5']),
+  'PLAUS-IBAN': plaus('IBAN mit falscher Prüfziffer', 'Die IBAN besteht die Prüfziffernrechnung (Modulo 97) nicht; sie ist falsch geschrieben oder gefälscht.', 'warnung', false, ['BT-84']),
+  'PLAUS-ANHANG-EXTERN': plaus('Verweis auf externes Dokument', 'Die Rechnung verweist auf ein externes Dokument. Der Link wird nicht geöffnet; Angaben daraus zählen nicht (BMF Rn. 35).', 'hinweis', false, ['BT-124']),
   'BETRAG-FORMAT': {
     titel: 'Betrag mit mehr als 2 Nachkommastellen',
     klartext: 'Ein Betrag auf Belegebene hat mehr als 2 Nachkommastellen oder ist kein Dezimalwert. EN 16931 erlaubt dort höchstens 2 Stellen; die Regeln BR-DEC melden das ebenfalls.',

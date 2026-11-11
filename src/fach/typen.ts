@@ -234,6 +234,8 @@ export interface Rechnungsdaten {
   zahlungsbedingungen: string | null; // BT-20
   verkaeufer: Partei
   kaeufer: Partei
+  /** BT-63, USt-IdNr. des Steuervertreters (BG-11); additiv ergänzt für R8 Nr. 2 */
+  steuervertreterUstId?: string | null
   lieferdatum: Datum | null;    // BT-72
   abrechnungszeitraum: { von: Datum | null; bis: Datum | null } | null; // BG-14
   positionen: Position[];       // BG-25

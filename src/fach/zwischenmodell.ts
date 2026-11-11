@@ -223,6 +223,7 @@ export function leseZwischenmodell(xr: string): Extraktion {
     zahlungsbedingungen: text(wurzel, 'Payment_terms'),
     verkaeufer: verkaeufer(wurzel),
     kaeufer: kaeufer(wurzel),
+    steuervertreterUstId: ohneLeerraum(text(knoten(wurzel, 'SELLER_TAX_REPRESENTATIVE_PARTY'), 'Seller_tax_representative_VAT_identifier')),
     lieferdatum: text(lieferung, 'Actual_delivery_date'),
     abrechnungszeitraum: zeitraum(knoten(wurzel, 'INVOICING_PERIOD'), 'Invoicing_period_start_date', 'Invoicing_period_end_date'),
     positionen,
