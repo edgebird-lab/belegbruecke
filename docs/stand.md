@@ -28,7 +28,7 @@ Letzte Aktualisierung: 11.11.2026
 ## Phase 2 – Archiv und Server
 
 - [x] **2.1** SQLite-Schema mit Migrationen und Protokoll-Triggern: `src/server/speicher/db.ts` (einziger Zugang, WAL, Transaktionen, `VACUUM INTO`), `migrationen.ts` (11 STRICT-Tabellen, Version über `user_version`). T-H5 grün, Sicherung und Wiederherstellung getestet.
-- [ ] **2.2** Dateiablage nach SHA-256
+- [x] **2.2** Dateiablage nach SHA-256: `src/server/speicher/ablage.ts`, atomar (Temporärdatei, fsync, umbenennen), danach schreibgeschützt, gleicher Hash ohne zweite Datei, auch bei gleichzeitigem Upload; Berichte nie überschreibbar, Pfade nur innerhalb der Ablage. Tests grün.
 - [ ] **2.3** Protokoll mit Hashkette und Kettenprüfung (R17, R18)
 - [ ] **2.4** Aufbewahrungsfrist (R15)
 - [ ] **2.5** HTTP-API mit Hono und zod für den Upload-Ablauf
