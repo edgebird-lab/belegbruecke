@@ -21,7 +21,7 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **1.3** ZUGFeRD-Anhänge mit pdf.js im Worker (R5): `src/pruefung/pdf.ts`, Worker-Pool `pool.ts` mit Zeitlimit (PDF 20 s, Prüfung 60 s), Speichergrenze und Ersatz-Worker. T-Z1 bis T-Z6 grün (T-Z1 gegen den Mustang-Hash, T-Z5 im Worker).
 - [x] **1.4** Prüfpipeline im Worker (R6): `szenarien.ts`, `xsd.ts`, `schematron.ts`, `stufen.ts`, `validierung.ts`, Ablauf `eingang.ts`. **T-V1 grün:** alle 86 Testdateien und M1 bis M8 gleich dem Referenzlauf (13 s). T-F4, T-V4, T-V5 grün. Abweichungen von 7.1 in [T8](entscheidungen.md#t8-prüfdienst-worker-und-pdf-schritte-13-bis-15).
 - [x] **1.5** Datenextraktion über das KoSIT-Zwischenmodell: `src/fach/zwischenmodell.ts` (rein), `src/pruefung/extraktion.ts` (SaxonJS). T-X1 bis T-X4 grün; alle 86 Dateien ohne Befund, Summen stimmen (BR-CO-15).
-- [ ] **1.6** Klartext-Katalog (R7)
+- [x] **1.6** Klartext-Katalog (R7): 45 Regeln der Regelwerke (`src/fach/klartext/regelwerk.ts`) und 17 eigene, alle in eigenen Worten mit BT-Bezug, USt-Einordnung und Handlung; jede Regel aus Referenzlauf und EXTENDED-Vergleich ist erklärt. `docs/regelkatalog.md` wird mit `node scripts/regelkatalog.mjs` erzeugt, ein Test hält sie aktuell. T-V2 bis T-V5 grün.
 - [ ] **1.7** Pflichtangaben, Empfängerprüfung, Plausibilität (R8, R11)
 - [ ] **1.8** Dubletten und Lieferantenschlüssel (R9, R10)
 

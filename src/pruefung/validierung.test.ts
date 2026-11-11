@@ -107,6 +107,23 @@ describe('Einzelfälle der Pipeline', () => {
     }
   })
 
+  it('T-V2: M1 ist ein Geschäftsregelfehler, umsatzsteuerlich relevant, mit Klartext aus dem Katalog', async () => {
+    const { validierung } = await pruefe(mutation('M1'))
+    const b = validierung!.befunde.find((x) => x.regelId === 'BR-CO-14')!
+    expect(b).toMatchObject({ fehlerklasse: 'geschaeftsregelfehler', ustRelevant: true, btBezug: ['BT-110', 'BT-117'] })
+    expect(b.klartext).toContain('Steuerbetrag der Rechnung (BT-110)')
+    expect(b.handlung).toBe('Korrigierte Rechnung anfordern; Vorsteuer nur aus einer richtigen Rechnung.')
+    expect(b.originaltext).toContain('[BR-CO-14]')
+  })
+
+  it('T-V3: M2 meldet BR-DE-15, umsatzsteuerlich unbeachtlich', async () => {
+    const { validierung } = await pruefe(mutation('M2'))
+    expect(validierung!.angenommen).toBe(false)
+    const b = validierung!.befunde.find((x) => x.regelId === 'BR-DE-15')!
+    expect(b).toMatchObject({ quelle: 'xrechnung', stufe: 'fehler', fehlerklasse: 'geschaeftsregelfehler', ustRelevant: false })
+    expect(b.klartext).toContain('umsatzsteuerlich unbeachtlich')
+  })
+
   it('01.01a ist angenommen; BR-DE-TMP-32 ist nur ein Hinweis', async () => {
     const { validierung } = await pruefe(kosit('standard/01.01a-INVOICE_ubl.xml'))
     expect(validierung).toMatchObject({ szenario: 'EN16931 XRechnung (UBL Invoice)', angenommen: true, xsdGueltig: true, wohlgeformt: true })
