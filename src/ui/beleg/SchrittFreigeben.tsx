@@ -48,7 +48,8 @@ export function SchrittFreigeben({ d, fertig }: Schrittprops) {
         {!kt?.nurBeleg && (
           <>
             <dt>Kreditorenkonto</dt>
-            <dd>{kreditor ?? (d.kreditorVorschlag ? `wird bei der Freigabe vergeben: ${d.kreditorVorschlag}` : '–')}</dd>
+            {/* Ohne zugeordneten Lieferanten gibt es noch kein Konto; der Vorschlag wäre der eines anderen Lieferanten */}
+            <dd>{kreditor ?? (d.lieferant && d.kreditorVorschlag ? `wird bei der Freigabe vergeben: ${d.kreditorVorschlag}` : '–')}</dd>
           </>
         )}
         <dt>Rechnung</dt>

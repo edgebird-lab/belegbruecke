@@ -151,6 +151,8 @@ export interface Belegdetail {
   lieferant: Lieferant | null
   lieferantenvorschlag: { schluessel: string; vorhanden: Lieferant | null; neu: Pick<Lieferant, 'schluessel' | 'name' | 'ustId' | 'steuernummer' | 'anschrift'> } | null
   kreditorVorschlag: number | null
+  /** nächstes freies Kreditorenkonto (für einen neuen Lieferanten oder einen ohne Konto) */
+  naechsterKreditor: number | null
   kontierungsvorschlag: Kontierung | null
   freigabe: { hindernisse: string[]; begruendungNoetig: boolean; vorsteuerGefaehrdet: boolean }
   dublettenVergleich: { hinweis: Dublettenhinweis; anderer: Belegzeile | null }[]

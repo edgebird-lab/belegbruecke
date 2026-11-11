@@ -76,6 +76,8 @@ export function registriereBelege(app: Hono<Umgebung>, d: Dienste): void {
       lieferant,
       lieferantenvorschlag: vorschlag,
       kreditorVorschlag: kreditorVorschlag(d, lieferant ?? vorschlag?.vorhanden ?? null),
+      // nächstes freies Kreditorenkonto, für einen neuen Lieferanten oder einen ohne Konto (B4)
+      naechsterKreditor: kreditorVorschlag(d, null),
       kontierungsvorschlag: kontierungsvorschlag(d, b),
       freigabe: { hindernisse: freigabeHindernisse(b), begruendungNoetig: begruendungNoetig(b), vorsteuerGefaehrdet: vorsteuerGefaehrdet(b) },
       dublettenVergleich: b.dubletten.map((h) => {

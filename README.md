@@ -2,7 +2,7 @@
 
 E-Rechnungs-Eingang, GoBD-Archiv und DATEV-Übergabe für Kleinbetriebe. Die Belegbrücke nimmt eingehende E-Rechnungen an (Upload oder E-Mail-Postfach), prüft sie nach EN 16931 und XRechnung mit den offiziellen KoSIT- und CEN-Artefakten und erklärt Fehler in Klartext. Sie bewahrt das Original unverändert auf, mit Prüfbericht und einem Protokoll, das eine SHA-256-Hashkette sichert, führt durch Zuordnen, Kontieren und Freigeben und erzeugt monatlich die Übergabe an die Steuerkanzlei. Läuft lokal, ohne KI, ohne Cloud und ohne Java.
 
-> **Stand: Version 0.1 in Arbeit.** Fertig sind Fachkern, Prüfung, Archiv, Server, Oberfläche, Kontierung mit DATEV-Übergabe und Postfach (Phasen 0 bis 5). Offen sind die Schritte mit Robin und der Kanzlei: DATEV-Formate an der Primärquelle prüfen (0.6) und der Probeimport (4.7); bis dahin heißt der Export „Vorschau“. Stand: [docs/stand.md](docs/stand.md). Annahmen, die noch eine Entscheidung brauchen: [docs/entscheidungen.md](docs/entscheidungen.md). Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
+> **Stand: Version 0.1 in Arbeit.** Fertig sind Fachkern, Prüfung, Archiv, Server, Oberfläche, Kontierung mit DATEV-Übergabe und Postfach (Phasen 0 bis 5) sowie die Qualitätsschritte 6.1 bis 6.3; ein Prüferdurchgang am 11.11.2026 hat die Fachlogik nachgerechnet und sechs Fehler behoben (gleichzeitige Anfragen, Kleinbetrag bei negativem Betrag, Sperren nach Kontenänderungen, Erfassung von Hand bei 1280 Pixel, Umbruch bei 320 Pixel, Druck). Offen sind die Schritte mit Robin und der Kanzlei: DATEV-Formate an der Primärquelle prüfen (0.6), der Probeimport (4.7) und die Abnahme von `start.cmd`; bis dahin heißt der Export „Vorschau“. Stand: [docs/stand.md](docs/stand.md). Annahmen, die noch eine Entscheidung brauchen: [docs/entscheidungen.md](docs/entscheidungen.md). Spezifikation: [docs/spezifikation.md](docs/spezifikation.md).
 
 ![Eingang mit offenen Belegen](docs/bilder/eingang.png)
 
@@ -87,10 +87,10 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 
 ## Qualität
 
-- Unit-Tests für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-K, T-E, T-I, T-H, T-A, T-S), die Testvektoren der Hashkette und das Fallbeispiel; Zweigabdeckung der Fachlogik über 90 % (Schwelle in `npm run abdeckung`).
+- 286 Unit-Tests (Vitest) für alle Fachregeln mit von Hand nachgerechneten Werten, die Testfälle der Spezifikation (T-F, T-Z, T-V, T-X, T-P, T-D, T-K, T-E, T-I, T-H, T-A, T-S), die Testvektoren der Hashkette, das Fallbeispiel und gleichzeitige Anfragen (Doppelklick, zweites Fenster: nichts wird still überschrieben oder doppelt protokolliert); Zweigabdeckung der Fachlogik 94,7 % (Schwelle 90 % in `npm run abdeckung`).
 - Gleichlauf mit dem KoSIT-Validator für alle 86 Testdateien der KoSIT-Testsuite (`testdaten/referenz/kosit-1.6.3.json`); EXTF-Ausgabe bytegleich mit einer Golden File (`testdaten/datev/EXTF_03.01a.csv`).
-- Browsertests gegen den echten Server: Einrichtung nur per Tastatur, Beleg bis zur Freigabe, Dublette, Erfassung von Hand, Übergabe, Archiv, Postfach gegen einen IMAP-Testserver; jeder Schritt mit axe hell und dunkel ohne schwere Befunde; Sicherheitsheader und CSP ohne Verstöße.
-- Bei jedem Push laufen Lint, Unit-Tests und Build in der CI; die Browsertests lokal vor jedem Commit.
+- 20 Browsertests gegen den echten Server: Einrichtung nur per Tastatur, Beleg bis zur Freigabe, Dublette, Erfassung von Hand, Übergabe, Archiv, Postfach gegen einen IMAP-Testserver, Kreditorenkonto im Schritt „Zuordnen“; jeder Schritt mit axe hell und dunkel ohne schwere Befunde; elf Hauptseiten bei 1280 und 320 Pixel ohne seitliches Verschieben (WCAG 1.4.10); Sicherheitsheader und CSP ohne Verstöße.
+- Bei jedem Push laufen Lint, Unit-Tests und Build in der CI (sobald das private Repo auf GitHub angelegt ist); die Browsertests lokal vor jedem Commit.
 
 ## Grenzen
 
@@ -98,6 +98,8 @@ Weitere Skripte: `node scripts/mutationen.mjs` (Mutationen M1 bis M8), `node scr
 - ZUGFeRD EXTENDED wird gegen EN 16931 geprüft; 12 Regeln, die bei gültigen EXTENDED-Rechnungen anschlagen, zählen dort nur als Warnung. ZUGFeRD 2.0 mit `urn:zugferd.de:2p0:`-Kennung ist noch nicht zugeordnet.
 - Postfach nur mit Passwort oder App-Passwort über IMAP mit TLS; OAuth2 (Microsoft 365, Gmail) folgt später.
 - Fremdwährung, PDF/A, Signaturen und Zeitstempel werden nicht geprüft bzw. nicht übergeben; Löschen nach Fristablauf kommt später.
+- Listen laden alle Belege auf einmal (für Kleinbetriebe ausreichend, bei mehreren tausend Belegen langsam). Ein Upload darf zusammen höchstens 120 MB groß sein; größere Mengen in mehreren Schritten hochladen.
+- Exportdateien werden beim erneuten Download nicht gegen ihren Hash geprüft; die Kettenprüfung umfasst wie spezifiziert nur `originale/` und `berichte/`. Das Übergabeprotokoll nennt Berater- und Mandantennummer, nicht den Firmennamen.
 
 ## Rechtliches
 

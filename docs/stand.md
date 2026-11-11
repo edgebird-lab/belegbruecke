@@ -4,13 +4,13 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. 277 Unit-Tests und 18 Browsertests (axe hell und dunkel) grün. **GitHub-Repo fehlt noch** (Rechteprüfung hat `gh repo create` abgelehnt): im Projektordner `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`. Phase 7 nur nach Robins Freigabe.
+**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. Prüferdurchgang am 11.11.2026 abgeschlossen (siehe unten). 286 Unit-Tests und 20 Browsertests (axe hell und dunkel) grün. **GitHub-Repo fehlt noch** (Rechteprüfung hat `gh repo create` auch im Prüferdurchgang abgelehnt): im Projektordner `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`. Phase 7 nur nach Robins Freigabe.
 
 ## Für Robin (in dieser Reihenfolge)
 
 1. Privates Repo anlegen und pushen: `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`; danach läuft zum ersten Mal die CI (Lint, Tests, Build).
 2. `start.cmd` einmal ausprobieren (Schritt 6.4): Einrichtung durchklicken, eine Rechnung aus `testdaten/fallbeispiel/` hochladen.
-3. Annahmen durchsehen: Tabelle oben in [entscheidungen.md](entscheidungen.md) (offene Fragen 1 bis 15) sowie T11 bis T13 (Kontierung, Oberfläche, Postfach).
+3. Annahmen durchsehen: Tabelle oben in [entscheidungen.md](entscheidungen.md) (offene Fragen 1 bis 15) sowie T11 bis T14 (Kontierung, Oberfläche, Postfach, Prüferdurchgang).
 4. Schritt 0.6: DATEV-Formatbeschreibung (Dok.-Nr. 1036228) neben [datev-felder.md](datev-felder.md) legen und die Feldliste vergleichen; Kanzlei nach BU-Schlüsseln, Automatikkonten, Berater- und Mandantennummer fragen.
 5. Schritt 4.7: Probeimport mit der Kanzlei (Fragen in [datev-felder.md](datev-felder.md), unten); danach den Export von „Vorschau“ auf endgültig umstellen und Version 0.1.0 taggen (6.5).
 6. Phase 7 (Docker, Windows-Programm) erst nach Freigabe.
@@ -32,8 +32,8 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **1.3** ZUGFeRD-Anhänge mit pdf.js im Worker (R5): `src/pruefung/pdf.ts`, Worker-Pool `pool.ts` mit Zeitlimit (PDF 20 s, Prüfung 60 s), Speichergrenze und Ersatz-Worker. T-Z1 bis T-Z6 grün (T-Z1 gegen den Mustang-Hash, T-Z5 im Worker).
 - [x] **1.4** Prüfpipeline im Worker (R6): `szenarien.ts`, `xsd.ts`, `schematron.ts`, `stufen.ts`, `validierung.ts`, Ablauf `eingang.ts`. **T-V1 grün:** alle 86 Testdateien und M1 bis M8 gleich dem Referenzlauf (13 s). T-F4, T-V4, T-V5 grün. Abweichungen von 7.1 in [T8](entscheidungen.md#t8-prüfdienst-worker-und-pdf-schritte-13-bis-15).
 - [x] **1.5** Datenextraktion über das KoSIT-Zwischenmodell: `src/fach/zwischenmodell.ts` (rein), `src/pruefung/extraktion.ts` (SaxonJS). T-X1 bis T-X4 grün; alle 86 Dateien ohne Befund, Summen stimmen (BR-CO-15).
-- [x] **1.6** Klartext-Katalog (R7): 61 Regeln der Regelwerke (`src/fach/klartext/regelwerk.ts`) und 35 eigene (mit R8 und R11), alle in eigenen Worten mit BT-Bezug, USt-Einordnung und Handlung; jede Regel aus Referenzlauf und EXTENDED-Vergleich ist erklärt. `docs/regelkatalog.md` wird mit `node scripts/regelkatalog.mjs` erzeugt, ein Test hält sie aktuell. T-V2 bis T-V5 grün.
-- [x] **1.7** Pflichtangaben, Empfängerprüfung, Plausibilität (R8, R11): `pflichtangaben.ts` (§ 14 Abs. 4 UStG, §§ 33, 34a UStDV, Erfassung von Hand), `plausibilitaet.ts` (IBAN Modulo 97), `pruefbericht.ts` (Prüfergebnis und Ampel nach 5.3). T-P1 bis T-P11 grün; T-P1 mit Nr. 6 „pruefen“ statt „erfüllt“ ([T9](entscheidungen.md#t9-pflichtangaben-ampel-und-plausibilität-schritt-17)).
+- [x] **1.6** Klartext-Katalog (R7): 61 Regeln der Regelwerke (`src/fach/klartext/regelwerk.ts`) und 36 eigene (mit R8 und R11), alle in eigenen Worten mit BT-Bezug, USt-Einordnung und Handlung; jede Regel aus Referenzlauf und EXTENDED-Vergleich ist erklärt. `docs/regelkatalog.md` wird mit `node scripts/regelkatalog.mjs` erzeugt, ein Test hält sie aktuell. T-V2 bis T-V5 grün.
+- [x] **1.7** Pflichtangaben, Empfängerprüfung, Plausibilität (R8, R11): `pflichtangaben.ts` (§ 14 Abs. 4 UStG, §§ 33, 34a UStDV, Erfassung von Hand), `plausibilitaet.ts` (IBAN Modulo 97), `pruefbericht.ts` (Prüfergebnis und Ampel nach 5.3). T-P1 bis T-P11 grün; T-P1 mit Nr. 6 „pruefen“ statt „erfüllt“ ([T9](entscheidungen.md#t9-pflichtangaben-ampel-und-plausibilität-schritt-17)). Kleinbetrag seit dem Prüferdurchgang nach dem Betrag ohne Vorzeichen ([T14](entscheidungen.md#t14-prüferdurchgang-11112026)).
 - [x] **1.8** Dubletten und Lieferantenschlüssel (R9, R10): `dubletten.ts` (drei Stufen, Abweichungen in Klartext, Sperre bis zur Entscheidung), `lieferant.ts` (Schlüssel, Vorschlag, Kreditorenkonto mit Prüfung). T-D1 bis T-D4 grün (T-D1 als reine Funktion; „kein neuer Beleg“ folgt mit der API in 2.5), dazu der Partnerschlüssel aus T-K9.
 
 ## Phase 2 – Archiv und Server
@@ -53,7 +53,7 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **3.4** Prüfen (Ampel, Befunde gruppiert, Pflichtangaben, Drucken, Text für die Rückfrage kopieren: `src/fach/rueckfrage.ts`) und Ansehen (KoSIT-Ansicht im Sandbox-iframe, Eckdaten, PDF-Reiter bei ZUGFeRD). U-2 bis „Ansehen“, T-S5 und T-S8 grün.
 - [x] **3.5** Zuordnen mit Dublettenvergleich nebeneinander, Lieferantenvorschlag (R10) und Kreditorenkonto. Browsertest für T-D2 grün, API-Tests in `src/server/schritte.test.ts`.
 - [x] **3.6** Kontieren (Sachkonto je Zeile, Suche, zuletzt genutzte zuerst, BU nach R13, Summenprüfung) und Freigeben/Ablehnen, Rücknahme, Aufheben. U-2 und U-3 grün.
-- [x] **3.7** Handerfassung für sonstige Rechnungen (R16): PDF oder Bild links, Formular rechts, Steuer berechnen, Summe übernehmen; danach R8 bis R15 (`src/fach/handerfassung.ts`). Browsertest PDF ohne XML bis zur Freigabe grün (`e2e/3-handerfassung.spec.ts`).
+- [x] **3.7** Handerfassung für sonstige Rechnungen (R16): PDF oder Bild links, Formular rechts (je Steuerzeile ein beschrifteter Block, passt seit dem Prüferdurchgang auch bei 1280 Pixel neben die PDF), Steuer berechnen, Summe übernehmen; danach R8 bis R15 (`src/fach/handerfassung.ts`). Browsertest PDF ohne XML bis zur Freigabe grün (`e2e/3-handerfassung.spec.ts`).
 - [x] **3.8** Archivsuche (Volltext, Betrag, Zeitraum, Status), Belegdetail mit Protokoll, „Archiv prüfen“ mit Kettenanker und druckbarem Kettenbericht, Prüferexport (R22). Suche nach „123456XX“ findet den Beleg (`e2e/5-archiv.spec.ts`).
 
 ## Phase 4 – Kontierung und DATEV-Übergabe
@@ -61,7 +61,7 @@ Letzte Aktualisierung: 11.11.2026
 - [x] **4.1** Kontenplan von Hand und per CSV (`src/fach/kontenplan.ts`, `/api/sachkonten`, Oberfläche in E3 und Einstellungen), Lieferantenliste mit Kreditorenkonto. Import von 20 Konten und Kreditor-Test grün.
 - [x] **4.2** Kontierungsvorschlag (R12, R13): `src/fach/kontierung.ts` (Steuerfall, BU-Schlüssel, Soll/Haben, Buchungstext, Vorschlag aus der Historie, Wahl des Benutzers, Regeln bei Freigabe und Rücknahme), `src/fach/freigabe.ts` (Statusübergänge, R14). T-K1 bis T-K9 grün (`kontierung.test.ts`).
 - [x] **4.3** EXTF-Buchungsstapel (R19): `src/fach/datev/extf.ts` mit 125 Feldern nach `ledermann/datev`, eigener Windows-1252-Kodierung (`cp1252.ts`, statt iconv-lite). T-E1 (bytegleich mit `testdaten/datev/EXTF_03.01a.csv`, selbst erzeugt, Bestätigung durch den Probeimport 4.7 offen) bis T-E4 grün.
-- [x] **4.4** Monatsgruppierung, Nachtrag, Exportsperren (R19, R21): `src/fach/uebergabe.ts` (Monat des Belegdatums, Nachtragsnummer, Sperrgründe je Beleg und Stammdaten, Buchungen, Summen je Steuersatz). T-E5, T-E6, T-E8 und der Exportteil von T-K3 grün.
+- [x] **4.4** Monatsgruppierung, Nachtrag, Exportsperren (R19, R21): `src/fach/uebergabe.ts` (Monat des Belegdatums, Nachtragsnummer, Sperrgründe je Beleg und Stammdaten, Buchungen, Summen je Steuersatz). T-E5, T-E6, T-E8 und der Exportteil von T-K3 grün. Seit dem Prüferdurchgang sperrt auch ein BU-Schlüssel auf einem inzwischen als Automatikkonto geführten Sachkonto und ein BU-Schlüssel, der nicht mehr zu den Einstellungen passt.
 - [x] **4.5** Belegpaket, DUO-Paket nur nach Bestätigung (R20): `src/fach/datev/belegpaket.ts` (ZIP mit fflate, `index.csv` UTF-8 mit BOM), Erzeugung im Server (`src/server/dienste/uebergabe.ts`, Ablage unter `exporte/<lauf-id>/` schreibgeschützt). T-E7 grün, auch über die API (Original im Paket mit dem Hash des Archivs). DUO-Paket bleibt aus, bis 0.6 das Format bestätigt; `document.xml` gegen das DATEV-XSD entfällt damit vorerst.
 - [x] **4.6** Übergabe-Assistent U1 bis U4 mit Übergabeprotokoll in der Druckansicht (Mandant, Zeitraum, Summen, Dateien mit SHA-256, Kettenanker, Nur-Beleg, Hinweise), Hinweis „Vorschau“. U-4 grün (`e2e/4-uebergabe.spec.ts`). Eigene Feldnotizen: [datev-felder.md](datev-felder.md).
 - [ ] **4.7** **(Robin)** Probeimport bei der Kanzlei
@@ -75,11 +75,23 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 6 – Qualität und Version 0.1
 
-- [x] **6.1** Barrierefreiheit und Tastaturbedienung: jeder Schritt (Anmeldung, Einrichtung E1 bis E5, Eingang, B1 bis B6, Erfassung von Hand, Übergabe U1 bis U4, Archiv, Belegdetail, alle Bereiche der Einstellungen, Postfach) mit axe hell und dunkel ohne Befunde der Stufen serious und critical (U-5). Einrichtung (U-1) und Beleg-Assistent bis zur Freigabe nur per Tastatur (`e2e/1-einrichtung.spec.ts`, `e2e/7-tastatur.spec.ts`).
-- [x] **6.2** Sicherheitsdurchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md), `npm audit` ohne Befund (lokal), Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Bewusst offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build; Robin entscheidet) und die Sicherung außerhalb des Rechners (später restic).
+- [x] **6.1** Barrierefreiheit und Tastaturbedienung: jeder Schritt (Anmeldung, Einrichtung E1 bis E5, Eingang, B1 bis B6, Erfassung von Hand, Übergabe U1 bis U4, Archiv, Belegdetail, alle Bereiche der Einstellungen, Postfach) mit axe hell und dunkel ohne Befunde der Stufen serious und critical (U-5). Einrichtung (U-1) und Beleg-Assistent bis zur Freigabe nur per Tastatur (`e2e/1-einrichtung.spec.ts`, `e2e/7-tastatur.spec.ts`). Seit dem Prüferdurchgang: elf Hauptseiten bei 1280 und 320 Pixel ohne seitliches Verschieben (WCAG 1.4.10, `e2e/8-breite.spec.ts`).
+- [x] **6.2** Sicherheitsdurchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md), `npm audit` ohne Befund (lokal), Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Seit dem Prüferdurchgang: gleichzeitige Anfragen auf denselben Beleg überschreiben nichts still (`src/server/nebenlaeufigkeit.test.ts`). Bewusst offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build; Robin entscheidet) und die Sicherung außerhalb des Rechners (später restic).
 - [x] **6.3** Fallbeispiel „Oktober“ mit 12 Belegen (`testdaten/fallbeispiel/`, erzeugt mit `scripts/fallbeispiel.mjs`, dazu eine PDF ohne XML): `src/server/fallbeispiel.test.ts` grün; alle Zahlen des README-Abschnitts stehen dort als Erwartung (Summen von Hand nachgerechnet).
 - [ ] **6.4** README mit Haftungshinweis, Fallbeispiel und Bildern (erzeugt mit `scripts/readme-bilder.mjs` nach `docs/bilder/`), [datenmodell.md](datenmodell.md) und [sicherheit.md](sicherheit.md) auf Stand Phase 5, [regelkatalog.md](regelkatalog.md) und [lizenzen-dritter.md](lizenzen-dritter.md) neu erzeugt, [datev-felder.md](datev-felder.md). `start.cmd` baut die Oberfläche jetzt bei jedem Start neu. Offen: Abnahme von `start.cmd` durch Robin (nicht ausgeführt, weil es auf Robins Rechner den Browser öffnet).
 - [ ] **6.5** Version 0.1.0 taggen (Repo privat). Wartet auf Robin: GitHub-Repo fehlt (Anlegen in dieser Sitzung abgelehnt, siehe oben), damit lief die CI noch nie; dazu 0.6, 4.7 und die Abnahme von `start.cmd`.
+
+## Prüferdurchgang (11.11.2026)
+
+Kritische Durchsicht gegen die Spezifikation, Einzelheiten und Entscheidungen in [T14](entscheidungen.md#t14-prüferdurchgang-11112026). Nachgerechnet und bestätigt: Fallbeispiel (alle Summen an den XML-Dateien), Golden File EXTF, Windows-1252-Tabelle, Steuer nach BR-CO-17, Kontierung, Soll/Haben, Fristen, Monatsübergabe. Die App lief auf Port 4184 mit dem Fallbeispiel; alle Hauptseiten wurden hell, dunkel, bei 1280 und 320 Pixel und in der Druckansicht angesehen.
+
+- [x] Gleichzeitige Anfragen: doppelte Freigabe (zweimal 200, zwei Protokolleinträge, Regel doppelt gezählt), veralteter Stand, Erfassung von Hand doppelt, Übergabe während einer Änderung, Ablehnen während der Prüfung, zwei „erste“ Benutzer. Behoben mit optimistischer Sperre, Reihenfolge in der API und Prüfung in der Transaktion; 7 Tests.
+- [x] Kleinbetrag nach dem Betrag ohne Vorzeichen (−5.000 € war Kleinbetrag); Test.
+- [x] Übergabe sperrt BU-Schlüssel auf inzwischen als Automatikkonto geführten Sachkonten und BU-Schlüssel, die nicht mehr zu den Einstellungen passen; Test.
+- [x] Erfassung von Hand bei 1280 Pixel (Seite verschob sich, Kategorie als „Nc“ abgeschnitten); Umbruch bei 320 Pixel auf allen Hauptseiten; Browsertest `e2e/8-breite.spec.ts`.
+- [x] Druck: Fokusrahmen der Überschrift und leere Kettenanker-Felder im Kettenbericht entfernt; Kettenbericht in Ortszeit.
+- [x] B4: Kreditorenkonto folgt der Wahl des Lieferanten (vorher irreführender Vorschlag beim zweiten Beleg eines Lieferanten); Browsertest `e2e/9-kreditor.spec.ts`.
+- [ ] Offen geblieben (siehe README, Grenzen): Listen ohne Seitenaufteilung, ein Upload je Anfrage höchstens 120 MB, Exportdateien werden beim erneuten Download nicht gegen ihren Hash geprüft, Firmenname fehlt im Übergabeprotokoll (nur Berater- und Mandantennummer).
 
 ## Phase 7 – Betrieb vorbereiten (nur nach Robins Freigabe)
 

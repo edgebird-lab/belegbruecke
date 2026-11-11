@@ -67,7 +67,7 @@ export function BelegAssistent({ id, schritt }: { id: string; schritt: Belegschr
   }
   const props: Schrittprops = { d, fertig, gesperrt: sperrgrund(b) }
   // Nach dem Neuladen beginnen die Schritte mit den neuen Daten (z. B. Vorschlag aus der Historie)
-  const stand = JSON.stringify([b.status, b.lieferantId, b.kontierung, b.handerfassung, b.dublettenEntscheidung, d.kontierungsvorschlag, d.kreditorVorschlag])
+  const stand = JSON.stringify([b.status, b.lieferantId, b.kontierung, b.handerfassung, b.dublettenEntscheidung, d.kontierungsvorschlag, d.kreditorVorschlag, d.naechsterKreditor])
   const titelText = z.lieferant ? `${z.belegnummer} · ${z.lieferant}` : z.belegnummer
   return (
     <div className="assistent">
