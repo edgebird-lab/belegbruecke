@@ -88,10 +88,14 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
     const e = await json(c, neuerBenutzerSchema)
     if (e.fehler) return e.fehler
     const b: Benutzer = { id: randomUUID().toUpperCase(), anmeldename: e.daten.anmeldename, name: e.daten.name, passwortHash: await hashePasswort(e.daten.passwort), aktiv: true, angelegtAm: d.uhr().toISOString() }
-    d.db.transaktion(() => {
+    // scrypt dauert; eine gleichzeitige zweite Anfrage darf in der Zwischenzeit keinen zweiten „ersten“ Benutzer anlegen
+    const angelegt = d.db.transaktion(() => {
+      if (d.benutzer.anzahl() > 0) return false
       d.benutzer.anlegen(b)
       d.protokoll.anhaengen({ akteur: { art: 'benutzer', id: b.id }, aktion: 'einstellungen-geaendert', belegId: null, daten: { bereich: 'benutzer', neu: { anmeldename: b.anmeldename, name: b.name } } })
+      return true
     })
+    if (!angelegt) return fehler(c, 409, 'SCHON-EINGERICHTET', 'Es gibt bereits einen Benutzer. Bitte melden Sie sich an.')
     d.sicherheitslog('benutzer-angelegt', { anmeldename: b.anmeldename, ip: ipAdresse(c) })
     setzeSitzung(c, b.id)
     return c.json({ benutzer: oeffentlicherBenutzer(b) }, 201)
@@ -133,10 +137,16 @@ export function erzeugeApp(d: Dienste, optionen: Appoptionen = {}): Hono<Umgebun
     if (e.fehler) return e.fehler
     if (d.benutzer.nachName(e.daten.anmeldename)) return fehler(c, 409, 'NAME-VERGEBEN', 'Dieser Anmeldename ist vergeben.')
     const b: Benutzer = { id: randomUUID().toUpperCase(), anmeldename: e.daten.anmeldename, name: e.daten.name, passwortHash: await hashePasswort(e.daten.passwort), aktiv: true, angelegtAm: d.uhr().toISOString() }
-    d.db.transaktion(() => {
+    // Nach dem Warten auf scrypt erneut prüfen: Höchstzahl und Name können inzwischen vergeben sein
+    const ergebnis = d.db.transaktion(() => {
+      if (d.benutzer.anzahl() >= MAX_BENUTZER) return 'zu-viele' as const
+      if (d.benutzer.nachName(b.anmeldename)) return 'vergeben' as const
       d.benutzer.anlegen(b)
       d.protokoll.anhaengen({ akteur: akteur(c), aktion: 'einstellungen-geaendert', belegId: null, daten: { bereich: 'benutzer', neu: { anmeldename: b.anmeldename, name: b.name } } })
+      return 'ok' as const
     })
+    if (ergebnis === 'zu-viele') return fehler(c, 409, 'ZU-VIELE-BENUTZER', `Version 0.1 erlaubt höchstens ${MAX_BENUTZER} Benutzer.`)
+    if (ergebnis === 'vergeben') return fehler(c, 409, 'NAME-VERGEBEN', 'Dieser Anmeldename ist vergeben.')
     return c.json({ benutzer: oeffentlicherBenutzer(b) }, 201)
   })
 

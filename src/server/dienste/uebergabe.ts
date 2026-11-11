@@ -8,6 +8,7 @@ import { belegpaket, belegpaketName, type Paketbeleg } from '../../fach/datev/be
 import { extfDatei } from '../../fach/datev/extf.ts'
 import { planeUebergabe, type Sperre, type Uebergabekontext, type Uebergabeplan } from '../../fach/uebergabe.ts'
 import type { Akteur, Beleg, Exportlauf } from '../../fach/typen.ts'
+import { BelegGeaendert } from '../speicher/belege.ts'
 import { ansichtHtml, letzterBericht } from './ansicht.ts'
 import type { Dienste } from './kontext.ts'
 
@@ -99,12 +100,12 @@ async function erzeugeLauf(d: Dienste, monat: string, akteur: Akteur): Promise<U
     nurBelegIds: plan.nurBeleg.map((b) => b.id),
     hinweise,
   }
-  d.db.transaktion(() => {
+  const schreibeLauf = () => {
     for (const f of abgelegt) {
       d.db.aendern('INSERT INTO dateien (pfad, sha256, art, mime_typ, bytes, angelegt_am) VALUES (?, ?, ?, ?, ?, ?)', [f.pfad, f.sha256, 'export', f.name.endsWith('.zip') ? 'application/zip' : 'text/csv', f.bytes, jetzt])
     }
     for (const b of plan.belege) {
-      d.belege.aktualisieren({ ...b, status: 'exportiert', exportlaufId: id }, jetzt)
+      d.belege.aktualisieren({ ...b, status: 'exportiert', exportlaufId: id }, jetzt, b)
       d.protokoll.anhaengen({ akteur, aktion: 'exportiert', belegId: b.id, daten: { exportlaufId: id, monat, nachtragNr: plan.nachtragNr } })
     }
     // Eintrag des Laufs mit Dateien und Belegliste (R17 Punkt 5); er ist der Kettenanker (R17 Punkt 8)
@@ -127,6 +128,26 @@ async function erzeugeLauf(d: Dienste, monat: string, akteur: Akteur): Promise<U
     })
     lauf.kettenanker = { nr: anker.nr, hash: anker.hash }
     d.exporte.anlegen(lauf)
-  })
+  }
+  const stand = planStand(plan, k)
+  try {
+    d.db.transaktion(() => {
+      // Während die Dateien entstanden (Ansicht im Worker, Lesen der Originale), konnte eine andere Anfrage
+      // einen Beleg, einen Lieferanten oder die Einstellungen ändern. Dann passen die Dateien nicht mehr.
+      const frischK = uebergabekontext(d)
+      if (planStand(planeUebergabe(monat, d.belege.liste(), d.exporte.alle(), frischK), frischK) !== stand) throw new BelegGeaendert('uebergabe')
+      schreibeLauf()
+    })
+  } catch (e) {
+    if (!(e instanceof BelegGeaendert)) throw e
+    // Die Dateien sind nirgends verbucht; sie gehören zu keinem Lauf
+    for (const f of abgelegt) await d.ablage.verwerfeUnverbucht(f.pfad)
+    return { ok: false, status: 409, code: 'GEAENDERT', text: 'Während die Dateien entstanden, hat sich ein Beleg, ein Lieferant oder eine Einstellung geändert. Prüfen Sie die Übergabe und erzeugen Sie sie noch einmal.', sperren: [] }
+  }
   return { ok: true, lauf }
+}
+
+/** Was den Inhalt der Dateien eines Laufs bestimmt: Belege, Nachtragsnummer, Sperren, Buchungen, DATEV-Kopfdaten. */
+function planStand(plan: Uebergabeplan, k: Uebergabekontext): string {
+  return JSON.stringify({ belege: plan.belege, nachtragNr: plan.nachtragNr, sperren: plan.sperren, buchungen: plan.buchungen, datev: k.einstellungen.datev })
 }

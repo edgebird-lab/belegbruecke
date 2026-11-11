@@ -20,10 +20,11 @@ export function registriereStammdaten(app: Hono<Umgebung>, d: Dienste): void {
   })
 
   app.put('/api/lieferanten/:id', async (c) => {
-    const alt = d.lieferanten.hole((c.req.param('id') ?? '').toUpperCase())
-    if (!alt) return fehler(c, 404, 'NICHT-GEFUNDEN', 'Diesen Lieferanten gibt es nicht.')
+    // Erst lesen, dann laden: zwischen Laden und Schreiben liegt kein await (kein veralteter Stand)
     const e = await leseJson(c, lieferantSchema)
     if (e.fehler) return e.fehler
+    const alt = d.lieferanten.hole((c.req.param('id') ?? '').toUpperCase())
+    if (!alt) return fehler(c, 404, 'NICHT-GEFUNDEN', 'Diesen Lieferanten gibt es nicht.')
     const neu: Lieferant = { ...alt, name: e.daten.name.trim(), ustId: e.daten.ustId || null, steuernummer: e.daten.steuernummer || null, anschrift: e.daten.anschrift, kreditorKonto: e.daten.kreditorKonto }
     if (neu.kreditorKonto !== alt.kreditorKonto) {
       if (alt.kreditorKonto !== null && d.belege.liste({ status: 'exportiert' }).some((b) => b.lieferantId === alt.id)) {

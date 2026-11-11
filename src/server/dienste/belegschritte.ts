@@ -14,12 +14,14 @@ import { kontierungsquelle, kontierungUebernehmen, kontierungVorschlagen, regeln
 import { lieferantVorschlagen, naechstesKreditorenkonto, pruefeKreditorenkonto, schluesselHand, type Lieferantenvorschlag } from '../../fach/lieferant.ts'
 import { ergaenzeHanderfassung } from '../../fach/pruefbericht.ts'
 import type { Akteur, Anschrift, Beleg, Handerfassung, Kontierung, Lieferant, Uuid } from '../../fach/typen.ts'
-import { merkmaleVon, schluesselVon } from '../speicher/belege.ts'
+import { BelegGeaendert, merkmaleVon, schluesselVon } from '../speicher/belege.ts'
 import type { Dienste } from './kontext.ts'
 
 export type Schrittergebnis = { ok: true; beleg: Beleg } | { ok: false; status: 400 | 404 | 409; code: string; text: string }
 
 const abgelehnt = (status: 400 | 404 | 409, code: string, text: string): Schrittergebnis => ({ ok: false, status, code, text })
+
+export const GEAENDERT_TEXT = 'Der Beleg wurde inzwischen geändert, etwa in einem anderen Fenster oder von einem anderen Benutzer. Laden Sie die Seite neu und prüfen Sie den aktuellen Stand.'
 
 function pruefeAktion(b: Beleg, aktion: Belegaktion): Schrittergebnis | null {
   const f = aktionErlaubt(b.status, aktion)
@@ -30,9 +32,27 @@ function benutzerId(akteur: Akteur): Uuid {
   return akteur.art === 'benutzer' ? akteur.id : '00000000-0000-4000-8000-000000000000'
 }
 
-function speichere(d: Dienste, b: Beleg): void {
-  d.belege.aktualisieren(b, d.uhr().toISOString())
+/** Schreibt `neu`, aber nur, wenn der Beleg noch so in der Datenbank steht wie `vorher` (optimistische Sperre). */
+function speichere(d: Dienste, neu: Beleg, vorher: Beleg): void {
+  d.belege.aktualisieren(neu, d.uhr().toISOString(), vorher)
 }
+
+/**
+ * Transaktion eines Schritts. Hat sich der Beleg seit dem Lesen geändert (zweites Fenster, Doppelklick,
+ * zweiter Benutzer), rollt sie zurück und meldet 409, statt den neueren Stand still zu überschreiben.
+ */
+function schreibe(d: Dienste, neu: Beleg, fn: () => void): Schrittergebnis {
+  try {
+    d.db.transaktion(fn)
+  } catch (e) {
+    if (e instanceof BelegGeaendert) return abgelehnt(409, 'GEAENDERT', GEAENDERT_TEXT)
+    throw e
+  }
+  return { ok: true, beleg: neu }
+}
+
+/** Belege, deren Erfassung von Hand gerade gespeichert wird (je Server), damit zwei Anfragen nicht dieselbe Berichtsnummer belegen. */
+const erfassungLaeuft = new WeakMap<Dienste, Set<Uuid>>()
 
 /** Lieferantenvorschlag nach R10 aus E-Rechnung oder Erfassung von Hand; null ohne Daten. */
 export function lieferantenvorschlag(d: Dienste, b: Beleg): Lieferantenvorschlag | null {
@@ -85,12 +105,11 @@ export function entscheideDublette(d: Dienste, b: Beleg, ergebnis: 'keine-dublet
     neu.status = 'abgelehnt'
     neu.ablehnung = { benutzerId: benutzerId(akteur), am: jetzt, grund: `Dublette von ${andere.map((a) => a.nummer).join(', ')}` }
   }
-  d.db.transaktion(() => {
-    speichere(d, neu)
+  return schreibe(d, neu, () => {
+    speichere(d, neu, b)
     d.protokoll.anhaengen({ akteur, aktion: 'dublette-entschieden', belegId: b.id, daten: { ergebnis, andere } })
     if (ergebnis === 'dublette') d.protokoll.anhaengen({ akteur, aktion: 'abgelehnt', belegId: b.id, daten: { grund: neu.ablehnung!.grund, vorherigerStatus: b.status } })
   })
-  return { ok: true, beleg: neu }
 }
 
 export interface Zuordnung {
@@ -144,10 +163,10 @@ export function ordneLieferantZu(d: Dienste, b: Beleg, z: Zuordnung, akteur: Akt
   const wechsel = b.lieferantId !== lieferant.id
   const neu: Beleg = { ...b, lieferantId: lieferant.id, kontierung: wechsel ? null : b.kontierung }
   neu.status = statusNachZuordnung(neu)
-  d.db.transaktion(() => {
+  return schreibe(d, neu, () => {
     if (angelegt) d.lieferanten.anlegen(lieferant)
     else d.lieferanten.aktualisieren(lieferant)
-    speichere(d, neu)
+    speichere(d, neu, b)
     d.protokoll.anhaengen({
       akteur,
       aktion: 'lieferant-zugeordnet',
@@ -155,7 +174,6 @@ export function ordneLieferantZu(d: Dienste, b: Beleg, z: Zuordnung, akteur: Akt
       daten: { lieferantId: lieferant.id, schluessel: lieferant.schluessel, name: lieferant.name, neu: angelegt, kreditorKonto: lieferant.kreditorKonto, belegSchluessel: schluesselVon(b) },
     })
   })
-  return { ok: true, beleg: neu }
 }
 
 /** B5: Sachkonto je Zeile (und Buchungstext, BU-Schlüssel bei Sonderfällen) übernehmen. */
@@ -169,8 +187,8 @@ export function kontiere(d: Dienste, b: Beleg, wahl: Zeilenwahl[], akteur: Akteu
   if (!r.ok) return abgelehnt(400, 'KONTIERUNG', r.fehler)
   const neu: Beleg = { ...b, kontierung: r.kontierung }
   neu.status = statusNachZuordnung(neu)
-  d.db.transaktion(() => {
-    speichere(d, neu)
+  return schreibe(d, neu, () => {
+    speichere(d, neu, b)
     d.protokoll.anhaengen({
       akteur,
       aktion: 'kontiert',
@@ -184,7 +202,6 @@ export function kontiere(d: Dienste, b: Beleg, wahl: Zeilenwahl[], akteur: Akteu
       },
     })
   })
-  return { ok: true, beleg: neu }
 }
 
 /** B3 bei sonstigen Rechnungen (R16): Werte von Hand erfassen; danach gelten R8 bis R15. */
@@ -192,6 +209,18 @@ export async function erfasseVonHand(d: Dienste, b: Beleg, h: Handerfassung, akt
   const f = pruefeAktion(b, 'handerfassung')
   if (f) return f
   if (b.format.belegart !== 'sonstige-rechnung') return abgelehnt(409, 'E-RECHNUNG', 'Bei einer E-Rechnung gilt der XML-Teil; eine Erfassung von Hand ist nicht vorgesehen.')
+  const laufend = erfassungLaeuft.get(d) ?? new Set<Uuid>()
+  erfassungLaeuft.set(d, laufend)
+  if (laufend.has(b.id)) return abgelehnt(409, 'LAEUFT', 'Die Erfassung dieses Belegs wird gerade gespeichert. Bitte einen Moment warten und die Seite neu laden.')
+  laufend.add(b.id)
+  try {
+    return await speichereErfassung(d, b, h, akteur)
+  } finally {
+    laufend.delete(b.id)
+  }
+}
+
+async function speichereErfassung(d: Dienste, b: Beleg, h: Handerfassung, akteur: Akteur): Promise<Schrittergebnis> {
   const jetzt = d.uhr()
   const pruefung = pruefeHanderfassung(h, datumInBerlin(jetzt))
   if (pruefung.fehler.length) return abgelehnt(400, 'HANDERFASSUNG', pruefung.fehler.join(' '))
@@ -216,8 +245,8 @@ export async function erfasseVonHand(d: Dienste, b: Beleg, h: Handerfassung, akt
   const bericht = await d.ablage.speichereBericht(b.id, nummer, JSON.stringify(neu.pruefung, null, 2))
   neu.pruefberichtSha256 = bericht.sha256
   const zeit = jetzt.toISOString()
-  d.db.transaktion(() => {
-    speichere(d, neu)
+  const ergebnisSchritt = schreibe(d, neu, () => {
+    speichere(d, neu, b)
     d.db.aendern('INSERT INTO dateien (pfad, sha256, art, mime_typ, bytes, angelegt_am) VALUES (?, ?, ?, ?, ?, ?)', [bericht.pfad, bericht.sha256, 'bericht', 'application/json', bericht.bytes, zeit])
     d.protokoll.anhaengen({
       akteur,
@@ -235,7 +264,10 @@ export async function erfasseVonHand(d: Dienste, b: Beleg, h: Handerfassung, akt
       },
     })
   })
-  return { ok: true, beleg: neu }
+  // Gescheitert (Beleg inzwischen geändert): Der Bericht ist nirgends verbucht und käme sonst als
+  // „Datei ohne Protokolleintrag“ in die Kettenprüfung.
+  if (!ergebnisSchritt.ok) await d.ablage.verwerfeUnverbucht(bericht.pfad)
+  return ergebnisSchritt
 }
 
 /** B6: Freigabe (R14); vergibt beim ersten Mal das Kreditorenkonto (R10) und schreibt die Kontierungsregeln fort (R12 Punkt 8). */
@@ -261,10 +293,10 @@ export function gibFrei(d: Dienste, b: Beleg, eingabe: { inhaltGeprueft: boolean
     freigabe: { benutzerId: benutzerId(akteur), am: jetzt, begruendung },
     aufbewahrenBis: aufbewahrenBis(einstellungen.aufbewahrung, { rechnungsdatum: b.handerfassung?.rechnungsdatum ?? b.daten?.rechnungsdatum ?? null, eingangAm: b.eingangAm, freigabeAm: jetzt }),
   }
-  d.db.transaktion(() => {
+  return schreibe(d, neu, () => {
     if (kreditor !== lieferant.kreditorKonto) d.lieferanten.aktualisieren({ ...lieferant, kreditorKonto: kreditor })
     for (const r of regeln) d.regeln.speichern(r)
-    speichere(d, neu)
+    speichere(d, neu, b)
     d.protokoll.anhaengen({
       akteur,
       aktion: 'freigegeben',
@@ -280,7 +312,6 @@ export function gibFrei(d: Dienste, b: Beleg, eingabe: { inhaltGeprueft: boolean
       },
     })
   })
-  return { ok: true, beleg: neu }
 }
 
 export function nimmFreigabeZurueck(d: Dienste, b: Beleg, grund: string | null, akteur: Akteur): Schrittergebnis {
@@ -288,13 +319,12 @@ export function nimmFreigabeZurueck(d: Dienste, b: Beleg, grund: string | null, 
   if (f) return f
   const neu: Beleg = { ...b, status: 'kontiert', freigabe: null, inhaltGeprueft: false }
   const r = b.lieferantId && b.kontierung ? regelnNachRuecknahme(d.regeln.fuerLieferant(b.lieferantId), b.lieferantId, b.kontierung) : { aendern: [], entfernen: [] }
-  d.db.transaktion(() => {
+  return schreibe(d, neu, () => {
     for (const x of r.aendern) d.regeln.speichern(x)
     for (const x of r.entfernen) d.regeln.entfernen(x)
-    speichere(d, neu)
+    speichere(d, neu, b)
     d.protokoll.anhaengen({ akteur, aktion: 'freigabe-zurueckgenommen', belegId: b.id, daten: { grund: grund?.trim() || null, freigabeVom: b.freigabe?.am ?? null } })
   })
-  return { ok: true, beleg: neu }
 }
 
 export const ABLEHNUNG_MIN = 5
@@ -302,14 +332,15 @@ export const ABLEHNUNG_MIN = 5
 export function lehneAb(d: Dienste, b: Beleg, grund: string, akteur: Akteur): Schrittergebnis {
   const f = pruefeAktion(b, 'ablehnen')
   if (f) return f
+  // Solange die Prüfung im Worker läuft, schriebe ihr Ergebnis die Ablehnung wieder über
+  if (b.status === 'eingegangen' && b.pruefung === null) return abgelehnt(409, 'PRUEFUNG-LAEUFT', 'Die Prüfung dieses Belegs läuft noch. Bitte einen Moment warten und dann erneut ablehnen.')
   const text = grund.trim()
   if (text.length < ABLEHNUNG_MIN) return abgelehnt(400, 'GRUND', `Geben Sie einen Grund mit mindestens ${ABLEHNUNG_MIN} Zeichen an.`)
   const neu: Beleg = { ...b, status: 'abgelehnt', ablehnung: { benutzerId: benutzerId(akteur), am: d.uhr().toISOString(), grund: text } }
-  d.db.transaktion(() => {
-    speichere(d, neu)
+  return schreibe(d, neu, () => {
+    speichere(d, neu, b)
     d.protokoll.anhaengen({ akteur, aktion: 'abgelehnt', belegId: b.id, daten: { grund: text, vorherigerStatus: b.status } })
   })
-  return { ok: true, beleg: neu }
 }
 
 export function hebeAblehnungAuf(d: Dienste, b: Beleg, akteur: Akteur): Schrittergebnis {
@@ -317,9 +348,8 @@ export function hebeAblehnungAuf(d: Dienste, b: Beleg, akteur: Akteur): Schritte
   if (f) return f
   // Eine als Dublette verworfene Rechnung wird neu entschieden
   const neu: Beleg = { ...b, status: statusNachAufhebung(b), ablehnung: null, dublettenEntscheidung: b.dublettenEntscheidung?.ergebnis === 'dublette' ? null : b.dublettenEntscheidung }
-  d.db.transaktion(() => {
-    speichere(d, neu)
+  return schreibe(d, neu, () => {
+    speichere(d, neu, b)
     d.protokoll.anhaengen({ akteur, aktion: 'ablehnung-aufgehoben', belegId: b.id, daten: { grund: b.ablehnung?.grund ?? null, neuerStatus: neu.status } })
   })
-  return { ok: true, beleg: neu }
 }

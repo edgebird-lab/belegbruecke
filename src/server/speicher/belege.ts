@@ -21,6 +21,17 @@ export interface Belegfilter {
   bruttoCent?: number
 }
 
+/** Der Beleg wurde zwischen Lesen und Schreiben geändert (optimistische Sperre in `aktualisieren`). */
+export class BelegGeaendert extends Error {
+  readonly belegId: string
+
+  constructor(belegId: string) {
+    super(`Beleg ${belegId} wurde inzwischen geändert`)
+    this.name = 'BelegGeaendert'
+    this.belegId = belegId
+  }
+}
+
 /** Belegdatum (BT-2 bzw. Handerfassung) für die Monatsgruppierung (R21). */
 export function belegdatum(b: Beleg): string | null {
   return b.handerfassung?.rechnungsdatum ?? b.daten?.rechnungsdatum ?? null
@@ -95,15 +106,39 @@ export class Belegspeicher {
     )
   }
 
-  aktualisieren(b: Beleg, jetzt: string): void {
+  /**
+   * Schreibt den Beleg. Mit `vorher` (dem gelesenen Stand) nur, wenn sich der Beleg seitdem nicht
+   * geändert hat; sonst `BelegGeaendert`. So überschreibt eine zweite Anfrage (zweites Fenster,
+   * Doppelklick, zweiter Benutzer) nie still einen neueren Stand.
+   */
+  aktualisieren(b: Beleg, jetzt: string, vorher?: Beleg): void {
     const s = spalten(b, jetzt)
     const r = this.db.aendern(
       `UPDATE belege SET status = $status, xml_sha256 = $xml_sha256, belegart = $belegart, lieferant_schluessel = $lieferant_schluessel, lieferant_id = $lieferant_id,
        rechnungsnummer = $rechnungsnummer, rechnungsdatum = $rechnungsdatum, brutto_cent = $brutto_cent, monat = $monat, suche = $suche, exportlauf_id = $exportlauf_id,
-       json = $json, geaendert_am = $geaendert_am WHERE id = $id`,
-      { id: s.id, status: s.status, xml_sha256: s.xml_sha256, belegart: s.belegart, lieferant_schluessel: s.lieferant_schluessel, lieferant_id: s.lieferant_id, rechnungsnummer: s.rechnungsnummer, rechnungsdatum: s.rechnungsdatum, brutto_cent: s.brutto_cent, monat: s.monat, suche: s.suche, exportlauf_id: s.exportlauf_id, json: s.json, geaendert_am: s.geaendert_am },
+       json = $json, geaendert_am = $geaendert_am WHERE id = $id${vorher ? ' AND json = $vorher' : ''}`,
+      {
+        id: s.id,
+        status: s.status,
+        xml_sha256: s.xml_sha256,
+        belegart: s.belegart,
+        lieferant_schluessel: s.lieferant_schluessel,
+        lieferant_id: s.lieferant_id,
+        rechnungsnummer: s.rechnungsnummer,
+        rechnungsdatum: s.rechnungsdatum,
+        brutto_cent: s.brutto_cent,
+        monat: s.monat,
+        suche: s.suche,
+        exportlauf_id: s.exportlauf_id,
+        json: s.json,
+        geaendert_am: s.geaendert_am,
+        ...(vorher ? { vorher: JSON.stringify(vorher) } : {}),
+      },
     )
-    if (r.changes !== 1) throw new Error(`Beleg ${b.id} nicht gefunden`)
+    if (r.changes !== 1) {
+      if (vorher && this.hole(b.id)) throw new BelegGeaendert(b.id)
+      throw new Error(`Beleg ${b.id} nicht gefunden`)
+    }
   }
 
   hole(id: Uuid): Beleg | null {

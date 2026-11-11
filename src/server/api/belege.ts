@@ -115,59 +115,62 @@ export function registriereBelege(app: Hono<Umgebung>, d: Dienste): void {
   })
 
   // ---------- Assistentenschritte ----------
+  // Bei allen Schritten zuerst den Körper lesen (das wartet) und erst danach den Beleg laden: Zwischen
+  // Laden und Schritt liegt so kein await, und eine zweite gleichzeitige Anfrage (Doppelklick, zweites
+  // Fenster) sieht schon den neuen Stand, etwa „Der Beleg ist freigegeben“.
   app.post('/api/belege/:id/dublette', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, dubletteSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, entscheideDublette(d, b, e.daten.ergebnis, akteurVon(c)))
   })
 
   app.put('/api/belege/:id/lieferant', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, zuordnungSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, ordneLieferantZu(d, b, { ...e.daten, lieferantId: e.daten.lieferantId?.toUpperCase() }, akteurVon(c)))
   })
 
   app.put('/api/belege/:id/kontierung', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, kontierungSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, kontiere(d, b, e.daten.zeilen, akteurVon(c)))
   })
 
   app.put('/api/belege/:id/handerfassung', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, handerfassungSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, await erfasseVonHand(d, b, e.daten, akteurVon(c)))
   })
 
   app.post('/api/belege/:id/freigeben', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, freigabeSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, gibFrei(d, b, { inhaltGeprueft: e.daten.inhaltGeprueft, begruendung: e.daten.begruendung ?? null }, akteurVon(c)))
   })
 
   app.post('/api/belege/:id/ablehnen', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, ablehnungSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, lehneAb(d, b, e.daten.grund, akteurVon(c)))
   })
 
   app.post('/api/belege/:id/freigabe-zuruecknehmen', async (c) => {
-    const b = ladeBeleg(d, c)
-    if (b instanceof Response) return b
     const e = await leseJson(c, ruecknahmeSchema)
     if (e.fehler) return e.fehler
+    const b = ladeBeleg(d, c)
+    if (b instanceof Response) return b
     return schrittAntwort(c, nimmFreigabeZurueck(d, b, e.daten.grund ?? null, akteurVon(c)))
   })
 

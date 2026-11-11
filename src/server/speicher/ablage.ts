@@ -6,7 +6,7 @@
  */
 import { createHash, randomBytes } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { chmod, link, mkdir, open, readdir, readFile, rename, unlink } from 'node:fs/promises'
+import { chmod, link, mkdir, open, readdir, readFile, rename, rmdir, unlink } from 'node:fs/promises'
 import { dirname, join, normalize, relative, sep } from 'node:path'
 
 export const ENDUNGEN = ['xml', 'pdf', 'jpg', 'png', 'eml'] as const
@@ -101,7 +101,9 @@ export class Ablage {
     const pfad = `berichte/${belegId}/${n}.json`
     const bytes = new TextEncoder().encode(inhalt)
     if (existsSync(this.absolut(pfad))) throw new AblageFehler(`Bericht ${pfad} existiert bereits`)
-    await atomarSchreiben(this.absolut(pfad), bytes)
+    // Zwei gleichzeitige Aufrufe mit derselben Nummer: nur einer legt die Datei an. Der andere darf nicht
+    // den Hash seines Inhalts melden, denn auf der Platte liegt der fremde Bericht (sonst „verändert“).
+    if ((await atomarSchreiben(this.absolut(pfad), bytes)) !== 'neu') throw new AblageFehler(`Bericht ${pfad} existiert bereits`)
     return { sha256: sha256(bytes), pfad, bytes: bytes.length }
   }
 
@@ -110,8 +112,23 @@ export class Ablage {
     if (!UUID.test(laufId) || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/.test(name)) throw new AblageFehler('Unzulässige Lauf-ID oder unzulässiger Dateiname')
     const pfad = `exporte/${laufId}/${name}`
     if (existsSync(this.absolut(pfad))) throw new AblageFehler(`Exportdatei ${pfad} existiert bereits`)
-    await atomarSchreiben(this.absolut(pfad), bytes)
+    if ((await atomarSchreiben(this.absolut(pfad), bytes)) !== 'neu') throw new AblageFehler(`Exportdatei ${pfad} existiert bereits`)
     return { sha256: sha256(bytes), pfad, bytes: bytes.length }
+  }
+
+  /**
+   * Entfernt eine Datei, die nie verbucht wurde: ein Prüfbericht oder eine Exportdatei, deren
+   * Transaktion gescheitert ist. Originale bleiben immer; der Aufrufer stellt sicher, dass weder
+   * die Tabelle `dateien` noch das Protokoll die Datei kennt.
+   */
+  async verwerfeUnverbucht(pfad: string): Promise<void> {
+    if (!/^(berichte|exporte)\//.test(pfad)) throw new AblageFehler(`Nur Berichte und Exportdateien lassen sich verwerfen: ${pfad}`)
+    const abs = this.absolut(pfad)
+    if (!existsSync(abs)) return
+    await chmod(abs, 0o666)
+    await unlink(abs)
+    // Ordner eines verworfenen Laufs nicht leer stehen lassen; ein Berichtsordner mit anderen Berichten bleibt
+    await rmdir(dirname(abs)).catch(() => undefined)
   }
 
   async lies(pfad: string): Promise<Uint8Array> {
