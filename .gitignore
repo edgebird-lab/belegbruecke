@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Playwright
+test-results
+playwright-report
+
+# Daten der laufenden App (Belege, Datenbank, Schlüssel) nie ins Repo
+daten/
+*.schluessel
+
+# Prüfartefakte: per Skript mit Prüfsumme geladen (npm run vorbereiten)
+vendor/downloads/
+vendor/konfiguration/
+vendor/visualisierung/
+vendor/werkzeuge/
+vendor/sef/
+testdaten/kosit/
+testdaten/visualisierung/

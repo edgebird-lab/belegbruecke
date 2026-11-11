@@ -1,0 +1,41 @@
+{
+  "name": "belegbruecke",
+  "private": true,
+  "version": "0.0.1",
+  "description": "E-Rechnungen annehmen, nach EN 16931 und XRechnung prüfen, GoBD-gerecht archivieren und monatlich an die Steuerkanzlei (DATEV) übergeben.",
+  "type": "module",
+  "engines": {
+    "node": ">=24.15"
+  },
+  "scripts": {
+    "dev": "vite",
+    "server": "node src/server/start.ts",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "e2e": "playwright test",
+    "vorbereiten": "node scripts/artefakte.mjs && node scripts/sef.mjs",
+    "artefakte": "node scripts/artefakte.mjs",
+    "sef": "node scripts/sef.mjs",
+    "referenz": "node scripts/referenz.mjs"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "oxlint": "^1.93.0",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.7",
+    "vitest": "^5.1.0"
+  }
+}

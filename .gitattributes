@@ -1,0 +1,7 @@
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.eml binary
+# Testdateien byte-genau halten: Hashwerte in Tests hängen an jedem Byte
+testdaten/** -text
