@@ -70,7 +70,7 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
     try {
       await api(`/belege/${b.id}/dublette`, { daten: { ergebnis } })
       melde(ergebnis === 'dublette' ? 'Als Dublette abgelehnt.' : 'Entschieden: keine Dublette.')
-      fertig(ergebnis === 'dublette' ? 'freigeben' : undefined)
+      await fertig(ergebnis === 'dublette' ? 'freigeben' : undefined)
     } catch (e) {
       setFehler(fehlerText(e))
     }
@@ -90,7 +90,7 @@ export function SchrittZuordnen({ d, fertig, gesperrt }: Schrittprops) {
     try {
       await api(`/belege/${b.id}/lieferant`, { methode: 'PUT', daten })
       melde(`${wer} zugeordnet.`)
-      fertig('kontieren')
+      await fertig('kontieren')
     } catch (e) {
       setFehler(fehlerText(e))
     } finally {

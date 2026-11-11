@@ -30,7 +30,7 @@ export function SchrittFreigeben({ d, fertig }: Schrittprops) {
       await api(`/belege/${b.id}/${pfad}`, { daten })
       melde(meldung)
       setAblehnen(false)
-      fertig()
+      await fertig()
     } catch (e) {
       setFehler(fehlerText(e))
     } finally {

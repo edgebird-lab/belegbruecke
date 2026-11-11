@@ -258,8 +258,12 @@ describe('Übergabe an die Kanzlei (4.4 bis 4.6)', () => {
     expect((await s.anfrage('/api/uebergaben/plan?monat=2016-13')).status).toBe(400)
 
     s.vorspulen(60_000)
-    const r = await s.anfrage('/api/uebergaben', s.json({ monat: '2016-04' }))
+    // Doppelklick: zwei gleichzeitige Anfragen ergeben genau einen Lauf
+    const [r, zweite] = await Promise.all([s.anfrage('/api/uebergaben', s.json({ monat: '2016-04' })), s.anfrage('/api/uebergaben', s.json({ monat: '2016-04' }))])
     expect(r.status).toBe(201)
+    expect(zweite.status).toBe(409)
+    expect(['LAEUFT', 'KEINE-BELEGE']).toContain(((await zweite.json()) as { fehler: { code: string } }).fehler.code)
+    expect(s.d.exporte.alle()).toHaveLength(1)
     const { lauf } = (await r.json()) as { lauf: Exportlauf }
     expect(lauf.dateien.map((f) => f.name)).toEqual(['EXTF_Buchungsstapel_1001_1_2016-04.csv', 'Belege_2016-04.zip'])
     const letzter = s.d.protokoll.letzter()!

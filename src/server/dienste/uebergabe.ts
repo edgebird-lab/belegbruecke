@@ -45,8 +45,21 @@ async function paketbeleg(d: Dienste, b: Beleg): Promise<Paketbeleg> {
   }
 }
 
+/** Läufe, die gerade entstehen; je Server nur einer gleichzeitig (Doppelklick, zwei Benutzer). */
+const laufend = new WeakSet<Dienste>()
+
 /** U3: Lauf erzeugen. Bricht mit den Sperrgründen ab (R19), wenn ein Beleg nicht übergeben werden kann. */
 export async function erzeugeUebergabe(d: Dienste, monat: string, akteur: Akteur): Promise<Uebergabeergebnis> {
+  if (laufend.has(d)) return { ok: false, status: 409, code: 'LAEUFT', text: 'Eine Übergabe wird gerade erzeugt. Bitte einen Moment warten.', sperren: [] }
+  laufend.add(d)
+  try {
+    return await erzeugeLauf(d, monat, akteur)
+  } finally {
+    laufend.delete(d)
+  }
+}
+
+async function erzeugeLauf(d: Dienste, monat: string, akteur: Akteur): Promise<Uebergabeergebnis> {
   const k = uebergabekontext(d)
   const plan = planeUebergabe(monat, d.belege.liste(), d.exporte.alle(), k)
   if (plan.belege.length === 0) return { ok: false, status: 409, code: 'KEINE-BELEGE', text: `Für ${monat} gibt es keine freigegebenen, noch nicht übergebenen Belege.`, sperren: [] }

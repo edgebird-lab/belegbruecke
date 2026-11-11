@@ -59,8 +59,9 @@ export function BelegAssistent({ id, schritt }: { id: string; schritt: Belegschr
     { id: 'kontieren', titel: 'Kontieren', fertig: kontierungVollstaendig(b.kontierung), gesperrt: !erfasst || b.lieferantId === null },
     { id: 'freigeben', titel: 'Freigeben', fertig: b.status === 'freigegeben' || b.status === 'exportiert' },
   ]
-  const fertig = (naechster?: Belegschritt) => {
-    detail.neu()
+  // Erst neu laden, dann den Schritt wechseln: so beginnt der nächste Schritt mit den neuen Daten
+  const fertig = async (naechster?: Belegschritt) => {
+    await detail.neu()
     aktualisiereZaehler()
     if (naechster) gehe({ seite: 'beleg', id, schritt: naechster })
   }

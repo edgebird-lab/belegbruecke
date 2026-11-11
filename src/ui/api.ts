@@ -2,7 +2,7 @@
  * Zugriff der Oberfläche auf die API: JSON hin und zurück, Pflicht-Kopfzeile gegen CSRF bei
  * ändernden Anfragen, Fehler mit deutschem Text vom Server. Antworttypen der wichtigsten Pfade.
  */
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { Ampel } from '../fach/pruefbericht.ts'
 import type { Belegstatus, Einstellungen, Exportlauf, Kontierung, Lieferant, Protokolleintrag, Beleg, Sachkonto, Dublettenhinweis, Kontierungsregel } from '../fach/typen.ts'
 
@@ -73,26 +73,37 @@ export function fehlerText(e: unknown): string {
   return e instanceof Error ? e.message : String(e)
 }
 
-/** Lädt JSON und hält Ladezustand und Fehler; `pfad` null lädt nichts. */
-export function useLaden<T>(pfad: string | null): { daten: T | null; fehler: string | null; laedt: boolean; neu: () => void } {
-  const [zaehler, setZaehler] = useState(0)
-  // Ergebnis je Anfrage (Pfad und Zähler); solange es fehlt, läuft das Laden
-  const [stand, setStand] = useState<{ schluessel: string; pfad: string; daten: T | null; fehler: string | null } | null>(null)
-  const schluessel = `${pfad}#${zaehler}`
+/**
+ * Lädt JSON und hält Ladezustand und Fehler; `pfad` null lädt nichts. `neu()` lädt erneut und ist
+ * erledigt, wenn die neuen Daten da sind; so wechselt ein Assistent erst danach den Schritt.
+ */
+export function useLaden<T>(pfad: string | null): { daten: T | null; fehler: string | null; laedt: boolean; neu: () => Promise<void> } {
+  const [stand, setStand] = useState<{ pfad: string; daten: T | null; fehler: string | null } | null>(null)
+  const aktuell = useRef(pfad)
   useEffect(() => {
+    aktuell.current = pfad
     if (pfad === null) return
     let aktiv = true
     api<T>(pfad)
-      .then((daten) => aktiv && setStand({ schluessel: `${pfad}#${zaehler}`, pfad, daten, fehler: null }))
-      .catch((e: unknown) => aktiv && setStand((s) => ({ schluessel: `${pfad}#${zaehler}`, pfad, daten: s?.pfad === pfad ? s.daten : null, fehler: fehlerText(e) })))
+      .then((daten) => aktiv && setStand({ pfad, daten, fehler: null }))
+      .catch((e: unknown) => aktiv && setStand((s) => ({ pfad, daten: s?.pfad === pfad ? s.daten : null, fehler: fehlerText(e) })))
     return () => {
       aktiv = false
     }
-  }, [pfad, zaehler])
-  const neu = useCallback(() => setZaehler((z) => z + 1), [])
+  }, [pfad])
+  const neu = useCallback(async () => {
+    if (pfad === null) return
+    try {
+      const daten = await api<T>(pfad)
+      // Ist inzwischen ein anderer Pfad gewählt, gehört das Ergebnis nicht mehr hierher
+      if (aktuell.current === pfad) setStand({ pfad, daten, fehler: null })
+    } catch (e) {
+      if (aktuell.current === pfad) setStand((s) => ({ pfad, daten: s?.pfad === pfad ? s.daten : null, fehler: fehlerText(e) }))
+    }
+  }, [pfad])
   // Beim Neuladen desselben Pfads bleiben die alten Daten sichtbar; bei einem anderen Pfad nicht
-  const daten = stand && stand.pfad === pfad ? stand.daten : null
-  return { daten, fehler: stand && stand.pfad === pfad ? stand.fehler : null, laedt: pfad !== null && stand?.schluessel !== schluessel, neu }
+  const passend = stand !== null && stand.pfad === pfad
+  return { daten: passend ? stand.daten : null, fehler: passend ? stand.fehler : null, laedt: pfad !== null && !passend, neu }
 }
 
 // ---------- Antworttypen ----------

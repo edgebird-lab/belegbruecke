@@ -6,7 +6,7 @@ import type { Belegschritt } from '../route.ts'
 export interface Schrittprops {
   d: Belegdetail
   /** nach einer Änderung: Daten neu laden und zum Schritt wechseln */
-  fertig: (naechster?: Belegschritt) => void
+  fertig: (naechster?: Belegschritt) => Promise<void>
   /** Änderungen sind gesperrt (freigegeben, exportiert, abgelehnt) */
   gesperrt: string | null
 }

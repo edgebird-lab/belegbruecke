@@ -52,7 +52,7 @@ export function SchrittKontieren({ d, fertig, gesperrt }: Schrittprops) {
         daten: { zeilen: basis.nurBeleg ? [] : wahl.map((w, i) => ({ sachkonto: w.sachkonto, buchungstext: w.buchungstext, ...(basis.zeilen[i].steuerfall === 'sonderfall' ? { buSchluessel: w.buSchluessel } : {}) })) },
       })
       melde('Kontierung gespeichert.')
-      fertig('freigeben')
+      await fertig('freigeben')
     } catch (e) {
       setFehler(fehlerText(e))
     } finally {

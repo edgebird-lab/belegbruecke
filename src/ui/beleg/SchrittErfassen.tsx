@@ -66,7 +66,7 @@ export function SchrittErfassen({ d, fertig, gesperrt }: Schrittprops) {
     try {
       await api(`/belege/${b.id}/handerfassung`, { methode: 'PUT', daten: h })
       melde('Rechnungsdaten gespeichert und geprüft.')
-      fertig('pruefen')
+      await fertig('pruefen')
     } catch (e) {
       setFehler(fehlerText(e))
     } finally {
