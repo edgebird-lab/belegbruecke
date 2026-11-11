@@ -4,7 +4,7 @@ Checkliste aller Schritte aus [Spezifikation, Abschnitt 11](spezifikation.md#11-
 
 Letzte Aktualisierung: 11.11.2026
 
-**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7). Oberfläche mit Einrichtung, Eingang mit Postfach, Beleg-Assistent, Übergabe, Archiv und Einstellungen; DATEV-Export als „Vorschau“. 276 Unit-Tests und 17 Browsertests (axe hell und dunkel) grün. Nächster Schritt: Phase 6 (Qualität und Version 0.1).
+**Kurzstand:** Phasen 0 bis 5 fertig bis auf die Schritte mit Robin (0.6, 4.7); aus Phase 6 sind 6.1 bis 6.3 fertig, 6.4 bis auf die Abnahme von `start.cmd`, 6.5 wartet auf Robin. DATEV-Export als „Vorschau“. 277 Unit-Tests und 18 Browsertests (axe hell und dunkel) grün. **GitHub-Repo fehlt noch** (Rechteprüfung hat `gh repo create` abgelehnt): im Projektordner `gh repo create edgebird-lab/belegbruecke --private --source . --remote origin --push`. Phase 7 nur nach Robins Freigabe.
 
 ## Phase 0 – Klärung und Durchstich
 
@@ -66,11 +66,11 @@ Letzte Aktualisierung: 11.11.2026
 
 ## Phase 6 – Qualität und Version 0.1
 
-- [ ] **6.1** Barrierefreiheit und Tastaturbedienung (U-5)
-- [ ] **6.2** Sicherheitsdurchsicht und Wiederherstellungstest. Durchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md) (Postfach-Passwort, Anzeige von PDF und Bildern, atomare Ablage mit hartem Link), `npm audit` ohne Befund, Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build).
-- [ ] **6.3** Fallbeispiel „Oktober“ mit 12 Belegen
-- [ ] **6.4** README, Datenmodell, Regelkatalog, Lizenzen Dritter, `start.cmd`. Teilweise: README auf Stand Phase 2, [datenmodell.md](datenmodell.md), [regelkatalog.md](regelkatalog.md) (erzeugt), [lizenzen-dritter.md](lizenzen-dritter.md) (erzeugt mit `scripts/lizenzen.mjs`), `start.cmd` geschrieben, aber nicht ausgeführt (würde auf Robins Rechner den Browser öffnen; der Serverstart selbst ist durch die Browsertests geprüft). Offen: Bilder für die README (brauchen die Oberfläche), Abnahme von `start.cmd` durch Robin.
-- [ ] **6.5** Version 0.1.0 taggen (Repo privat)
+- [x] **6.1** Barrierefreiheit und Tastaturbedienung: jeder Schritt (Anmeldung, Einrichtung E1 bis E5, Eingang, B1 bis B6, Erfassung von Hand, Übergabe U1 bis U4, Archiv, Belegdetail, alle Bereiche der Einstellungen, Postfach) mit axe hell und dunkel ohne Befunde der Stufen serious und critical (U-5). Einrichtung (U-1) und Beleg-Assistent bis zur Freigabe nur per Tastatur (`e2e/1-einrichtung.spec.ts`, `e2e/7-tastatur.spec.ts`).
+- [x] **6.2** Sicherheitsdurchsicht für Phasen 0 bis 5 in [sicherheit.md](sicherheit.md), `npm audit` ohne Befund (lokal), Wiederherstellungstest grün (`src/server/sicherung.test.ts`). Bewusst offen: `npm audit` in der CI (Vorgabe dieses Durchgangs: CI nur Lint, Test, Build; Robin entscheidet) und die Sicherung außerhalb des Rechners (später restic).
+- [x] **6.3** Fallbeispiel „Oktober“ mit 12 Belegen (`testdaten/fallbeispiel/`, erzeugt mit `scripts/fallbeispiel.mjs`, dazu eine PDF ohne XML): `src/server/fallbeispiel.test.ts` grün; alle Zahlen des README-Abschnitts stehen dort als Erwartung (Summen von Hand nachgerechnet).
+- [ ] **6.4** README mit Haftungshinweis, Fallbeispiel und Bildern (erzeugt mit `scripts/readme-bilder.mjs` nach `docs/bilder/`), [datenmodell.md](datenmodell.md) und [sicherheit.md](sicherheit.md) auf Stand Phase 5, [regelkatalog.md](regelkatalog.md) und [lizenzen-dritter.md](lizenzen-dritter.md) neu erzeugt, [datev-felder.md](datev-felder.md). `start.cmd` baut die Oberfläche jetzt bei jedem Start neu. Offen: Abnahme von `start.cmd` durch Robin (nicht ausgeführt, weil es auf Robins Rechner den Browser öffnet).
+- [ ] **6.5** Version 0.1.0 taggen (Repo privat). Wartet auf Robin: GitHub-Repo fehlt (Anlegen in dieser Sitzung abgelehnt, siehe oben), damit lief die CI noch nie; dazu 0.6, 4.7 und die Abnahme von `start.cmd`.
 
 ## Phase 7 – Betrieb vorbereiten (nur nach Robins Freigabe)
 

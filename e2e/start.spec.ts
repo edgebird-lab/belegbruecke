@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import { axe, PASSWORT, vorbereiten } from './hilfen.ts'
+import { axe, axeHellUndDunkel, PASSWORT, vorbereiten } from './hilfen.ts'
 
 for (const schema of ['light', 'dark'] as const) {
   test(`Anmeldeseite ohne schwere Barrieren (${schema === 'light' ? 'hell' : 'dunkel'})`, async ({ page }) => {
@@ -50,10 +50,10 @@ test('der Server liefert die Oberfläche mit Sicherheitsheadern und ohne CSP-Ver
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
   // auch angemeldet auf allen Seiten
   await vorbereiten(page.request, baseURL!)
-  for (const pfad of ['#/eingang', '#/belege', '#/uebergabe', '#/archiv', '#/einstellungen/firma', '#/einstellungen/konten', '#/einstellungen/lieferanten', '#/einstellungen/system']) {
+  for (const pfad of ['#/eingang', '#/belege', '#/uebergabe', '#/archiv', '#/einstellungen/firma', '#/einstellungen/konten', '#/einstellungen/kanzlei', '#/einstellungen/lieferanten', '#/einstellungen/eingang', '#/einstellungen/benutzer', '#/einstellungen/system']) {
     await page.goto(`/${pfad}`)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-    await axe(page)
+    await axeHellUndDunkel(page)
   }
   expect(verstoesse).toEqual([])
 })

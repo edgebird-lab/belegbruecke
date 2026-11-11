@@ -13,10 +13,9 @@ if not exist vendor\sef\verzeichnis.json (
   echo Pruefartefakte werden geladen und kompiliert ...
   call npm run vorbereiten || exit /b 1
 )
-if not exist dist\index.html (
-  echo Oberflaeche wird gebaut ...
-  call npm run build || exit /b 1
-)
+rem Oberflaeche bei jedem Start neu bauen (wenige Sekunden), damit sie nach einem Update passt
+echo Oberflaeche wird gebaut ...
+call npx vite build --logLevel warn || exit /b 1
 
 rem Browser nach kurzer Wartezeit oeffnen, waehrend der Server im Vordergrund laeuft
 start "" /b cmd /c "timeout /t 4 /nobreak >nul & start "" http://127.0.0.1:8784"
