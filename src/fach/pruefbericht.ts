@@ -50,10 +50,13 @@ export function erstellePruefergebnis(t: TechnischePruefung, k: Pruefkontext): P
   }
 }
 
-/** Prüfergebnis nach der Erfassung von Hand (R16): Pflichtangaben auf den erfassten Werten. */
+/**
+ * Prüfergebnis nach der Erfassung von Hand (R16): Pflichtangaben auf den erfassten Werten. Befunde
+ * einer früheren Erfassung (Pflichtangaben, Plausibilität) werden ersetzt, nicht verdoppelt.
+ */
 export function ergaenzeHanderfassung(p: Pruefergebnis, h: Handerfassung, befunde: Befund[] = []): Pruefergebnis {
   const r8 = pruefePflichtangabenHand(h)
-  return { ...p, befunde: [...p.befunde.filter((b) => b.quelle !== 'ustg'), ...r8.befunde, ...befunde], pflichtangaben: r8.pruefung }
+  return { ...p, befunde: [...p.befunde.filter((b) => b.quelle !== 'ustg' && b.quelle !== 'plausibilitaet'), ...r8.befunde, ...befunde], pflichtangaben: r8.pruefung }
 }
 
 export type Ampelfarbe = 'gruen' | 'gelb' | 'rot' | 'grau'

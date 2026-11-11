@@ -6,7 +6,7 @@ Die Erklärungen sind eigene Texte der Belegbrücke. Aus den Regelwerken stammen
 
 **Einordnung nach R7:** Formatfehler (Rn. 6a) machen die Datei zur sonstigen Rechnung. Schematron-Meldungen der Stufe Fehler sind Geschäftsregelfehler (Rn. 6b). Fehlende Pflichtangaben sind Inhaltsfehler (Rn. 35a). „USt-relevant“ sagt, ob der Befund eine Pflichtangabe nach § 14 Abs. 4 UStG oder Entgelt und Steuer betrifft; Regeln ohne Eintrag zeigt die App als „unklar“ mit dem Originaltext.
 
-## Eigene Regeln (35)
+## Eigene Regeln (36)
 
 | Regel | Stufe | Fehlerklasse | Titel | Erklärung | USt-relevant | Handlung | Quelle |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -45,6 +45,7 @@ Die Erklärungen sind eigene Texte der Belegbrücke. Aus den Regelwerken stammen
 | `PLAUS-IBAN` | warnung | keine | IBAN mit falscher Prüfziffer | Die IBAN besteht die Prüfziffernrechnung (Modulo 97) nicht; sie ist falsch geschrieben oder gefälscht. | nein | Angabe prüfen; bei Fehlern korrigierte Rechnung anfordern. |  |
 | `PLAUS-ANHANG-EXTERN` | hinweis | keine | Verweis auf externes Dokument | Die Rechnung verweist auf ein externes Dokument. Der Link wird nicht geöffnet; Angaben daraus zählen nicht (BMF Rn. 35). | nein | Angabe prüfen; bei Fehlern korrigierte Rechnung anfordern. |  |
 | `BETRAG-FORMAT` | warnung | keine | Betrag mit mehr als 2 Nachkommastellen | Ein Betrag auf Belegebene hat mehr als 2 Nachkommastellen oder ist kein Dezimalwert. EN 16931 erlaubt dort höchstens 2 Stellen; die Regeln BR-DEC melden das ebenfalls. | unklar | Betrag von Hand prüfen; korrigierte Rechnung anfordern, falls er abweicht. |  |
+| `HAND-STEUER` | warnung | keine | Steuerbetrag passt nicht zum Steuersatz | Bei der Erfassung von Hand ergibt Bemessungsgrundlage mal Steuersatz, kaufmännisch auf den Cent gerundet, einen anderen Steuerbetrag als erfasst. | ja | Erfasste Werte mit der Rechnung vergleichen; ist die Rechnung selbst falsch berechnet, eine korrigierte Rechnung anfordern. | R16; § 14 Abs. 4 Satz 1 Nr. 8 UStG |
 
 ## EN 16931: Pflichtfelder, Summen, Steuer, Codelisten (40)
 

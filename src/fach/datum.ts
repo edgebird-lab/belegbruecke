@@ -32,3 +32,28 @@ export function datumInBerlin(z: Zeitpunkt | Date): Datum {
 export function jahr(d: Datum): number {
   return Number(d.slice(0, 4))
 }
+
+const BERLIN_ZEIT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Europe/Berlin',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+})
+
+/** Ortszeit Europe/Berlin eines Zeitpunkts als Zeichenketten mit führenden Nullen (Millisekunden dreistellig). */
+export function ortszeitBerlin(z: Zeitpunkt | Date): { jahr: string; monat: string; tag: string; stunde: string; minute: string; sekunde: string; milli: string } {
+  const d = typeof z === 'string' ? new Date(z) : z
+  const teile = BERLIN_ZEIT.formatToParts(d)
+  const wert = (typ: string) => teile.find((t) => t.type === typ)!.value
+  return { jahr: wert('year'), monat: wert('month'), tag: wert('day'), stunde: wert('hour'), minute: wert('minute'), sekunde: wert('second'), milli: String(d.getUTCMilliseconds()).padStart(3, '0') }
+}
+
+/** Letzter Tag eines Monats "JJJJ-MM" als Zahl. */
+export function monatsletzter(monat: string): number {
+  const [j, m] = monat.split('-').map(Number)
+  return new Date(Date.UTC(j, m, 0)).getUTCDate()
+}

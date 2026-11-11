@@ -280,4 +280,15 @@ export const EIGENE_REGELN: Record<string, Katalogeintrag> = {
     stufe: 'warnung',
     fehlerklasse: 'keine',
   },
+  'HAND-STEUER': {
+    titel: 'Steuerbetrag passt nicht zum Steuersatz',
+    klartext: 'Bei der Erfassung von Hand ergibt Bemessungsgrundlage mal Steuersatz, kaufmännisch auf den Cent gerundet, einen anderen Steuerbetrag als erfasst.',
+    handlung: 'Erfasste Werte mit der Rechnung vergleichen; ist die Rechnung selbst falsch berechnet, eine korrigierte Rechnung anfordern.',
+    ustRelevant: true,
+    btBezug: ['BT-116', 'BT-117', 'BT-119'],
+    quelle: 'plausibilitaet',
+    stufe: 'warnung',
+    fehlerklasse: 'keine',
+    rechtsgrundlage: 'R16; § 14 Abs. 4 Satz 1 Nr. 8 UStG',
+  },
 }
