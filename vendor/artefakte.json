@@ -1,0 +1,118 @@
+{
+  "formatVersion": 1,
+  "hinweis": "Offizielle Prüfartefakte. scripts/artefakte.mjs lädt sie, prüft SHA-256 und entpackt sie unverändert. Prüfsummen der KoSIT-Releases aus der Spezifikation (Abschnitt 3.2), die übrigen am 11.11.2026 beim ersten Laden berechnet.",
+  "artefakte": [
+    {
+      "id": "konfiguration",
+      "titel": "KoSIT Validator-Konfiguration XRechnung",
+      "version": "v2026-08-31 (XRechnung 3.0.2, CEN-Schematron 1.3.16, XRechnung-Schematron 2.6.0)",
+      "lizenz": "Apache-2.0; darin CEN-Schematron EUPL-1.2",
+      "quelle": "https://github.com/itplr-kosit/validator-configuration-xrechnung",
+      "url": "https://github.com/itplr-kosit/validator-configuration-xrechnung/releases/download/v2026-08-31/xrechnung-3.0.2-validator-configuration-2026-08-31.zip",
+      "sha256": "2530cd107c414511c5d0462ec10f886910395abfca820db82e83d70bf01221a8",
+      "bytes": 499607,
+      "entpacken": "vendor/konfiguration",
+      "zweck": "laufzeit"
+    },
+    {
+      "id": "visualisierung",
+      "titel": "KoSIT XRechnung-Visualisierung",
+      "version": "v2026-10-13",
+      "lizenz": "Apache-2.0; Schriften im Ordner conf/fonts unter OFL-1.1",
+      "quelle": "https://github.com/itplr-kosit/xrechnung-visualization",
+      "url": "https://github.com/itplr-kosit/xrechnung-visualization/releases/download/v2026-10-13/xrechnung-3.0.2-visualization-2026-10-13.zip",
+      "sha256": "ecf3913029218822ee4c90a86a3e23689768bf3568a061cf9bc742115e52264e",
+      "bytes": 558116,
+      "entpacken": "vendor/visualisierung",
+      "zweck": "laufzeit"
+    },
+    {
+      "id": "testsuite",
+      "titel": "KoSIT XRechnung-Testsuite",
+      "version": "v2026-08-31 (86 positive Testdateien)",
+      "lizenz": "Apache-2.0",
+      "quelle": "https://github.com/itplr-kosit/xrechnung-testsuite",
+      "url": "https://github.com/itplr-kosit/xrechnung-testsuite/releases/download/v2026-08-31/xrechnung-3.0.2-testsuite-2026-08-31.zip",
+      "sha256": "1e81ef7563e0fa04c0e0b0631318a7e0843a3c0beb57d83ef95ac0c4a095e3d7",
+      "bytes": 5586900,
+      "entpacken": "testdaten/kosit",
+      "zweck": "test"
+    },
+    {
+      "id": "validator",
+      "titel": "KoSIT-Validator (Java, nur Referenzlauf)",
+      "version": "1.6.3",
+      "lizenz": "Apache-2.0",
+      "quelle": "https://github.com/itplr-kosit/validator",
+      "url": "https://github.com/itplr-kosit/validator/releases/download/v1.6.3/validator-1.6.3-standalone.jar",
+      "sha256": "799e64befca97d4080e03608c80b85dd5a5ecc5f4ae4f35d1116ec2855b9a7c9",
+      "bytes": 10648594,
+      "ablage": "vendor/werkzeuge/validator-1.6.3-standalone.jar",
+      "zweck": "referenz"
+    },
+    {
+      "id": "mustang",
+      "titel": "Mustang-CLI (Java, nur Referenzlauf)",
+      "version": "2.26.0",
+      "lizenz": "Apache-2.0",
+      "quelle": "https://github.com/ZUGFeRD/mustangproject",
+      "url": "https://github.com/ZUGFeRD/mustangproject/releases/download/core-2.26.0/Mustang-CLI-2.26.0.jar",
+      "sha256": "42d7868cb68264874a7b8cab4c3587b03b23ccc7cd72373da917f66758bb9736",
+      "bytes": 59163641,
+      "ablage": "vendor/werkzeuge/Mustang-CLI-2.26.0.jar",
+      "zweck": "referenz"
+    }
+  ],
+  "lizenztexte": [
+    {
+      "datei": "vendor/lizenzen/konfiguration-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/validator-configuration-xrechnung/v2026-08-31/LICENSE",
+      "sha256": "73f2898ad26e1fcb9ec4649cdf8466ea0bda47644b7c12efc10a703bdfb94a9f"
+    },
+    {
+      "datei": "vendor/lizenzen/konfiguration-NOTICE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/validator-configuration-xrechnung/v2026-08-31/NOTICE",
+      "sha256": "aaba5a88c905a8d421877698396755abb3b9563b7655bfb02b76d634c9e861e4"
+    },
+    {
+      "datei": "vendor/lizenzen/en16931-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/ConnectingEurope/eInvoicing-EN16931/validation-1.3.16/LICENSE.txt",
+      "sha256": "fc22ec1dcd8bee4636a395fb332e2308cde870fb3fdc71a2e260b919877cdef5"
+    },
+    {
+      "datei": "vendor/lizenzen/xrechnung-schematron-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/xrechnung-schematron/v2.6.0/LICENSE",
+      "sha256": "57e93bb611b8aeb93ff0f23b271a23291217b0016f6e66297dfd5e9467538a5f"
+    },
+    {
+      "datei": "vendor/lizenzen/visualisierung-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/xrechnung-visualization/v2026-10-13/LICENSE",
+      "sha256": "e0d7665e91531aebb79e4feaa415796f076b0f93e9eddd6d1d05efe9d93808ac"
+    },
+    {
+      "datei": "vendor/lizenzen/testsuite-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/xrechnung-testsuite/v2026-08-31/LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "datei": "vendor/lizenzen/validator-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/validator/v1.6.3/LICENSE",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "datei": "vendor/lizenzen/validator-NOTICE.txt",
+      "url": "https://raw.githubusercontent.com/itplr-kosit/validator/v1.6.3/NOTICE",
+      "sha256": "56e0cd9ecfcf7cc5c8e9542e4f21364cdcb3b761b82213b6d5fff694c7fe0483"
+    },
+    {
+      "datei": "vendor/lizenzen/mustang-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/ZUGFeRD/mustangproject/core-2.26.0/LICENSE",
+      "sha256": "ba98dd76bda1e82034791438bb931145f85e5db3975852a015344ad5990fa21b"
+    },
+    {
+      "datei": "vendor/lizenzen/mustang-NOTICE.txt",
+      "url": "https://raw.githubusercontent.com/ZUGFeRD/mustangproject/core-2.26.0/NOTICE",
+      "sha256": "4730c8f82436984caec13d8d865850bb6aca9ad3f94a68b3f6bbeb1a87c3bec2"
+    }
+  ]
+}

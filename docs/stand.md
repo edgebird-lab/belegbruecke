@@ -7,7 +7,7 @@ Letzte Aktualisierung: 11.11.2026
 ## Phase 0 – Klärung und Durchstich
 
 - [x] **0.1** Projektgerüst (Vite, React, TypeScript, Vitest, oxlint, Playwright, CI). Gerüst wie beim Prozesslotsen, Ports 4184 (Vorschau, Browsertests) und 8784 (Server). Drei `tsconfig`: Oberfläche (ohne Node-Typen, erzwingt `src/fach` ohne Node-APIs), Server und Prüfung (Node 24 führt TypeScript direkt aus), Werkzeuge.
-- [ ] **0.2** Skript `artefakte`
+- [x] **0.2** Skript `artefakte`: `npm run artefakte` lädt Konfiguration, Visualisierung und Testsuite, `--referenz` zusätzlich Validator 1.6.3 und Mustang-CLI 2.26.0. Prüfsummen in `vendor/artefakte.json` (KoSIT-Werte gleich der Spezifikation), Lizenztexte in `vendor/lizenzen/`, Herkunft in `vendor/LIZENZEN.md`. Die Archive enthalten keine Lizenzdateien; die Texte kommen aus den Repos zum Release-Stand.
 - [ ] **0.3** Referenzlauf mit dem KoSIT-Validator
 - [ ] **0.4** SaxonJS-Durchstich (Gate)
 - [ ] **0.5** xmllint-wasm-Durchstich

@@ -31,3 +31,9 @@ Hier steht, was beim Bau entschieden wurde. Einträge mit **Annahme, bis Robin e
 - Node 24.15 führt die TypeScript-Dateien des Servers und der Worker direkt aus (Type Stripping, ohne Warnung geprüft). Deshalb `erasableSyntaxOnly` und relative Importe mit Endung `.ts`; kein eigener Build-Schritt für den Server.
 - Drei Typprüfungen: `tsconfig.app.json` (Oberfläche und `src/fach`, ohne Node-Typen), `tsconfig.server.json` (`src/server`, `src/pruefung`, `src/fach`, alle Tests) und `tsconfig.node.json` (Konfiguration, Browsertests, Skripte). Benutzt `src/fach` versehentlich eine Node-API, scheitert die Typprüfung der Oberfläche.
 - Die CI prüft Lint, Unit-Tests und Build (Vorgabe für diesen Durchgang), Browsertests laufen lokal vor jedem Commit.
+
+### T2 Prüfartefakte per Skript statt im Repo (Schritt 0.2)
+
+- Die KoSIT-Releases (Konfiguration, Visualisierung, Testsuite) liegen nicht im Repo, sondern werden von `scripts/artefakte.mjs` mit fester SHA-256 geladen und unverändert entpackt. Das hält das Repo klein und macht jede Aktualisierung zu einer Zeile in `vendor/artefakte.json`. Die CI lädt sie ebenfalls und hält sie im Cache.
+- Validator und Mustang-CLI (Java) lädt das Skript nur mit `--referenz`; die App und die Tests brauchen kein Java.
+- Die Release-Archive enthalten keine Lizenzdateien. Die Lizenztexte stammen deshalb aus den Repos zum jeweiligen Release-Stand und liegen, ebenfalls mit Prüfsumme, in `vendor/lizenzen/` im Repo.

@@ -15,6 +15,16 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # Prüfartefakte (KoSIT-Releases mit Prüfsumme)
+      - uses: actions/cache@v4
+        with:
+          path: |
+            vendor/downloads
+            vendor/konfiguration
+            vendor/visualisierung
+            testdaten/kosit
+          key: artefakte-${{ hashFiles('vendor/artefakte.json', 'scripts/artefakte.mjs') }}
+      - run: npm run artefakte
       - run: npm run lint
       - run: npm test
       - run: npm run build
