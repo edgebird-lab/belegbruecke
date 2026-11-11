@@ -209,8 +209,13 @@ describe('Echter HTTP-Server mit Worker-Pool', () => {
       const fd = new FormData()
       fd.append('dateien', new File([kosit('standard/01.01a-INVOICE_ubl.xml') as Uint8Array<ArrayBuffer>], '01.01a.xml'))
       const upload = await fetch(`${basis}/api/belege`, { method: 'POST', headers: { 'x-belegbruecke': '1', origin: basis, cookie }, body: fd })
-      const { ergebnisse } = (await upload.json()) as { ergebnisse: { ok: boolean; status: string }[] }
+      const { ergebnisse } = (await upload.json()) as { ergebnisse: { ok: boolean; status: string; belegId: string }[] }
       expect(ergebnisse[0]).toMatchObject({ ok: true, status: 'geprueft' })
+      // Ansicht über den Worker-Pool (dieser Weg war in den Tests mit Prüfung im Prozess nicht abgedeckt)
+      const ansicht = await fetch(`${basis}/api/belege/${ergebnisse[0].belegId}/ansicht`, { headers: { cookie } })
+      expect(ansicht.status).toBe(200)
+      expect(ansicht.headers.get('content-security-policy')).toMatch(/^sandbox allow-scripts allow-downloads;/)
+      expect(await ansicht.text()).toContain('123456XX')
     } finally {
       await s.beenden()
       for (const e of readdirSync(ordner, { recursive: true, withFileTypes: true })) if (e.isFile()) chmodSync(join(e.parentPath, e.name), 0o666)

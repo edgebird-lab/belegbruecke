@@ -7,8 +7,8 @@
  */
 import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { serve } from '@hono/node-server'
-import { ansicht } from '../pruefung/extraktion.ts'
 import { Prueferpool } from '../pruefung/pool.ts'
 import { erzeugeApp } from './app.ts'
 import { pruefeOffene } from './dienste/eingang.ts'
@@ -42,12 +42,9 @@ export function sichereTaeglich(d: Dienste): string | null {
 }
 
 export async function starteServer(o: Serveroptionen) {
+  // PDF, Prüfung und Ansicht laufen im Worker-Pool
   const pool = new Prueferpool()
-  const pruefer = Object.assign(pool, {
-    // Die Ansicht läuft ebenfalls im Worker
-    ansicht: (text: string, syntax: Parameters<typeof ansicht>[1]) => pool.ansicht(text, syntax),
-  })
-  const d = erzeugeDienste({ datenOrdner: o.datenOrdner, port: o.port, pruefer })
+  const d = erzeugeDienste({ datenOrdner: o.datenOrdner, port: o.port, pruefer: pool })
   raeumeSicherheitslogAuf(d)
   sichereTaeglich(d)
   const offen = await pruefeOffene(d)
@@ -72,7 +69,7 @@ export async function starteServer(o: Serveroptionen) {
 }
 
 // Direkt gestartet (node src/server/start.ts): Server starten und bei Strg+C sauber beenden
-if (import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, '/').replace(/^\//, '')}` || process.argv[1]?.endsWith('start.ts')) {
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const o = optionenAusUmgebung()
   const s = await starteServer(o)
   console.log(`Belegbrücke ${s.d.version} läuft auf ${s.url} (Daten: ${o.datenOrdner}${o.oberflaeche ? '' : ', ohne Oberfläche: erst npm run build'})`)

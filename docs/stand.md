@@ -39,7 +39,7 @@ Letzte Aktualisierung: 11.11.2026
 - [ ] **3.1** Grundlayout, Navigation, Hell/Dunkel, Schrittleiste. Vorarbeit: Startseite mit Serverstatus und Darstellungswahl, Browsertest mit axe hell und dunkel.
 - [ ] **3.2** Einrichtungsassistent E1 bis E5
 - [ ] **3.3** Eingang mit Upload und Belegliste
-- [ ] **3.4** Prüfen und Ansehen mit Sandbox-iframe
+- [ ] **3.4** Prüfen und Ansehen mit Sandbox-iframe. Vorarbeit: T-S5 und T-S8 als Browsertests gegen den Server grün (`e2e/ansicht.spec.ts`: Ansicht lädt im iframe, XSS-Testdatei der KoSIT öffnet keinen Dialog, undurchsichtiger Ursprung).
 - [ ] **3.5** Zuordnen mit Lieferant und Dublettenvergleich
 - [ ] **3.6** Kontieren, Freigeben, Ablehnen
 - [ ] **3.7** Handerfassung für sonstige Rechnungen (R16)
